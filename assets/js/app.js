@@ -12,5 +12,9 @@ require('../css/app.scss');
 const $ = require('jquery');
 
 require('bootstrap');
+const feather = require('feather-icons');
+
+feather.replace();
+
 
 console.log('Hello Webpack Encore! Edit me in assets/js/app.js');

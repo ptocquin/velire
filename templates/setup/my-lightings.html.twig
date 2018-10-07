@@ -1,0 +1,61 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Setup{% endblock %}
+
+{% block panelTitle %}
+<h1 class="h2">Setup</h1>
+<div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group mr-2">
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block panelContent %}
+
+{% for message in app.flashes('info') %}
+	<div class="alert alert-success" role="alert">
+        {{ message }}
+    </div>
+{% endfor %}
+<div class="row">
+	{# My Lightings #}
+	<div class="col col-md-12">
+		<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
+			<h1 class="h5">My Lightings</h1>
+			<a href="#" class="btn btn-sm btn-outline-secondary"><span data-feather="plus-circle"></span> New lighting</a>
+		</div>
+		<div class="row">
+			<div class="col">
+				<ul class="list-group list-group-flush">
+				{% for luminaire in all_luminaires %}
+					{% if loop.index is divisible by(6) %}
+					</ul>
+					</div>
+					<div class="col">
+						<ul class="list-group list-group-flush">
+					{% endif %}
+					<li class="list-group-item d-flex justify-content-between">{{ luminaire.serial }} 
+					</li>
+				{% endfor %}
+				</ul>
+			</div>
+		</div>
+	</div>
+
+	{# Groups #}
+{# 	<div class="col col-md-6">
+		<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
+			<h1 class="h5">Clusters</h1>
+			<a href="#" class="btn btn-sm btn-outline-secondary"><span data-feather="plus-circle"></span> New group</a>
+		</div>
+	  	<ul class="list-group list-group-flush">
+		{% for cluster in clusters %}
+		  <li class="list-group-item">{{ cluster.description }}</li>
+		{% endfor %}
+		</ul>
+	</div> #}
+
+</div>
+
+{% endblock %}
