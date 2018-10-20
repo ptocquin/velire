@@ -9,14 +9,18 @@
     </head>
     <body style="padding-top: 60px;">
         {% block navbar %}
-            <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
+            <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-dark shadow">
               <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="{{ path('home') }}">VeLiRe Controller</a>
-              
-              <ul class="navbar-nav px-3">
-                <li class="nav-item text-nowrap">
+              <div class="collapse navbar-collapse" id="navbarText">
+              <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
                   <a class="nav-link" href="#">Sign out</a>
                 </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{{ path('admin') }}">Admin</a>
+                </li>
               </ul>
+            </div>
             </nav>
         {% endblock %}
         {% block body %}
@@ -42,6 +46,9 @@
                             </div>
                             <div class="nav-item p-2 border" href="#">
                                 <a class="nav-link text-right" href="{{ path('connected-lightings') }}">Connected lighting</a>
+                            </div>
+                            <div class="nav-item p-2 border" href="#">
+                                <a class="nav-link text-right" href="{{ path('recipes') }}">Recipes</a>
                             </div>
                         </div>
                       </li>

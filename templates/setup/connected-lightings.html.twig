@@ -56,7 +56,11 @@
 					<li class="list-group-item d-flex justify-content-between">{{ luminaire.serial }} 
 						<div class="d-inline">
 						{% for n in 1..next_cluster %}
+							{% if n == next_cluster %}
+								<a href="{{ path('add-cluster', { 'l': luminaire.id, 'c': n }) }}" class="btn btn-light">+</a>
+							{% else %}
 							<a href="{{ path('add-cluster', { 'l': luminaire.id, 'c': n }) }}" class="btn {% if luminaire.cluster.label is defined and luminaire.cluster.label == n %}btn-{{ colors[ n-1 ] }}{% else %}btn-light{% endif %}">{{ n }} </a>
+							{% endif %}
 						{% endfor %}
 						</div>
 					</li>

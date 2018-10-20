@@ -924,7 +924,7 @@
     }
   },
   "6": {
-    "serial": "0xFFGA3",
+    "serial": "0xFFFFF",
     "address": "1",
     "status": {
       "0": {
@@ -937,13 +937,13 @@
         "crc": "0xDDA5",
         "serial": "0x12900003",
         "n": 0,
-        "type": 1
+        "type": 2
       },
       "1": {
         "crc": "0x54C3",
         "serial": "0x12900002",
         "n": 1,
-        "type": 1
+        "type": 2
       }
     },
     "channels": {

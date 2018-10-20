@@ -19,22 +19,39 @@ class ClusterRepository extends ServiceEntityRepository
         parent::__construct($registry, Cluster::class);
     }
 
-//    /**
-//     * @return Cluster[] Returns an array of Cluster objects
-//     */
-    /*
-    public function findByExampleField($value)
+   /**
+    * @return Cluster[] Returns an array of Cluster objects
+    */
+    
+    public function getEmptyClusters()
     {
         return $this->createQueryBuilder('c')
-            ->andWhere('c.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('c.id', 'ASC')
-            ->setMaxResults(10)
+            ->leftJoin('c.luminaires', 'l')
+            ->where('l.cluster is null')
             ->getQuery()
             ->getResult()
         ;
     }
+
+   /**
+    * @return Cluster[] Returns an array of Cluster objects
     */
+    
+    public function getLedTypes($id)
+    {
+        return $this->createQueryBuilder('cl')
+            ->leftJoin('cl.luminaires', 'l')
+            ->leftJoin('l.channels', 'ch')
+            ->leftJoin('ch.led', 'le')
+            ->groupBy('le.type')
+            ->addGroupBy('le.wavelength')
+            ->where('cl.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+    
 
     /*
     public function findOneBySomeField($value): ?Cluster

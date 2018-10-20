@@ -29,27 +29,17 @@ class Channel
     /**
      * @ORM\Column(type="integer", nullable=true)
      */
-    private $wave_length;
-
-    /**
-     * @ORM\Column(type="string", length=2, nullable=true)
-     */
-    private $led_type;
-
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
     private $pcb;
-
-    /**
-     * @ORM\Column(type="string", length=1, nullable=true)
-     */
-    private $manuf;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Luminaire", inversedBy="channels")
      */
     private $luminaire;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Led", inversedBy="channels")
+     */
+    private $led;
 
     public function getId(): ?int
     {
@@ -80,30 +70,6 @@ class Channel
         return $this;
     }
 
-    public function getWaveLength(): ?int
-    {
-        return $this->wave_length;
-    }
-
-    public function setWaveLength(?int $wave_length): self
-    {
-        $this->wave_length = $wave_length;
-
-        return $this;
-    }
-
-    public function getLedType(): ?string
-    {
-        return $this->led_type;
-    }
-
-    public function setLedType(?string $led_type): self
-    {
-        $this->led_type = $led_type;
-
-        return $this;
-    }
-
     public function getPcb(): ?int
     {
         return $this->pcb;
@@ -116,18 +82,6 @@ class Channel
         return $this;
     }
 
-    public function getManuf(): ?string
-    {
-        return $this->manuf;
-    }
-
-    public function setManuf(?string $manuf): self
-    {
-        $this->manuf = $manuf;
-
-        return $this;
-    }
-
     public function getLuminaire(): ?Luminaire
     {
         return $this->luminaire;
@@ -136,6 +90,18 @@ class Channel
     public function setLuminaire(?Luminaire $luminaire): self
     {
         $this->luminaire = $luminaire;
+
+        return $this;
+    }
+
+    public function getLed(): ?Led
+    {
+        return $this->led;
+    }
+
+    public function setLed(?Led $led): self
+    {
+        $this->led = $led;
 
         return $this;
     }

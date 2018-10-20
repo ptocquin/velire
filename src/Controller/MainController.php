@@ -8,7 +8,6 @@ use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Request;
 
 
-
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
@@ -21,7 +20,12 @@ use App\Entity\Luminaire;
 use App\Entity\Channel;
 use App\Entity\LuminaireStatus;
 use App\Entity\Cluster;
+use App\Entity\Led;
+use App\Entity\Recipe;
+use App\Entity\Ingredient;
 
+use App\Form\RecipeType;
+use App\Form\IngredientType;
 
 class MainController extends AbstractController
 {
@@ -63,6 +67,14 @@ class MainController extends AbstractController
     	$installed_luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findInstalledLuminaire();
 		$clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
 
+        $empty_clusters = $this->getDoctrine()->getRepository(Cluster::class)->getEmptyClusters();
+
+        $em = $this->getDoctrine()->getManager();
+        foreach ($empty_clusters as $cluster) {
+            $em->remove($cluster);
+        }
+        $em->flush();
+
 		// Compter les clusters existants
 		$cluster_number = count($this->getDoctrine()->getRepository(Cluster::class)->findAll());
     	
@@ -70,6 +82,59 @@ class MainController extends AbstractController
         	'installed_luminaires' => $installed_luminaires,
         	'clusters' => $clusters,
         	'next_cluster' => $cluster_number+1
+        ]);
+    }
+
+    /**
+     * @Route("/setup/recipes", name="recipes")
+     */
+    public function recipes()
+    {
+        $led_repo = $this->getDoctrine()->getRepository(Led::class);
+        $recipe_repo = $this->getDoctrine()->getRepository(Recipe::class);
+        $clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
+        $recipes = $recipe_repo->findAll();
+
+        $em = $this->getDoctrine()->getManager();
+        
+        return $this->render('setup/recipes.html.twig', [
+            'clusters' => $clusters,
+            'led_repo' => $led_repo,
+            'recipe_repo' => $recipe_repo,
+            'recipes' => $recipes,
+        ]);
+    }
+
+    /**
+     * @Route("/setup/recipes/new/{id}", name="new-recipe")
+     */
+    public function newRecipe(Request $request, Cluster $cluster)
+    {
+        $em = $this->getDoctrine()->getManager();
+
+        $leds = $this->getDoctrine()->getRepository(Led::class)->getLedTypes($cluster);
+
+        $recipe = new Recipe;
+        foreach ($leds as $led) {
+            $ingredient = new Ingredient;
+            $ingredient->setLed($led);
+            $em->persist($ingredient);
+            $recipe->addIngredient($ingredient);
+        }
+
+        $form = $this->createForm(RecipeType::class, $recipe);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($recipe);
+            $em->flush();
+
+            return $this->redirectToRoute('recipes');
+        }
+        
+        return $this->render('setup/new-recipes.html.twig', [
+            'form' => $form->createView(),
         ]);
     }
 
@@ -144,31 +209,50 @@ class MainController extends AbstractController
 				$luminaire->addStatus($s);
 			}
 
+            foreach ($pcbs as $pcb) {
+                $p = new Pcb;
+                $p->setCrc($pcb["crc"]);
+                $p->setSerial($pcb["serial"]);
+                $p->setN($pcb["n"]);
+                $p->setType($pcb["type"]);
+
+                $em->persist($p);
+
+                $luminaire->addPcb($p);
+            }
+
+            $em->persist($luminaire);
+
 			foreach ($channels as $channel) {
 				$c = new Channel;
 				$c->setChannel($channel["channel"]);
 				$c->setIPeek($channel["i_peek"]);
-				$c->setWaveLength($channel["wave_length"]);
-				$c->setLedType($channel["led_type"]);
 				$c->setPcb($channel["pcb"]);
-				$c->setManuf($channel["manuf"]);
+                $c->setLuminaire($luminaire);
+                $em->persist($c);
 
-				$em->persist($c);
+                # Vérifie que la Led existe dans la base de données, sinon l'ajoute.
+                $led = $this->getDoctrine()->getRepository(Led::class)->findOneBy(array(
+                    'wavelength' => $channel["wave_length"],
+                    'type' => $channel["led_type"],
+                    'manufacturer' => $channel["manuf"]));
 
-				$luminaire->addChannel($c);
+                // die(var_dump(count($led)));
+
+                if ($led == null) {
+                    $l = new Led;
+                    $l->setWavelength($channel["wave_length"]);
+                    $l->setType($channel["led_type"]);
+                    $l->setManufacturer($channel["manuf"]);
+                    $l->addChannel($c);
+                    $em->persist($l);
+                    $em->flush();
+                } else {
+                    $c->setLed($led);
+                }
+	
 			}
-			foreach ($pcbs as $pcb) {
-				$p = new Pcb;
-				$p->setCrc($pcb["crc"]);
-				$p->setSerial($pcb["serial"]);
-				$p->setN($pcb["n"]);
-				$p->setType($pcb["type"]);
 
-				$em->persist($p);
-
-				$luminaire->addPcb($p);
-			}
-			$em->persist($luminaire);
 		}
 
 		$em->flush();
@@ -189,6 +273,7 @@ class MainController extends AbstractController
     public function addCluster(Request $request, $l, $c)
     {
     	$em = $this->getDoctrine()->getManager();
+    	$session = new Session();
 
     	$luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->find($l);
     	$cluster = $this->getDoctrine()->getRepository(Cluster::class)->findOneByLabel($c);
@@ -201,8 +286,8 @@ class MainController extends AbstractController
     		$luminaire->setCluster($new_cluster);
     		$em->persist($luminaire);
     	} else {
-    		$luminaire->setCluster($cluster);
-    		$em->persist($luminaire);
+			$luminaire->setCluster($cluster);
+			$em->persist($luminaire);
     	}
     	
     	$em->flush();
@@ -236,5 +321,40 @@ class MainController extends AbstractController
     	$em->flush();
 
         return $this->redirectToRoute('connected-lightings');
+    }
+
+    /**
+     * @Route("/control/by-color", name="control-by-color")
+     */
+    public function controlByColor()
+    {
+    	$em = $this->getDoctrine()->getManager();
+
+    	$luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findInstalledLuminaire();
+    	$clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
+
+        return $this->render('control/control-by-color.html.twig', [
+        	'clusters' => $clusters,
+        ]);
+
+        return $this->redirectToRoute('control-by-color');
+    }
+
+    /**
+     * @Route("/control/by-color/{id}", name="control-by-color-id")
+     */
+    public function controlByColorId(Request $request, $id)
+    {
+    	$em = $this->getDoctrine()->getManager();
+
+    	$luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findInstalledLuminaire();
+    	$clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
+    	$current_cluster = $this->getDoctrine()->getRepository(Cluster::class)->find($id);
+
+        return $this->render('control/control-by-color.html.twig', [
+        	'clusters' => $clusters,
+        	'current_cluster' => $current_cluster
+       	]);
+
     }
 }
