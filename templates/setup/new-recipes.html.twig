@@ -5,23 +5,9 @@
 {% block title %}Setup{% endblock %}
 
 {% block panelTitle %}
-<h1 class="h2">Recipes</h1>
+<h1 class="h2">New recipe</h1>
 <div class="btn-toolbar mb-2 mb-md-0">
-    <div class="btn-group mr-2">
-      	<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-new-recipes">
-        	<span data-feather="plus"></span>  New recipes
-        </button>
-        <a href="#" class="btn btn-sm btn-outline-secondary">New recipes</a>
-    </div>
-	<div class="modal fade" id="modal-new-recipes">
-		<div class="modal-dialog modal-dialog-centered" role="document">
-			<div class="modal-content">
-				<div class="modal-body text-center">
-					<button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">Cancel</button>
-				</div>
-			</div><!-- /.modal-content -->
-		</div><!-- /.modal-dialog -->
-	</div><!-- /.modal -->
+
 </div>
 {% endblock %}
 
@@ -36,7 +22,7 @@
 	{# Connected Lightings #}
 	<div class="col col-md-12">
 		<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
-		  	<h1 class="h5">New recipe</h1>
+		  	<h1 class="h5">Informations</h1>
 		  	<div class="btn-group">
 		    </div>
 	    </div>
@@ -46,7 +32,8 @@
 <div class="row">	
 
 		<div class="col-md-8">
-			{% form_theme form 'bootstrap_4_horizontal_layout.html.twig' %}
+			{% form_theme form 
+				'bootstrap_4_horizontal_layout.html.twig' %}
 			{{ form_start(form) }}
 			{{ form_row(form.label) }}
 			{{ form_row(form.description) }}
@@ -59,6 +46,7 @@
 			</ul>
     		{{ form_widget(form) }}
     		<button class="btn">{{ button_label|default('Save') }}</button>
+    		<a class="btn" href="{{ path('recipes') }}">Cancel</a>
 			{{ form_end(form) }}
 		</div>
 

@@ -23,6 +23,8 @@ use App\Entity\Cluster;
 use App\Entity\Led;
 use App\Entity\Recipe;
 use App\Entity\Ingredient;
+use App\Entity\Run;
+
 
 use App\Form\RecipeType;
 use App\Form\IngredientType;
@@ -34,8 +36,13 @@ class MainController extends AbstractController
      */
     public function index()
     {
+        $today = new \DateTime();
+
+        $runs = $this->getDoctrine()->getRepository(Run::class)->getRunningRuns($today);
+        
         return $this->render('main/index.html.twig', [
             'controller_name' => 'MainController',
+            'runs' => $runs,
         ]);
     }
 
@@ -112,7 +119,7 @@ class MainController extends AbstractController
     {
         $em = $this->getDoctrine()->getManager();
 
-        $leds = $this->getDoctrine()->getRepository(Led::class)->getLedTypes($cluster);
+        $leds = $this->getDoctrine()->getRepository(Led::class)->getLedTypesFromCluster($cluster);
 
         $recipe = new Recipe;
         foreach ($leds as $led) {
@@ -136,6 +143,24 @@ class MainController extends AbstractController
         return $this->render('setup/new-recipes.html.twig', [
             'form' => $form->createView(),
         ]);
+    }
+
+
+    /**
+     * @Route("/setup/recipes/delete/{id}", name="delete-recipe")
+     */
+    public function deleteRecipe(Request $request, Recipe $recipe)
+    {
+        $em = $this->getDoctrine()->getManager();
+
+        foreach ($recipe->getIngredients() as $ingredient) {
+            $em->remove($ingredient);
+        }
+
+        $em->remove($recipe);
+        $em->flush();
+        
+        return $this->redirectToRoute('recipes');        
     }
 
     /**

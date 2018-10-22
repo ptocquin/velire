@@ -1,0 +1,109 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello {{ controller_name }}!{% endblock %}
+
+{% block panelTitle %}
+<h1 class="h2">Runs</h1>
+<div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group mr-2">
+		<a class="btn btn-sm btn-outline-secondary" href="{{ path('new-run') }}">
+			<span class="far fa-plus-square"> Add a new run</span>
+	    </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block panelContent %}
+
+{% for message in app.flashes('info') %}
+	<div class="alert alert-success" role="alert">
+        {{ message }}
+    </div>
+{% endfor %}
+
+<div class="row">
+	<div class="col col-lg-6 col-xl-4">
+		<ul class="list-group list-group-flush">
+		{% for run in runs %}
+			{% if loop.index is divisible by(6) %}
+			</ul>
+			</div>
+			<div class="col col-md-3">
+				<ul class="list-group list-group-flush">
+			{% endif %}
+			<li class="list-group-item d-flex justify-content-between">
+				<span>{{ run.label }}</span> 
+				<div class="d-inline">
+					<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#run-detail-{{ run.id }}">
+			        	<span class="far fa-question-circle"></span>
+			        </button>
+			        <button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-delete-run-{{ run.id }}">
+			        	<span class="far fa-trash-alt"></span>
+			        </button>
+			     
+				</div>
+			</li>
+			<div class="modal fade" id="modal-delete-run-{{ run.id }}">
+				<div class="modal-dialog modal-dialog-centered" role="document">
+					<div class="modal-content">
+						<div class="modal-body text-center">
+							<p>Warning !</p>
+							<p>By deleting a run, you will also delete related 'steps'.</p>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-sm btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+								Cancel
+							</button>
+							<a class="btn btn-sm btn-outline-danger" href="{{ path('delete-run', { 'id': run.id }) }}">
+								<span class="far fa-trash-alt"> Confirm delete</span>
+					        </a>
+						</div>
+					</div><!-- /.modal-content -->
+				</div><!-- /.modal-dialog -->
+			</div><!-- /.modal -->
+			<div class="modal fade" id="run-detail-{{ run.id }}">
+				<div class="modal-dialog modal-dialog-centered" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h4 class="modal-title">{{ run.label }}</h4>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+								<span aria-hidden="true">&times;</span>
+							</button>
+						</div>
+						<div class="modal-body">
+							<p class="text-muted my-1 border-bottom">{{ run.description }}</p>
+							<ul class="list-group list-group-flush">
+								<li class="list-group-item">
+									<label>Cluster: </label>
+									{{ run.cluster.label }}
+								</li>
+								<li class="list-group-item">
+									<label>Program: </label>
+									<a href="{{ path('edit-program', { 'id': run.program.id }) }}">{{ run.program.label }}</a>
+								</li>
+								<li class="list-group-item">
+									<label>Start: </label>
+									{{ run.start|date("F jS \\a\\t g:ia") }}
+								</li>
+								<li class="list-group-item">
+									<label>End: </label>
+									{{ run.dateend|date("F jS \\a\\t g:ia") }}
+								</li>
+							</ul>
+						</div>
+						<div class="modal-footer">
+							<a class="btn btn-sm btn-outline-secondary" href="{{ path('edit-run', { 'id': run.id }) }}">
+								<span class="far fa-edit"> Edit</span>
+			        		</a>
+						</div>
+					</div><!-- /.modal-content -->
+				</div><!-- /.modal-dialog -->
+			</div><!-- /.modal -->
+		{% endfor %}
+		</ul>
+	</div>
+</div>
+
+
+
+{% endblock %}
