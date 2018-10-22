@@ -19,22 +19,22 @@ class RunRepository extends ServiceEntityRepository
         parent::__construct($registry, Run::class);
     }
 
-//    /**
-//     * @return Run[] Returns an array of Run objects
-//     */
-    /*
-    public function findByExampleField($value)
+   /**
+    * @return Run[] Returns an array of Run objects
+    */
+    
+    public function getRunningRuns($today)
     {
         return $this->createQueryBuilder('r')
-            ->andWhere('r.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('r.id', 'ASC')
-            ->setMaxResults(10)
+            ->where('r.start <= :today')
+            ->andWhere('r.date_end >= :today')
+            ->setParameter('today', $today)
+            ->orderBy('r.start', 'ASC')
             ->getQuery()
             ->getResult()
         ;
     }
-    */
+    
 
     /*
     public function findOneBySomeField($value): ?Run

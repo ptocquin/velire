@@ -152,8 +152,6 @@ class ProgramController extends AbstractController
             $process = new Process('./bin/run.R');
             $process->run();
 
-            die(print_r($process->getOutput()));
-
             return $this->redirectToRoute('run');
         }
         return $this->render('control/new-run.html.twig', [
@@ -186,7 +184,8 @@ class ProgramController extends AbstractController
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             
-
+            $em->flush();
+            
             $process = new Process('./bin/run.R');
             $process->run();
 
@@ -195,11 +194,14 @@ class ProgramController extends AbstractController
                 throw new ProcessFailedException($process);
             }
 
+            
+
             $date = new \DateTime($process->getOutput());
             $run->setDateEnd($date);
 
             $em->persist($run);
             $em->flush();
+            
 
             return $this->redirectToRoute('run');
         }

@@ -23,6 +23,8 @@ use App\Entity\Cluster;
 use App\Entity\Led;
 use App\Entity\Recipe;
 use App\Entity\Ingredient;
+use App\Entity\Run;
+
 
 use App\Form\RecipeType;
 use App\Form\IngredientType;
@@ -34,8 +36,13 @@ class MainController extends AbstractController
      */
     public function index()
     {
+        $today = new \DateTime();
+
+        $runs = $this->getDoctrine()->getRepository(Run::class)->getRunningRuns($today);
+        
         return $this->render('main/index.html.twig', [
             'controller_name' => 'MainController',
+            'runs' => $runs,
         ]);
     }
 

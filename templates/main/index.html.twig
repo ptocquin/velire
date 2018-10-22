@@ -5,17 +5,45 @@
 {% block panelTitle %}
 <h1 class="h2">Dashboard</h1>
 <div class="btn-toolbar mb-2 mb-md-0">
-    <div class="btn-group mr-2">
+{#     <div class="btn-group mr-2">
         <button class="btn btn-sm btn-outline-secondary">Share</button>
         <button class="btn btn-sm btn-outline-secondary">Export</button>
     </div>
     <button class="btn btn-sm btn-outline-secondary dropdown-toggle">
         <span data-feather="calendar"></span>
         This week
-    </button>
+    </button> #}
 </div>
 {% endblock %}
 
 {% block panelContent %}
-  
+<div class="row">
+	<div class="col col-md-12">
+		<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
+	  		<h1 class="h5">Running programs</h1>
+	    </div>
+	</div>
+</div>
+<div class="row">
+{% for run in runs %}
+  <div class="col-sm-4">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title d-flex justify-content-between">
+          {{ run.label }}
+          <div class="d-inline">
+            <a href="{{ path('edit-run', {'id': run.id }) }}"> <span class="far fa-edit"></span> </a>
+          </div>
+        </h5>
+        <h6 class="card-subtitle mb-2 text-muted">Cluster: {{ run.cluster.label }}</h6>
+      </div>
+      <div class="card-body">
+        <p class="card-text">Start: {{ run.start|date("F jS \\a\\t g:ia") }}</p>
+        <p class="card-text">End: {{ run.dateend|date("F jS \\a\\t g:ia") }}</p>
+        <p class="card-text">Program: {{ run.program.label }}</p>
+      </div>
+    </div>
+  </div>
+{% endfor %}
+</div>
 {% endblock %}
