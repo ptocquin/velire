@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% set colors = ["primary","secondary","success","danger","warning","info"] %}
+
+{% block title %}Setup{% endblock %}
+
+{% block panelTitle %}
+<h1 class="h2">New recipe</h1>
+<div class="btn-toolbar mb-2 mb-md-0">
+
+</div>
+{% endblock %}
+
+{% block panelContent %}
+
+{% for message in app.flashes('info') %}
+	<div class="alert alert-success" role="alert">
+        {{ message }}
+    </div>
+{% endfor %}
+<div class="row">
+	{# Connected Lightings #}
+	<div class="col col-md-12">
+		<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
+		  	<h1 class="h5">Informations</h1>
+		  	<div class="btn-group">
+		    </div>
+	    </div>
+	</div>
+</div>
+
+<div class="row">	
+
+		<div class="col-md-8">
+			{% form_theme form 
+				'bootstrap_4_horizontal_layout.html.twig' %}
+			{{ form_start(form) }}
+			{{ form_row(form.label) }}
+			{{ form_row(form.description) }}
+			<h5>Ingredients</h5>
+			
+			<ul>
+				{% for ingredient in form.ingredients %}
+				    <li>{{ form_row(ingredient.level, { 'label': ingredient.vars.data.led.type~' '~ingredient.vars.data.led.wavelength }) }} </li>
+				{% endfor %}
+			</ul>
+    		{{ form_widget(form) }}
+    		<button class="btn">{{ button_label|default('Save') }}</button>
+    		<a class="btn" href="{{ path('recipes') }}">Cancel</a>
+			{{ form_end(form) }}
+		</div>
+
+</div>
+
+
+{% endblock %}

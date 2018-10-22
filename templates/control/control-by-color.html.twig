@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% set colors = ["primary","secondary","success","danger","warning","info"] %}
+
+{% if current_cluster is not defined %}
+	{% set current_cluster = clusters[0] %}
+{% endif %}
+
+{% block title %}Setup{% endblock %}
+
+{% block panelTitle %}
+<h1 class="h2">Control By Color</h1>
+<div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group mr-2">
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block panelContent %}
+
+{% for message in app.flashes('info') %}
+	<div class="alert alert-success" role="alert">
+        {{ message }}
+    </div>
+{% endfor %}
+<div class="row">
+	{# Connected Lightings #}
+	<div class="col col-md-12">
+		<ul class="nav nav-tabs">
+		{% for cluster in clusters %}
+			<li class="nav-item">
+				<a class="nav-link {% if loop.index == current_cluster.label|default(1) %}active{% endif %}" href="{{ path('control-by-color-id', {'id': cluster.id }) }}">Group #{{ cluster.label }}</a>
+			</li>
+		{% endfor %}
+		</ul>
+
+		<div class="row">
+			<div class="col">
+				<h5>ID: {{ current_cluster.label }}</h5>
+			</div>
+		</div>
+	</div>
+
+</div>
+
+{% endblock %}

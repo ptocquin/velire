@@ -1,0 +1,11 @@
+easy_admin:
+   entities:
+#        # List the entity class name you want to manage
+       - App\Entity\LuminaireStatus
+       - App\Entity\Led
+#        - App\Entity\User
+   design:
+      menu:
+         - LuminaireStatus
+         - Led
+         - { label: 'Homepage', route: 'home' }
