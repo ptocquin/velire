@@ -14,7 +14,20 @@ const $ = require('jquery');
 require('bootstrap');
 const feather = require('feather-icons');
 
-feather.replace();
+require('./jquery.collection.js')
+
+$(document).ready(function () {
+		  $('.form-collection').collection({
+				position_field_selector: '.rank',
+				allow_duplicate: true,
+				allow_up: true,
+         		allow_down: true,
+         	}
+		  	);
+
+		  feather.replace();
+		});
+
 
 
 console.log('Hello Webpack Encore! Edit me in assets/js/app.js');

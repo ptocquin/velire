@@ -1,0 +1,102 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello {{ controller_name }}!{% endblock %}
+
+{% block panelTitle %}
+<h1 class="h2">Programs</h1>
+<div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group mr-2">
+		<a class="btn btn-sm btn-outline-secondary" href="{{ path('new-program') }}">
+			<span class="far fa-plus-square"> Add a new program</span>
+	    </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block panelContent %}
+
+{% for message in app.flashes('info') %}
+	<div class="alert alert-success" role="alert">
+        {{ message }}
+    </div>
+{% endfor %}
+
+<div class="row">
+	<div class="col col-lg-6 col-xl-4">
+		<ul class="list-group list-group-flush">
+		{% for program in programs %}
+			{% if loop.index is divisible by(6) %}
+			</ul>
+			</div>
+			<div class="col col-md-3">
+				<ul class="list-group list-group-flush">
+			{% endif %}
+			<li class="list-group-item d-flex justify-content-between">
+				<span>{{ program.label }}</span> 
+				<div class="d-inline">
+					<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#program-detail-{{ program.id }}">
+			        	<span class="far fa-question-circle"></span>
+			        </button>
+			        <button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-delete-program-{{ program.id }}">
+			        	<span class="far fa-trash-alt"></span>
+			        </button>
+			     
+				</div>
+			</li>
+			<div class="modal fade" id="modal-delete-program-{{ program.id }}">
+				<div class="modal-dialog modal-dialog-centered" role="document">
+					<div class="modal-content">
+						<div class="modal-body text-center">
+							<p>Warning !</p>
+							<p>By deleting a program, you will also delete related 'steps'.</p>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-sm btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+								Cancel
+							</button>
+							<a class="btn btn-sm btn-outline-danger" href="{{ path('delete-program', { 'id': program.id }) }}">
+								<span class="far fa-trash-alt"> Confirm delete</span>
+					        </a>
+						</div>
+					</div><!-- /.modal-content -->
+				</div><!-- /.modal-dialog -->
+			</div><!-- /.modal -->
+			<div class="modal fade" id="program-detail-{{ program.id }}">
+				<div class="modal-dialog modal-dialog-centered" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h4 class="modal-title">{{ program.label }}</h4>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+								<span aria-hidden="true">&times;</span>
+							</button>
+						</div>
+						<div class="modal-body">
+							<p class="text-muted my-1 border-bottom">{{ program.description }}</p>
+							<ul class="list-group list-group-flush">
+							  	{% for step in program.steps %}
+							  	    <li class="list-group-item d-flex justify-content-between align-items-center">
+							  	    	<div class="d-inline">
+							  	    	<span class="badge badge-info mr-2">{{ step.rank }}</span>
+							  	    	<span class="badge badge-light mr-2">{{ step.type }}</span>
+							  	    	</div>
+							  	    	<span>{{ step.value }}</span> 
+							  	    </li>
+							  	{% endfor %}
+							 </ul>
+						</div>
+						<div class="modal-footer">
+							<a class="btn btn-sm btn-outline-secondary" href="{{ path('edit-program', { 'id': program.id }) }}">
+								<span class="far fa-edit"> Edit</span>
+			        		</a>
+						</div>
+					</div><!-- /.modal-content -->
+				</div><!-- /.modal-dialog -->
+			</div><!-- /.modal -->
+		{% endfor %}
+		</ul>
+	</div>
+</div>
+
+
+
+{% endblock %}

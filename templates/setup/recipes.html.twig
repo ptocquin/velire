@@ -8,10 +8,7 @@
 <h1 class="h2">Recipes</h1>
 <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group mr-2">
-      	<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-new-recipes">
-        	<span data-feather="plus"></span>  New recipes
-        </button>
-        <a href="#" class="btn btn-sm btn-outline-secondary">New recipes</a>
+
     </div>
 	<div class="modal fade" id="modal-new-recipes">
 		<div class="modal-dialog modal-dialog-centered" role="document">
@@ -34,72 +31,106 @@
 {% endfor %}
 
 <div class="row">
-	{% for recipe in recipes %}
-	    <div class="col-md-3">
-			<div class="card">
-				<div class="card-block">
-					<h5 class="card-title">{{ recipe.label }}</h5>
-					<h6 class="card-subtitle text-muted">{{ recipe.description }}</h6>
-					  <ul class="list-group list-group-flush">
-					  	{% for ingredient in recipe.ingredients %}
-					  	    <li class="list-group-item d-flex justify-content-between align-items-center">{{ ingredient.led.type }} {{ ingredient.led.wavelength }} <span class="badge badge-light">{{ ingredient.level }}%</span></li>
-					  	{% endfor %}
-					  </ul>
-				</div>
+	<div class="col col-md-3">
+		<ul class="list-group list-group-flush">
+		{% for recipe in recipes %}
+			{% if loop.index is divisible by(6) %}
+			</ul>
 			</div>
-	    </div>
-	{% endfor %}
+			<div class="col col-md-3">
+				<ul class="list-group list-group-flush">
+			{% endif %}
+			<li class="list-group-item d-flex justify-content-between">
+				<span>{{ recipe.label }}</span> 
+				<div class="d-inline">
+					<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#recipe-detail-{{ recipe.id }}">
+			        	<span class="far fa-question-circle"></span>
+			        </button>
+			        <a class="btn btn-sm btn-outline-secondary" href="{{ path('delete-recipe', { 'id': recipe.id }) }}">
+						<span class="far fa-trash-alt"></span>
+			        </a>
+				</div>
+			</li>
+			<div class="modal fade" id="recipe-detail-{{ recipe.id }}">
+				<div class="modal-dialog modal-dialog-centered" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h4 class="modal-title">{{ recipe.label }}</h4>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+								<span aria-hidden="true">&times;</span>
+							</button>
+						</div>
+						<div class="modal-body">
+							<p class="text-muted my-1 border-bottom">{{ recipe.description }}</p>
+							<ul class="list-group list-group-flush">
+							  	{% for ingredient in recipe.ingredients %}
+							  	    <li class="list-group-item d-flex justify-content-between align-items-center">{{ ingredient.led.type }} {{ ingredient.led.wavelength }} <span class="badge badge-light">{{ ingredient.level }}%</span></li>
+							  	{% endfor %}
+							 </ul>
+						</div>
+					</div><!-- /.modal-content -->
+				</div><!-- /.modal-dialog -->
+			</div><!-- /.modal -->
+		{% endfor %}
+		</ul>
+	</div>
 </div>
 
 <div class="row">
 	{# Connected Lightings #}
 	<div class="col col-md-12">
-		<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
-		  	<h1 class="h5">Clusters</h1>
+		<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mt-5 mb-3">
+		  	<h1 class="h5">Create recipes for existing clusters</h1>
 		  	<div class="btn-group">
 		    </div>
 	    </div>
 	</div>
 </div>
 
-<div class="row">	
-	<div class="accordion w-100" id="clusters">
+<div class="row">
+	<div class="col col-md-3">
+		<ul class="list-group list-group-flush">
 		{% for cluster in clusters %}
-		<div class="col-md-12">
-			<div class="card w-100">
-				<div class="card-header" id="heading_{{ loop.index }}">
-					<h5 class="mb-0">
-						<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse_{{ loop.index }}" aria-expanded="true" aria-controls="collapse_{{ loop.index }}">
-						Cluster #{{ cluster.label }}
-						</button>
-						<a href="{{ path('new-recipe', {'id': cluster.id }) }}" class="btn btn-sm btn-outline-secondary">New recipes</a>
-					</h5>
-				</div>
-
-				<div id="collapse_{{ loop.index }}" class="collapse show" aria-labelledby="heading_{{ loop.index }}" data-parent="#clusters">
-					{% set cluster_leds = led_repo.getLedTypesFromCluster(cluster.id) %}
-					<div class="card-body">
-						<ul>
-						{% for recipe in recipes %}
-						    {% set recipe_leds = led_repo.getLedTypesFromRecipe(recipe.id) %}
-						    	{% if cluster_leds is same as(recipe_leds) %}
-						    		<li>{{ recipe.label }} {{ recipe.id }}</li>
-						    	{% endif %}
-		{# 						{% for led in recipe_leds %}
-								    <li>{{ led.type }} {{ led.wavelength }}</li>
-								{% endfor %} #}
-						{% endfor %}
-						</ul>
-						<ul>
-						{% for led in cluster_leds %}
-						    <li>{{ led.type }} {{ led.wavelength }}</li>
-						{% endfor %}
-						</ul>
-					</div>
-				</div>
+			{% if loop.index is divisible by(6) %}
+			</ul>
 			</div>
-		</div>
+			<div class="col col-md-3">
+				<ul class="list-group list-group-flush">
+			{% endif %}
+			<li class="list-group-item d-flex justify-content-between">
+				<span>Cluster #{{ cluster.label }}</span> 
+				<div class="d-inline">
+					<div class="btn-group">
+						<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#cluster-detail-{{ cluster.id }}">
+				        	<span class="far fa-question-circle"></span>
+				        </button>
+				        <a href="{{ path('new-recipe', {'id': cluster.id }) }}" class="btn btn-sm btn-outline-secondary"><span class="far fa-plus-square"></span> New recipes</a>
+			        </div>
+				</div>
+			</li>
+			<div class="modal fade" id="cluster-detail-{{ cluster.id }}">
+				<div class="modal-dialog" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h4 class="modal-title">Cluster #{{ cluster.label }}</h4>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+								<span aria-hidden="true">&times;</span>
+							</button>
+						</div>
+						<div class="modal-body">
+							<p class="text-muted my-1 border-bottom">{{ cluster.description }}</p>
+							{% set cluster_leds = led_repo.getLedTypesFromCluster(cluster.id) %}
+							<ul class="list-group list-group-flush">
+							{% for led in cluster_leds %}
+							    <li class="list-group-item d-flex justify-content-between align-items-center">{{ led.type }} {{ led.wavelength }}</li>
+							{% endfor %}
+							</ul>
+						</div>
+					</div><!-- /.modal-content -->
+				</div><!-- /.modal-dialog -->
+			</div><!-- /.modal -->
 		{% endfor %}
+		</ul>
 	</div>
 </div>
 

@@ -7,9 +7,9 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\RecipeRepository")
+ * @ORM\Entity(repositoryClass="App\Repository\ProgramRepository")
  */
-class Recipe
+class Program
 {
     /**
      * @ORM\Id()
@@ -17,11 +17,6 @@ class Recipe
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Ingredient", mappedBy="recipe")
-     */
-    private $ingredients;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
@@ -34,55 +29,24 @@ class Recipe
     private $description;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Step", mappedBy="recipe")
+     * @ORM\OneToMany(targetEntity="App\Entity\Step", mappedBy="program")
      */
     private $steps;
 
-    public function __toString()
-    {
-        return $this->label;
-    }
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Run", mappedBy="program", orphanRemoval=true)
+     */
+    private $runs;
 
     public function __construct()
     {
-        $this->ingredients = new ArrayCollection();
         $this->steps = new ArrayCollection();
+        $this->runs = new ArrayCollection();
     }
 
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    /**
-     * @return Collection|Ingredient[]
-     */
-    public function getIngredients(): Collection
-    {
-        return $this->ingredients;
-    }
-
-    public function addIngredient(Ingredient $ingredient): self
-    {
-        if (!$this->ingredients->contains($ingredient)) {
-            $this->ingredients[] = $ingredient;
-            $ingredient->setRecipe($this);
-        }
-
-        return $this;
-    }
-
-    public function removeIngredient(Ingredient $ingredient): self
-    {
-        if ($this->ingredients->contains($ingredient)) {
-            $this->ingredients->removeElement($ingredient);
-            // set the owning side to null (unless already changed)
-            if ($ingredient->getRecipe() === $this) {
-                $ingredient->setRecipe(null);
-            }
-        }
-
-        return $this;
     }
 
     public function getLabel(): ?string
@@ -121,7 +85,7 @@ class Recipe
     {
         if (!$this->steps->contains($step)) {
             $this->steps[] = $step;
-            $step->setRecipe($this);
+            $step->setProgram($this);
         }
 
         return $this;
@@ -132,8 +96,39 @@ class Recipe
         if ($this->steps->contains($step)) {
             $this->steps->removeElement($step);
             // set the owning side to null (unless already changed)
-            if ($step->getRecipe() === $this) {
-                $step->setRecipe(null);
+            if ($step->getProgram() === $this) {
+                $step->setProgram(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Run[]
+     */
+    public function getRuns(): Collection
+    {
+        return $this->runs;
+    }
+
+    public function addRun(Run $run): self
+    {
+        if (!$this->runs->contains($run)) {
+            $this->runs[] = $run;
+            $run->setProgram($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRun(Run $run): self
+    {
+        if ($this->runs->contains($run)) {
+            $this->runs->removeElement($run);
+            // set the owning side to null (unless already changed)
+            if ($run->getProgram() === $this) {
+                $run->setProgram(null);
             }
         }
 

@@ -112,7 +112,7 @@ class MainController extends AbstractController
     {
         $em = $this->getDoctrine()->getManager();
 
-        $leds = $this->getDoctrine()->getRepository(Led::class)->getLedTypes($cluster);
+        $leds = $this->getDoctrine()->getRepository(Led::class)->getLedTypesFromCluster($cluster);
 
         $recipe = new Recipe;
         foreach ($leds as $led) {
@@ -136,6 +136,24 @@ class MainController extends AbstractController
         return $this->render('setup/new-recipes.html.twig', [
             'form' => $form->createView(),
         ]);
+    }
+
+
+    /**
+     * @Route("/setup/recipes/delete/{id}", name="delete-recipe")
+     */
+    public function deleteRecipe(Request $request, Recipe $recipe)
+    {
+        $em = $this->getDoctrine()->getManager();
+
+        foreach ($recipe->getIngredients() as $ingredient) {
+            $em->remove($ingredient);
+        }
+
+        $em->remove($recipe);
+        $em->flush();
+        
+        return $this->redirectToRoute('recipes');        
     }
 
     /**

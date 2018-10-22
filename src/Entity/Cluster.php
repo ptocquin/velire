@@ -33,9 +33,16 @@ class Cluster
      */
     private $luminaires;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Run", mappedBy="cluster", orphanRemoval=true)
+     */
+    private $runs;
+
+
     public function __construct()
     {
         $this->luminaires = new ArrayCollection();
+        $this->runs = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -97,4 +104,36 @@ class Cluster
 
         return $this;
     }
+
+    /**
+     * @return Collection|Run[]
+     */
+    public function getRuns(): Collection
+    {
+        return $this->runs;
+    }
+
+    public function addRun(Run $run): self
+    {
+        if (!$this->runs->contains($run)) {
+            $this->runs[] = $run;
+            $run->setCluster($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRun(Run $run): self
+    {
+        if ($this->runs->contains($run)) {
+            $this->runs->removeElement($run);
+            // set the owning side to null (unless already changed)
+            if ($run->getCluster() === $this) {
+                $run->setCluster(null);
+            }
+        }
+
+        return $this;
+    }
+
 }
