@@ -1,3 +1,6 @@
+# 24/10/2018 v0.2
+- Mise en production sur TouchPanel > ajout fichier composer.lock pour solutionner problème
+
 # 22/10/2018 v0.1
 
 - Version de base, incluant la gestion des recettes et programmes
