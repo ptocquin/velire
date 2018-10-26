@@ -176,14 +176,14 @@ class MainController extends AbstractController
 		// Compter les clusters existants
 		$clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
 
-		foreach ($old_luminaires as $ol) {
-			foreach ($ol->getStatus() as $status) {
-				$status->removeLuminaire($ol);
-				$em->persist($status);
-				$em->flush();
-			}
-			$em->remove($ol);
-		}
+		// foreach ($old_luminaires as $ol) {
+		// 	foreach ($ol->getStatus() as $status) {
+		// 		$status->removeLuminaire($ol);
+		// 		$em->persist($status);
+		// 		$em->flush();
+		// 	}
+		// 	$em->remove($ol);
+		// }
 
 		foreach ($clusters as $c) {
 			$em->remove($c);
@@ -191,7 +191,7 @@ class MainController extends AbstractController
 		$em->flush();
 
 		// Interroger le réseau de luminaires
-    	$process = new Process('./bin/get_data.sh ');
+    	$process = new Process('./bin/info.R');
 		$process->run();
 
 		// executes after the command finishes
@@ -203,21 +203,22 @@ class MainController extends AbstractController
 
 		// Decode to array
 		$data = json_decode($output, true);
+        $spots = $data['spots'];
 
 		$i = 0;
 
-		foreach ($data as $d) {
+		foreach ($spots as $spot) {
 
-			$channels = $d["channels"];
-			$pcbs = $d["pcb"];
-			$status = $d["status"];
+			$channels = $spot["channels"];
+			$pcbs = $spot["pcb"];
+			$status = $spot["status"];
 
 			// Create Luminaire by recusively adding channels / pcbs
 			$luminaire = new Luminaire;
-			$luminaire->setSerial($d["serial"]);
-			$luminaire->setAddress($d["address"]);
+			$luminaire->setSerial($spot["serial"]);
+			$luminaire->setAddress($spot["address"]);
 
-			if ($status[0]["code"] == 0) {
+			if ($status["config"] == "OK") {
 				$i++;
 				$cluster = $this->getDoctrine()->getRepository(Cluster::class)->findOneByLabel(1);
 				if(count($cluster) == 0){
@@ -229,10 +230,10 @@ class MainController extends AbstractController
 				$luminaire->setCluster($cluster);
 			}
 
-			foreach ($status as $st) {
-				$s = $this->getDoctrine()->getRepository(LuminaireStatus::class)->findOneByCode($st["code"]);
-				$luminaire->addStatus($s);
-			}
+			// foreach ($status as $st) {
+			// 	$s = $this->getDoctrine()->getRepository(LuminaireStatus::class)->findOneByCode($st["code"]);
+			// 	$luminaire->addStatus($s);
+			// }
 
             foreach ($pcbs as $pcb) {
                 $p = new Pcb;
@@ -250,24 +251,24 @@ class MainController extends AbstractController
 
 			foreach ($channels as $channel) {
 				$c = new Channel;
-				$c->setChannel($channel["channel"]);
-				$c->setIPeek($channel["i_peek"]);
-				$c->setPcb($channel["pcb"]);
+				$c->setChannel($channel["id"]);
+				$c->setIPeek($channel["max"]);
+				$c->setPcb($channel["address"]);
                 $c->setLuminaire($luminaire);
                 $em->persist($c);
 
                 # Vérifie que la Led existe dans la base de données, sinon l'ajoute.
                 $led = $this->getDoctrine()->getRepository(Led::class)->findOneBy(array(
-                    'wavelength' => $channel["wave_length"],
-                    'type' => $channel["led_type"],
+                    'wavelength' => $channel["wl"],
+                    'type' => $channel["type"],
                     'manufacturer' => $channel["manuf"]));
 
                 // die(var_dump(count($led)));
 
                 if ($led == null) {
                     $l = new Led;
-                    $l->setWavelength($channel["wave_length"]);
-                    $l->setType($channel["led_type"]);
+                    $l->setWavelength($channel["wl"]);
+                    $l->setType($channel["type"]);
                     $l->setManufacturer($channel["manuf"]);
                     $l->addChannel($c);
                     $em->persist($l);

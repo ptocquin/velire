@@ -23,7 +23,7 @@ library("RSQLite")
 #### Parameters
 command.file <- "./bin/commands"
 db <- "../var/data.db"
-port     <- "/dev/ttyUSB0"
+port     <- "/dev/ttyUSB1"
 
 #### Connexion à la base de données
 con <- dbConnect(SQLite(), dbname = db)

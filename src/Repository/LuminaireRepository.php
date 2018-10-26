@@ -28,8 +28,8 @@ class LuminaireRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('l')
             ->leftJoin('l.status', 's')
-            ->andWhere('s.code < :val')
-            ->setParameter('val', 99)
+            // ->andWhere('s.code < :val')
+            // ->setParameter('val', 99)
             ->orderBy('l.id', 'ASC')
             // ->setMaxResults(10)
             ->getQuery()
