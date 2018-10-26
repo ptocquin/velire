@@ -13,11 +13,17 @@ use Symfony\Component\Process\Process;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+
+
 
 
 use App\Entity\Program;
 use App\Entity\Step;
 use App\Entity\Run;
+use App\Entity\Cluster;
+use App\Entity\Recipe;
 
 
 use App\Form\ProgramType;
@@ -207,6 +213,59 @@ class ProgramController extends AbstractController
         }
         return $this->render('control/new-run.html.twig', [
             'controller_name' => 'ProgramController',
+            'form' => $form->createView(),
+        ]);
+    }
+
+    /**
+     * @Route("/program/manual", name="manual")
+     */
+    public function manualControl(Request $request)
+    {
+        $session = new Session;
+        $cluster_repo = $this->getDoctrine()->getRepository(Cluster::class);
+        $clusters = $cluster_repo->findAll();
+
+        $form = $this->createFormBuilder()
+            ->add('recipe', EntityType::class, [
+                'class' => Recipe::class,
+                'choice_label' => 'label',
+                'choice_value' => 'id', // <--- default IdReader::getIdValue()
+            ])
+            ->add('cluster', HiddenType::class, array(
+                // 'mapped' => false,
+            ))
+            ->getForm()
+            ;
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
+            $cluster_id = $data['cluster'];
+            $recipe = $data['recipe'];
+
+            $process = new Process('./bin/play.R '.$cluster_id.' '.$recipe->getId());
+            $process->run();
+
+            // executes after the command finishes
+            if (!$process->isSuccessful()) {
+                throw new ProcessFailedException($process);
+            } else {
+                            // add flash messages
+                $session->getFlashBag()->add(
+                    'info',
+                    $process->getOutput()
+                );
+            }
+            // die(var_dump($data['cluster']));
+        }
+
+
+        return $this->render('control/manual-control.html.twig', [
+            'controller_name' => 'ProgramController',
+            'clusters' => $clusters,
+            'cluster_repo' => $cluster_repo,
             'form' => $form->createView(),
         ]);
     }

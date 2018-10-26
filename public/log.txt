@@ -1,0 +1,2 @@
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
