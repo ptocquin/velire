@@ -33,6 +33,45 @@ class ClusterRepository extends ServiceEntityRepository
         ;
     }
 
+    /**
+    * @return Cluster[] Returns an array of Cluster objects
+    */
+    
+    public function getRunningClusters($id, $today)
+    {
+        $qb = $this->createQueryBuilder('c');
+        
+        $qb->leftJoin('c.runs', 'r')
+            ->where('c.id = :id')
+            ->andWhere('r.start <= :today')
+            ->andWhere('r.date_end >= :today')
+            ->andWhere('r.status is null')
+            ->orWhere('r.status <> :status')
+            // ->andWhere($qb->expr()->neq('r.status', ':status'))
+            ->setParameter('id', $id)
+            ->setParameter('today', $today)
+            ->setParameter('status', 'pause')
+            ;
+
+        return $qb
+            ->getQuery()
+            ->getResult()
+            ;
+
+
+        // return $this->createQueryBuilder('c')
+        //     ->leftJoin('c.runs', 'r')
+        //     ->where('c.id = :id')
+        //     ->andWhere('r.start <= :today')
+        //     ->andWhere('r.date_end >= :today')
+        //     ->andWhere($expr->neq('r.status', 'pause'))
+        //     ->setParameter('id', $id)
+        //     ->setParameter('today', $today)
+        //     ->getQuery()
+        //     ->getResult()
+        // ;
+    }
+
    /**
     * @return Cluster[] Returns an array of Cluster objects
     */

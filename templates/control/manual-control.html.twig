@@ -1,0 +1,87 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello {{ controller_name }}!{% endblock %}
+
+{% block panelTitle %}
+<h1 class="h2">Dashboard</h1>
+<div class="btn-toolbar mb-2 mb-md-0">
+{#     <div class="btn-group mr-2">
+        <button class="btn btn-sm btn-outline-secondary">Share</button>
+        <button class="btn btn-sm btn-outline-secondary">Export</button>
+    </div>
+    <button class="btn btn-sm btn-outline-secondary dropdown-toggle">
+        <span data-feather="calendar"></span>
+        This week
+    </button> #}
+</div>
+{% endblock %}
+
+{% block panelContent %}
+{% for message in app.flashes('info') %}
+  <div class="alert alert-success" role="alert">
+        {{ message }}
+    </div>
+{% endfor %}
+
+<div class="row">
+	<div class="col col-md-12">
+		<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
+	  		<h1 class="h5">Clusters</h1>
+	    </div>
+	</div>
+</div>
+<div class="row">
+{% for cluster in clusters %}
+  <div class="col col-md-6 col-lg-4">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title d-flex justify-content-between">
+          Cluster {{ cluster.label }}
+          <div class="d-inline">
+
+          </div>
+        </h5>
+        <h6 class="card-subtitle mb-2 text-muted">{{ cluster.description }}</h6>
+      </div>
+      <div class="card-body">
+        {% if cluster_repo.getRunningClusters(cluster.id, "now"|date("Y-m-d"))|length > 0 %}
+          <p><span class="fas fa-circle" style="color: green;"></span> {{ cluster_repo.getRunningClusters(cluster.id, "now"|date("Y-m-d"))|length }} running program</p> 
+        {% else %}
+          <p>  <span class="fas fa-circle" style="color: red;"></span> No running programs</p>
+        {% endif %}
+        <div class="btn-group">
+          <button class="btn btn-primary far fa-play-circle" data-toggle="modal" data-target="#modal-manual-play"></button>
+        </div>
+        <div class="modal fade" id="modal-manual-play">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h4 class="modal-title">Play a recipe</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                  <span class="sr-only">Close</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                {% form_theme form 
+                  'bootstrap_4_layout.html.twig' %}
+                {{ form_start(form) }}
+                {{ form_widget(form.recipe) }}
+                {{ form_widget(form.cluster, { 'value' : cluster.id }) }}
+             
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button class="btn">{{ button_label|default('Save') }}</button>
+                 {{ form_end(form) }} 
+               
+              </div>
+            </div><!-- /.modal-content -->
+          </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+      </div>
+    </div>
+  </div>
+{% endfor %}
+</div>
+{% endblock %}
