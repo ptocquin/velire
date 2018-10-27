@@ -23,7 +23,7 @@
 	<div class="col col-md-12">
 		<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
 			<h1 class="h5">My Lightings</h1>
-			<a href="#" class="btn btn-sm btn-outline-secondary"><span data-feather="plus-circle"></span> New lighting</a>
+			<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-add-luminaire"><span data-feather="plus-circle"></span> New Lighting</button>
 		</div>
 		<div class="row">
 			<div class="col">
@@ -35,12 +35,37 @@
 					<div class="col">
 						<ul class="list-group list-group-flush">
 					{% endif %}
-					<li class="list-group-item d-flex justify-content-between">{{ luminaire.serial }} 
+					<li class="list-group-item d-flex justify-content-between">Lighting #{{ luminaire.address }} [ Serial: {{ luminaire.serial }} ] 
 					</li>
 				{% endfor %}
 				</ul>
 			</div>
 		</div>
+		<div class="modal fade" id="modal-add-luminaire">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title">Add a new lighting</h4>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+							<span class="sr-only">Close</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						{% form_theme form 
+							'bootstrap_4_horizontal_layout.html.twig' %}
+						{{ form_start(form) }}			
+    					{{ form_widget(form) }}
+    					
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+						<button class="btn">{{ button_label|default('Add') }}</button>
+						{{ form_end(form) }}
+					</div>
+				</div><!-- /.modal-content -->
+			</div><!-- /.modal-dialog -->
+		</div><!-- /.modal -->
 	</div>
 
 	{# Groups #}
