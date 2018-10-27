@@ -233,9 +233,19 @@ class MainController extends AbstractController
 			$status = $spot["status"];
 
 			// Create Luminaire by recusively adding channels / pcbs
-			$luminaire = new Luminaire;
+			$luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->findByAddress($spot["address"]);
+
+            if(count($luminaire) == 0) {
+                // add flash messages
+                $session->getFlashBag()->add(
+                'info',
+                'The lighting '.$spot["address"].' does not exist. Please add it first to your lighting list.'
+                );
+            return $this->redirectToRoute('connected-lightings'); 
+            }
+
 			$luminaire->setSerial($spot["serial"]);
-			$luminaire->setAddress($spot["address"]);
+			// $luminaire->setAddress($spot["address"]);
 
 			if ($status["config"] == "OK") {
 				$i++;
@@ -310,6 +320,126 @@ class MainController extends AbstractController
 		    $i.' lightings were detected and successfully installed.'
 		);
 		return $this->redirectToRoute('connected-lightings');        
+    }
+
+    /**
+     * @Route("/setup/get-my-lightings", name="get-my-lightings")
+     */
+    public function getMyLightings()
+    {
+        $em = $this->getDoctrine()->getManager();
+        $session = new Session();
+
+        // Supprimer les luminaires existants
+        $old_luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findAll();
+        // Compter les clusters existants
+        $clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
+
+        foreach ($old_luminaires as $ol) {
+         $em->remove($ol);
+        }
+
+        foreach ($clusters as $c) {
+            $em->remove($c);
+        }
+        $em->flush();
+
+        // Interroger le réseau de luminaires
+        $process = new Process('./bin/get_connected.R');
+        // $process = new Process('./bin/get_data.sh');
+        $process->run();
+
+        // executes after the command finishes
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        }
+
+        $output = $process->getOutput();
+
+        // Decode to array
+        $data = json_decode($output, true);
+
+        $spots = $data['spots'];
+
+        $i = 0;
+
+        foreach ($spots as $spot) {
+
+            $channels = $spot["channels"];
+            $pcbs = $spot["pcb"];
+            $status = $spot["status"];
+
+            $luminaire = new Luminaire;
+            $luminaire->setAddress($spot["address"]);
+
+            $luminaire->setSerial($spot["serial"]);
+
+            if ($status["config"] == "OK") {
+                $i++;
+                $cluster = $this->getDoctrine()->getRepository(Cluster::class)->findOneByLabel(1);
+                if(count($cluster) == 0){
+                    $cluster = new Cluster;
+                    $cluster->setLabel(1);
+                    $em->persist($cluster);
+                    $em->flush();
+                }
+                $luminaire->setCluster($cluster);
+            }
+
+            foreach ($pcbs as $pcb) {
+                $p = new Pcb;
+                $p->setCrc($pcb["crc"]);
+                $p->setSerial($pcb["serial"]);
+                $p->setN($pcb["n"]);
+                $p->setType($pcb["type"]);
+
+                $em->persist($p);
+
+                $luminaire->addPcb($p);
+            }
+
+            $em->persist($luminaire);
+
+            foreach ($channels as $channel) {
+                $c = new Channel;
+                $c->setChannel($channel["id"]);
+                $c->setIPeek($channel["max"]);
+                $c->setPcb($channel["address"]);
+                $c->setLuminaire($luminaire);
+                $em->persist($c);
+
+                # Vérifie que la Led existe dans la base de données, sinon l'ajoute.
+                $led = $this->getDoctrine()->getRepository(Led::class)->findOneBy(array(
+                    'wavelength' => $channel["wl"],
+                    'type' => $channel["type"],
+                    'manufacturer' => $channel["manuf"]));
+
+                if ($led == null) {
+                    $l = new Led;
+                    $l->setWavelength($channel["wl"]);
+                    $l->setType($channel["type"]);
+                    $l->setManufacturer($channel["manuf"]);
+                    $l->addChannel($c);
+                    $em->persist($l);
+                    $em->flush();
+                } else {
+                    $c->setLed($led);
+                }
+    
+            }
+
+        }
+
+        $em->flush();
+
+        $installed_luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findInstalledLuminaire();
+
+        // add flash messages
+        $session->getFlashBag()->add(
+            'info',
+            $i.' lightings were detected and successfully installed.'
+        );
+        return $this->redirectToRoute('my-lightings');        
     }
 
     /**
