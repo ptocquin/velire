@@ -38,12 +38,13 @@ class MainController extends AbstractController
     public function index()
     {
         $today = new \DateTime();
-
-        $runs = $this->getDoctrine()->getRepository(Run::class)->getRunningRuns($today);
+        $cluster_repo = $this->getDoctrine()->getRepository(Cluster::class);
+        $clusters = $cluster_repo->findAll();
         
         return $this->render('main/index.html.twig', [
             'controller_name' => 'MainController',
-            'runs' => $runs,
+            'clusters' => $clusters,
+            'cluster_repo' => $cluster_repo,
         ]);
     }
 
@@ -440,6 +441,56 @@ class MainController extends AbstractController
             $i.' lightings were detected and successfully installed.'
         );
         return $this->redirectToRoute('my-lightings');        
+    }
+
+    /**
+     * @Route("/setup/get-info", name="get-info")
+     */
+    public function getInfo()
+    {
+        $em = $this->getDoctrine()->getManager();
+        $session = new Session();
+
+        // Interroger le réseau de luminaires
+        // $process = new Process('./bin/info.R');
+        $process = new Process('./bin/get_data.sh');
+        $process->run();
+
+        // executes after the command finishes
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        }
+
+        $output = $process->getOutput();
+
+        // Decode to array
+        $data = json_decode($output, true);
+
+        $spots = $data['spots'];
+
+        $i = 0;
+
+        foreach ($spots as $spot) {
+
+            $channels = $spot["channels"];
+            $pcbs = $spot["pcb"];
+            $status = $spot["status"];
+
+            $luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->findOneByAddress($spot["address"]);
+
+            foreach ($pcbs as $pcb) {
+                $p = $this->getDoctrine()->getRepository(Pcb::class)->findOneBy(array(
+                    'serial' => $pcb["serial"],
+                    'luminaire' => $luminaire->getId()));
+                $n = $p->getN();
+                $p->setTemperature($spot["temperature"]["led_pcb_".$n]);
+                $em->persist($p);
+            }
+        }
+
+        $em->flush();
+
+        return $this->redirectToRoute('home');        
     }
 
     /**
