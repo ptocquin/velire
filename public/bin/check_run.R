@@ -13,7 +13,6 @@ day   <- format(Sys.time(), "%Y-%m-%d")
 ####
 message(paste("CheckRun at", day, hour, min))
 commands <- read.delim(command.file, header = FALSE, stringsAsFactors = FALSE)
-con <- dbConnect(SQLite(), dbname=db)
 
 hour2check <- paste0(formatC(hour, flag=0, width = 2), ":",
                      formatC(min, flag=0, width = 2), ":00")
