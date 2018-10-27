@@ -41,6 +41,11 @@ class Pcb
      */
     private $luminaire;
 
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $temperature;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -102,6 +107,18 @@ class Pcb
     public function setLuminaire(?Luminaire $luminaire): self
     {
         $this->luminaire = $luminaire;
+
+        return $this;
+    }
+
+    public function getTemperature(): ?float
+    {
+        return $this->temperature;
+    }
+
+    public function setTemperature(?float $temperature): self
+    {
+        $this->temperature = $temperature;
 
         return $this;
     }

@@ -16,11 +16,8 @@ if(length(args) == 0) {
 
 #### Librairies ###########################################
 library("RSQLite")
-# library("data.table")
 
-#### Parameters
-command.file <- "./bin/commands"
-db <- "../var/data.db"
+source("./bin/config.R")
 
 #### Connexion à la base de données
 con <- dbConnect(SQLite(), dbname = db)
@@ -77,7 +74,7 @@ for (run.id in runs) {
     
     if(type == "off") {
       duration <- as.numeric(unlist(strsplit(current.step$value, ":"))[1])*3600 + as.numeric(unlist(strsplit(current.step$value, ":"))[2])*60
-      command <- "--off"
+      command <- paste(s.option, "--off")
       cat(paste(day.start, hour.start, command, sep = "\t"), file = command.file, append = T, sep = "\n")
       message(step.start, duration, command)
       step <- step + 1

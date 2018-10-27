@@ -20,27 +20,55 @@
 <div class="row">
 	<div class="col col-md-12">
 		<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
-	  		<h1 class="h5">Running programs</h1>
+	  		<h1 class="h5"></h1>
 	    </div>
 	</div>
 </div>
 <div class="row">
-{% for run in runs %}
+{% for cluster in clusters %}
   <div class="col col-md-6 col-lg-4">
     <div class="card">
       <div class="card-header">
         <h5 class="card-title d-flex justify-content-between">
-          {{ run.label }}
+          Cluster {{ cluster.label }}
           <div class="d-inline">
-            <a href="{{ path('edit-run', {'id': run.id }) }}"> <span class="far fa-edit"></span> </a>
+
           </div>
         </h5>
-        <h6 class="card-subtitle mb-2 text-muted">Cluster: {{ run.cluster.label }}</h6>
+        <h6 class="card-subtitle mb-2 text-muted">{{ cluster.description }}</h6>
       </div>
       <div class="card-body">
-        <p class="card-text">Start: {{ run.start|date("F jS \\a\\t g:ia") }}</p>
-        <p class="card-text">End: {{ run.dateend|date("F jS \\a\\t g:ia") }}</p>
-        <p class="card-text">Program: {{ run.program.label }}</p>
+        {% if cluster_repo.getRunningClusters(cluster.id, "now"|date("Y-m-d"))|length > 0 %}
+          <p><span class="fas fa-circle" style="color: green;"></span> {{ cluster_repo.getRunningClusters(cluster.id, "now"|date("Y-m-d"))|length }} running program</p> 
+        {% else %}
+          <p>  <span class="fas fa-circle" style="color: red;"></span> No running programs</p>
+        {% endif %}
+        {% set temp = 0 %}
+        {% set i = 0 %}
+          {% for luminaire in cluster.luminaires %}
+              {% for pcb in luminaire.pcbs %}
+                  {% set temp = temp + pcb.temperature %}
+                  {% set i = i + 1 %}
+              {% endfor %}
+          {% endfor %}
+          <div class="dropdown open">
+            <button class="btn btn-xs btn-info fas fa-thermometer-quarter dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              {{ temp / i }}°C
+            </button> 
+            <div class="dropdown-menu" aria-labelledby="dropdownMenu1">
+              {% for luminaire in cluster.luminaires %}
+                  <button class="dropdown-item" type="button">
+                    {{ luminaire.address }}: 
+                    {% for pcb in luminaire.pcbs %}
+                        {{ pcb.temperature }}
+                        {% if not loop.last %} // {% endif %}
+                    {% endfor %}
+                  </button>
+              {% endfor %}
+            </div>
+          </div>
+        <div class="btn-group">
+
       </div>
     </div>
   </div>
