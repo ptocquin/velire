@@ -1,7 +1,7 @@
 #!/usr/local/bin/Rscript
 
 Sys.setenv(TZ="Europe/Paris")
-logfile <- "../log.txt"
+logfile <- "log.txt"
 uu      <- file(logfile, open = "wt")
 sink(uu, type = "message")
 
@@ -9,7 +9,7 @@ min   <- as.numeric(format(Sys.time(), "%M"))
 hour  <- as.numeric(format(Sys.time(), "%H"))
 day   <- format(Sys.time(), "%Y-%m-%d")
 
-source("config.R")
+source("./bin/config.R")
 
 ####
 message(paste("CheckRun at", day, hour, min))
