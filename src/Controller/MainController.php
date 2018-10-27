@@ -215,10 +215,9 @@ class MainController extends AbstractController
 
 		$output = $process->getOutput();
 
-        die(print_r($output));
-
 		// Decode to array
 		$data = json_decode($output, true);
+
         $spots = $data['spots'];
 
 		$i = 0;
