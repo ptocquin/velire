@@ -233,7 +233,7 @@ class MainController extends AbstractController
 			$status = $spot["status"];
 
 			// Create Luminaire by recusively adding channels / pcbs
-			$luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->findByAddress($spot["address"]);
+			$luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->findOneByAddress($spot["address"]);
 
             if(count($luminaire) == 0) {
                 // add flash messages
