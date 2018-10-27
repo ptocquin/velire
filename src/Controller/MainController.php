@@ -85,7 +85,10 @@ class MainController extends AbstractController
      */
     public function connectedLighting()
     {
-    	$installed_luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findInstalledLuminaire();
+        // TODO gestion du status
+    	// $installed_luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findInstalledLuminaire();
+        $installed_luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findAll();
+
 		$clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
 
         $empty_clusters = $this->getDoctrine()->getRepository(Cluster::class)->getEmptyClusters();
