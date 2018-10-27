@@ -209,6 +209,7 @@ class MainController extends AbstractController
 
 		// Interroger le réseau de luminaires
     	$process = new Process('./bin/info.R');
+        // $process = new Process('./bin/get_data.sh');
 		$process->run();
 
 		// executes after the command finishes
