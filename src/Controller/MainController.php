@@ -205,7 +205,7 @@ class MainController extends AbstractController
 		$em->flush();
 
 		// Interroger le réseau de luminaires
-    	$process = new Process('./bin/info.R 2>/dev/null');
+    	$process = new Process('./bin/info.R');
 		$process->run();
 
 		// executes after the command finishes
@@ -214,6 +214,8 @@ class MainController extends AbstractController
 		}
 
 		$output = $process->getOutput();
+
+        die(print_r($output));
 
 		// Decode to array
 		$data = json_decode($output, true);
