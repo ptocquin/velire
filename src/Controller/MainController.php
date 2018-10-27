@@ -205,7 +205,7 @@ class MainController extends AbstractController
 		$em->flush();
 
 		// Interroger le réseau de luminaires
-    	$process = new Process('./bin/info.R');
+    	$process = new Process('./bin/info.R 2>/dev/null');
 		$process->run();
 
 		// executes after the command finishes
