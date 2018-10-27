@@ -18,19 +18,20 @@ if(length(args) == 0) {
 
 #### Librairies ###########################################
 library("RSQLite")
+source("config.R")
 # library("data.table")
 
 #### Parameters
-command.file <- "./bin/commands"
-db <- "../var/data.db"
-port     <- "/dev/ttyUSB1"
+# command.file <- "./bin/commands"
+# db <- "../var/data.db"
+# port     <- "/dev/ttyUSB1"
 
 #### Connexion à la base de données
 con <- dbConnect(SQLite(), dbname = db)
 
 # cat(append = F, file = command.file)
 
-luminaires <-  dbGetQuery(con, paste0("SELECT * FROM luminaire WHERE"))
+luminaires <-  dbGetQuery(con, paste0("SELECT * FROM luminaire"))
 
 s.option <- paste("-s", paste(luminaires$address, collapse = " "))
 

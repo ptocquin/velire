@@ -28,6 +28,7 @@ use App\Entity\Run;
 
 use App\Form\RecipeType;
 use App\Form\IngredientType;
+use App\Form\LuminaireType;
 
 class MainController extends AbstractController
 {
@@ -49,7 +50,7 @@ class MainController extends AbstractController
     /**
      * @Route("/setup/my-lightings", name="my-lightings")
      */
-    public function myLightings()
+    public function myLightings(Request $request)
     {
     	$all_luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findAll();
 
@@ -58,11 +59,24 @@ class MainController extends AbstractController
 
 		// Compter les clusters existants
 		$cluster_number = count($this->getDoctrine()->getRepository(Cluster::class)->findAll());
+
+        $luminaire = new Luminaire;
+        $form = $this->createForm(LuminaireType::class, $luminaire);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($luminaire);
+            $em->flush();
+
+            return $this->redirectToRoute('my-lightings');
+        }
     	
         return $this->render('setup/my-lightings.html.twig', [
         	'all_luminaires' => $all_luminaires,
         	'clusters' => $clusters,
-        	'next_cluster' => $cluster_number+1
+        	'next_cluster' => $cluster_number+1,
+            'form' => $form->createView(),
         ]);
     }
 
