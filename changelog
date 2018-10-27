@@ -1,14 +1,18 @@
 # 27/10/2018 
 
-##v0.54 v0.55
+## v0.56
+
+- corrected recherche des luminaires installés > remplacé par tous les luminaires
+
+## v0.54 v0.55
 
 - debug steps
 
-##v0.53
+## v0.53
 
 - Suite v0.52
 
-##v0.52
+## v0.52
 
 - Supprimer les messages de info.R (tentative fix)
 
