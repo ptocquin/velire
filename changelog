@@ -1,5 +1,9 @@
 # 27/10/2018 
 
+## v0.61
+
+- remove config.R from git
+
 ## v0.6
 
 - fix info.R and play.R
