@@ -48,7 +48,7 @@ for (id in ingredients$id) {
 DMXcommand <- paste(s.option, c.option, i.option)
 
 command <- paste("python3 velire -p", port, DMXcommand)
-system(command)
+system(command, ignore.stderr = TRUE)
  
 zz<-dbDisconnect(con)
 

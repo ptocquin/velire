@@ -18,6 +18,6 @@ s.option <- paste("-s", paste(luminaires$address, collapse = " "))
 DMXcommand <- paste(s.option, "--info")
 
 command <- paste("python3 ./bin/veliregui-demo.py -p", port, DMXcommand)
-system(command)
+system(command, ignore.stderr = TRUE)
  
 zz<-dbDisconnect(con)

@@ -1,5 +1,9 @@
 # 27/10/2018 
 
+## v0.57
+
+- tentative fix pour message d'erreur produits par python
+
 ## v0.56
 
 - corrected recherche des luminaires installés > remplacé par tous les luminaires
