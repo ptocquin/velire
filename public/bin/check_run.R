@@ -21,5 +21,6 @@ DMXcommand <- commands[commands$V1 == day & commands$V2 == hour2check,]
 
 if(nrow(DMXcommand) == 1){
   command <- paste(python.cmd, "-p", port, DMXcommand$V3)
+  message(command)
   system(command)
 }
