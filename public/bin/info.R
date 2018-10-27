@@ -18,7 +18,7 @@ if(length(args) == 0) {
 
 #### Librairies ###########################################
 library("RSQLite")
-source("config.R")
+source("./bin/config.R")
 # library("data.table")
 
 #### Parameters
