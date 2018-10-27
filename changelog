@@ -1,8 +1,14 @@
-# 27/10/2018 v0.51
+
+
+# 27/10/2018 v0.52
+
+- Supprimer les messages de info.R (tentative fix)
+
+## v0.51
 
 - hotfix chemin config.R
 
-# 27/10/2018 v0.5
+## v0.5
 
 - Ajout d'un formulaire "ajout de luminaire"
 - Ajout d'un fichier de conf pour R (non suivi par git)
