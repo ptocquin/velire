@@ -111,12 +111,15 @@
                         <li class="list-group-item d-flex justify-content-between">
                           {% set n_channels = 0 %}
                           <span>Lighting #{{ luminaire.address }}</span>
+                          {% set html = '<ul>' %}
                           {% for channel in luminaire.channels %}
                             {% if channel.currentintensity > 0 %}
                               {% set n_channels = n_channels + 1 %}
-                              <span class="badge badge-success pull-right">{{ channel.led.type }}{{ channel.led.wavelength }}</span>
+                                {% set html = html ~ '<li>' ~ channel.channel ~ ': ' ~ channel.led.type ~ '_' ~ channel.led.wavelength ~ '</li>' %}
                             {% endif %}
                           {% endfor %}
+                          {% set html = html ~ '</ul>' %}
+                          <span class="badge badge-success pull-right" data-toggle="popover" title="Lighting #{{ luminaire.address }}" data-content="{{ html }}" data-html="true" data-placement="left">{{ n_channels }} channels On</span>
                         </li>
                       {% endfor %}
                       </ul>
