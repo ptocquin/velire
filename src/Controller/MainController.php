@@ -337,6 +337,12 @@ class MainController extends AbstractController
         $clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
 
         foreach ($old_luminaires as $ol) {
+            foreach ($ol->getPcbs() as $pcb) {
+                $em->remove($pcb);
+            }
+            foreach ($ol->getChannels() as $channel) {
+                $em->remove($channel);
+            }
          $em->remove($ol);
         }
 
@@ -346,8 +352,8 @@ class MainController extends AbstractController
         $em->flush();
 
         // Interroger le réseau de luminaires
-        $process = new Process('./bin/get_connected.R');
-        // $process = new Process('./bin/get_data.sh');
+        // $process = new Process('./bin/get_connected.R');
+        $process = new Process('./bin/get_data.sh');
         $process->run();
 
         // executes after the command finishes
@@ -407,7 +413,7 @@ class MainController extends AbstractController
                 $c->setIPeek($channel["max"]);
                 $c->setPcb($channel["address"]);
                 $c->setLuminaire($luminaire);
-                $em->persist($c);
+                
 
                 # Vérifie que la Led existe dans la base de données, sinon l'ajoute.
                 $led = $this->getDoctrine()->getRepository(Led::class)->findOneBy(array(
@@ -426,14 +432,15 @@ class MainController extends AbstractController
                 } else {
                     $c->setLed($led);
                 }
-    
+
+                $em->persist($c);
+                
             }
+            
 
         }
 
         $em->flush();
-
-        $installed_luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findInstalledLuminaire();
 
         // add flash messages
         $session->getFlashBag()->add(
@@ -485,6 +492,15 @@ class MainController extends AbstractController
                 $n = $p->getN();
                 $p->setTemperature($spot["temperature"]["led_pcb_".$n]);
                 $em->persist($p);
+            }
+
+            foreach ($channels as $channel) {
+                $c = $this->getDoctrine()->getRepository(Channel::class)->findOneBy(array(
+                    'luminaire' => $luminaire->getId(),
+                    'channel' => $channel["id"]
+                ));
+                $c->setCurrentIntensity($channel["intensity"]);
+                $em->persist($c);
             }
         }
 

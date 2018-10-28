@@ -5,11 +5,10 @@
 {% block panelTitle %}
 <h1 class="h2">Dashboard</h1>
 <div class="btn-toolbar mb-2 mb-md-0">
-{#     <div class="btn-group mr-2">
-        <button class="btn btn-sm btn-outline-secondary">Share</button>
-        <button class="btn btn-sm btn-outline-secondary">Export</button>
+    <div class="btn-group mr-2">
+      <a href="{{ path('get-info') }}" class="btn btn-sm btn-outline-secondary fas fa-redo"> Refresh</a>
     </div>
-    <button class="btn btn-sm btn-outline-secondary dropdown-toggle">
+{#     <button class="btn btn-sm btn-outline-secondary dropdown-toggle">
         <span data-feather="calendar"></span>
         This week
     </button> #}
@@ -43,33 +42,101 @@
         {% else %}
           <p>  <span class="fas fa-circle" style="color: red;"></span> No running programs</p>
         {% endif %}
-        {% set temp = 0 %}
-        {% set i = 0 %}
-          {% for luminaire in cluster.luminaires %}
-              {% for pcb in luminaire.pcbs %}
-                  {% set temp = temp + pcb.temperature %}
-                  {% set i = i + 1 %}
-              {% endfor %}
-          {% endfor %}
-          <div class="dropdown open">
-            <button class="btn btn-xs btn-info fas fa-thermometer-quarter dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              {{ temp / i }}°C
-            </button> 
-            <div class="dropdown-menu" aria-labelledby="dropdownMenu1">
-              {% for luminaire in cluster.luminaires %}
-                  <button class="dropdown-item" type="button">
-                    {{ luminaire.address }}: 
-                    {% for pcb in luminaire.pcbs %}
-                        {{ pcb.temperature }}
-                        {% if not loop.last %} // {% endif %}
-                    {% endfor %}
-                  </button>
-              {% endfor %}
-            </div>
-          </div>
-        <div class="btn-group">
-
-      </div>
+        <div class="modal fade" id="modal-temp-cluster_{{ cluster.id }}">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Lighting temperatures, Cluster {{ cluster.label }} </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                  <span class="sr-only">Close</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                {% set temp = 0 %}
+                {% set i = 0 %}
+                <div class="row">
+                    <div class="col">
+                      <ul class="list-group list-group-flush">
+                      {% for luminaire in cluster.luminaires %}
+                        {% if loop.index is divisible by(6) %}
+                        </ul>
+                        </div>
+                        <div class="col">
+                          <ul class="list-group list-group-flush">
+                        {% endif %}
+                        <li class="list-group-item d-flex justify-content-between">
+                          Lighting #{{ luminaire.address }} [ Serial: {{ luminaire.serial }} ] 
+                          {% for pcb in luminaire.pcbs %}
+                            {% set temp = temp + pcb.temperature %}
+                            {% set i = i + 1 %}
+                              <span class="badge badge-success pull-right">{{ pcb.temperature }}°C</span>
+                          {% endfor %}
+                        </li>
+                      {% endfor %}
+                      </ul>
+                    </div>
+                </div>
+              </div>
+            </div><!-- /.modal-content -->
+          </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+        <div class="modal fade" id="modal-channels-cluster_{{ cluster.id }}">
+          <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Channels state, Cluster {{ cluster.label }} </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                  <span class="sr-only">Close</span>
+                </button>
+              </div>
+              <div class="modal-body">
+              {% set n_channels = 0 %}
+                <div class="row">
+                    <div class="col">
+                      <ul class="list-group list-group-flush">
+                      {% for luminaire in cluster.luminaires %}
+                        {% if loop.index is divisible by(6) %}
+                        </ul>
+                        </div>
+                        <div class="col">
+                          <ul class="list-group list-group-flush">
+                        {% endif %}
+                        <li class="list-group-item d-flex justify-content-between">
+                          {% set n_channels = 0 %}
+                          <span>Lighting #{{ luminaire.address }}</span>
+                          {% for channel in luminaire.channels %}
+                            {% if channel.currentintensity > 0 %}
+                              {% set n_channels = n_channels + 1 %}
+                              <span class="badge badge-success pull-right">{{ channel.led.type }}{{ channel.led.wavelength }}</span>
+                            {% endif %}
+                          {% endfor %}
+                        </li>
+                      {% endfor %}
+                      </ul>
+                    </div>
+                </div>
+              </div>
+            </div><!-- /.modal-content -->
+          </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+        <div class="btn-group btn-block">
+          <button class="btn btn-xs 
+            {% if (temp/i) < 100 %}
+              btn-info
+            {% else %}
+              btn-danger
+            {% endif %}
+            btn-info fas fa-thermometer-quarter" data-toggle="modal" data-target="#modal-temp-cluster_{{ cluster.id }}"> {{ temp / i }}°C</button>
+          <button class="btn btn-xs 
+          {% if n_channels > 0 %}
+            btn-success
+          {% else %}
+            btn-light
+          {% endif %} 
+          fas fa-sliders-h" data-toggle="modal" data-target="#modal-channels-cluster_{{ cluster.id }}"> {{ n_channels }} Ch.</button>
+        </div>
     </div>
   </div>
 {% endfor %}
