@@ -152,11 +152,15 @@ class ProgramController extends AbstractController
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             $em = $this->getDoctrine()->getManager();
-            $em->persist($run);
-            $em->flush();
 
             $process = new Process('./bin/run.R');
             $process->run();
+
+            $date = new \DateTime($process->getOutput());
+            $run->setDateEnd($date);
+
+            $em->persist($run);
+            $em->flush();
 
             return $this->redirectToRoute('run');
         }

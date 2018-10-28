@@ -1,5 +1,10 @@
 {% extends 'base.html.twig' %}
 
+
+{% block meta %}
+<meta http-equiv="refresh" content="300">
+{% endblock %}
+
 {% block title %}Hello {{ controller_name }}!{% endblock %}
 
 {% block panelTitle %}
@@ -37,8 +42,8 @@
         <h6 class="card-subtitle mb-2 text-muted">{{ cluster.description }}</h6>
       </div>
       <div class="card-body">
-        {% if cluster_repo.getRunningClusters(cluster.id, "now"|date("Y-m-d"))|length > 0 %}
-          <p><span class="fas fa-circle" style="color: green;"></span> {{ cluster_repo.getRunningClusters(cluster.id, "now"|date("Y-m-d"))|length }} running program</p> 
+        {% if cluster_repo.getRunningClusters(cluster.id, "now"|date("Y-m-d H:i:s"))|length > 0 %}
+          <p><span class="fas fa-circle" style="color: green;"></span> {{ cluster_repo.getRunningClusters(cluster.id, "now"|date("Y-m-d H:i:s"))|length }} running program</p> 
         {% else %}
           <p>  <span class="fas fa-circle" style="color: red;"></span> No running programs</p>
         {% endif %}
