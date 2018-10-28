@@ -209,8 +209,8 @@ class MainController extends AbstractController
 		$em->flush();
 
 		// Interroger le réseau de luminaires
-    	$process = new Process('./bin/info.R');
-        // $process = new Process('./bin/get_data.sh');
+    	// $process = new Process('./bin/info.R');
+        $process = new Process('./bin/get_data.sh');
 		$process->run();
 
 		// executes after the command finishes
@@ -254,10 +254,12 @@ class MainController extends AbstractController
 				if(count($cluster) == 0){
 					$cluster = new Cluster;
 					$cluster->setLabel(1);
+                    $cluster->addLuminaire($luminaire);
 					$em->persist($cluster);
 					$em->flush();
-				}
-				$luminaire->setCluster($cluster);
+				} else {
+                    $luminaire->setCluster($cluster);
+                }
 			}
 
 			// foreach ($status as $st) {
