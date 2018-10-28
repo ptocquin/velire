@@ -1,2 +1,3 @@
 Warning message:
 le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+python3 ./bin/veliregui-demo.py -p /dev/ttyUSB1 -s 1 --info

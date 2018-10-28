@@ -17,16 +17,19 @@ const feather = require('feather-icons');
 require('./jquery.collection.js')
 
 $(document).ready(function () {
-		  $('.form-collection').collection({
-				position_field_selector: '.rank',
-				allow_duplicate: true,
-				allow_up: true,
-         		allow_down: true,
-         	}
-		  	);
+  $('.form-collection').collection({
+		position_field_selector: '.rank',
+		allow_duplicate: true,
+		allow_up: true,
+ 		allow_down: true,
+ 	}
+  	);
 
-		  feather.replace();
-		});
+	feather.replace();
+
+	$('[data-toggle="popover"]').popover()
+
+});
 
 
 

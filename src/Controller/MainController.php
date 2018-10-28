@@ -40,6 +40,56 @@ class MainController extends AbstractController
         $today = new \DateTime();
         $cluster_repo = $this->getDoctrine()->getRepository(Cluster::class);
         $clusters = $cluster_repo->findAll();
+
+        $em = $this->getDoctrine()->getManager();
+
+        // Interroger le réseau de luminaires
+        $process = new Process('./bin/info.R');
+        // $process = new Process('./bin/get_data.sh');
+        $process->run();
+
+        // executes after the command finishes
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        }
+
+        $output = $process->getOutput();
+
+        // Decode to array
+        $data = json_decode($output, true);
+
+        $spots = $data['spots'];
+
+        $i = 0;
+
+        foreach ($spots as $spot) {
+
+            $channels = $spot["channels"];
+            $pcbs = $spot["pcb"];
+            $status = $spot["status"];
+
+            $luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->findOneByAddress($spot["address"]);
+
+            foreach ($pcbs as $pcb) {
+                $p = $this->getDoctrine()->getRepository(Pcb::class)->findOneBy(array(
+                    'serial' => $pcb["serial"],
+                    'luminaire' => $luminaire->getId()));
+                $n = $p->getN();
+                $p->setTemperature($spot["temperature"]["led_pcb_".$n]);
+                $em->persist($p);
+            }
+
+            foreach ($channels as $channel) {
+                $c = $this->getDoctrine()->getRepository(Channel::class)->findOneBy(array(
+                    'luminaire' => $luminaire->getId(),
+                    'channel' => $channel["id"]
+                ));
+                $c->setCurrentIntensity($channel["intensity"]);
+                $em->persist($c);
+            }
+        }
+
+        $em->flush();
         
         return $this->render('main/index.html.twig', [
             'controller_name' => 'MainController',
@@ -194,15 +244,6 @@ class MainController extends AbstractController
 		// Compter les clusters existants
 		$clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
 
-		// foreach ($old_luminaires as $ol) {
-		// 	foreach ($ol->getStatus() as $status) {
-		// 		$status->removeLuminaire($ol);
-		// 		$em->persist($status);
-		// 		$em->flush();
-		// 	}
-		// 	$em->remove($ol);
-		// }
-
 		foreach ($clusters as $c) {
 			$em->remove($c);
 		}
@@ -261,61 +302,10 @@ class MainController extends AbstractController
                     $luminaire->setCluster($cluster);
                 }
 			}
-
-			// foreach ($status as $st) {
-			// 	$s = $this->getDoctrine()->getRepository(LuminaireStatus::class)->findOneByCode($st["code"]);
-			// 	$luminaire->addStatus($s);
-			// }
-
-            // foreach ($pcbs as $pcb) {
-            //     $p = new Pcb;
-            //     $p->setCrc($pcb["crc"]);
-            //     $p->setSerial($pcb["serial"]);
-            //     $p->setN($pcb["n"]);
-            //     $p->setType($pcb["type"]);
-
-            //     $em->persist($p);
-
-            //     $luminaire->addPcb($p);
-            // }
-
             $em->persist($luminaire);
-
-			// foreach ($channels as $channel) {
-			// 	$c = new Channel;
-			// 	$c->setChannel($channel["id"]);
-			// 	$c->setIPeek($channel["max"]);
-			// 	$c->setPcb($channel["address"]);
-   //              $c->setLuminaire($luminaire);
-   //              $em->persist($c);
-
-   //              # Vérifie que la Led existe dans la base de données, sinon l'ajoute.
-   //              $led = $this->getDoctrine()->getRepository(Led::class)->findOneBy(array(
-   //                  'wavelength' => $channel["wl"],
-   //                  'type' => $channel["type"],
-   //                  'manufacturer' => $channel["manuf"]));
-
-   //              // die(var_dump(count($led)));
-
-   //              if ($led == null) {
-   //                  $l = new Led;
-   //                  $l->setWavelength($channel["wl"]);
-   //                  $l->setType($channel["type"]);
-   //                  $l->setManufacturer($channel["manuf"]);
-   //                  $l->addChannel($c);
-   //                  $em->persist($l);
-   //                  $em->flush();
-   //              } else {
-   //                  $c->setLed($led);
-   //              }
-	
-			// }
-
 		}
 
 		$em->flush();
-
-		// $installed_luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findInstalledLuminaire();
 
 		// add flash messages
 		$session->getFlashBag()->add(
