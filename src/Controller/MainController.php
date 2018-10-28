@@ -267,55 +267,55 @@ class MainController extends AbstractController
 			// 	$luminaire->addStatus($s);
 			// }
 
-            foreach ($pcbs as $pcb) {
-                $p = new Pcb;
-                $p->setCrc($pcb["crc"]);
-                $p->setSerial($pcb["serial"]);
-                $p->setN($pcb["n"]);
-                $p->setType($pcb["type"]);
+            // foreach ($pcbs as $pcb) {
+            //     $p = new Pcb;
+            //     $p->setCrc($pcb["crc"]);
+            //     $p->setSerial($pcb["serial"]);
+            //     $p->setN($pcb["n"]);
+            //     $p->setType($pcb["type"]);
 
-                $em->persist($p);
+            //     $em->persist($p);
 
-                $luminaire->addPcb($p);
-            }
+            //     $luminaire->addPcb($p);
+            // }
 
             $em->persist($luminaire);
 
-			foreach ($channels as $channel) {
-				$c = new Channel;
-				$c->setChannel($channel["id"]);
-				$c->setIPeek($channel["max"]);
-				$c->setPcb($channel["address"]);
-                $c->setLuminaire($luminaire);
-                $em->persist($c);
+			// foreach ($channels as $channel) {
+			// 	$c = new Channel;
+			// 	$c->setChannel($channel["id"]);
+			// 	$c->setIPeek($channel["max"]);
+			// 	$c->setPcb($channel["address"]);
+   //              $c->setLuminaire($luminaire);
+   //              $em->persist($c);
 
-                # Vérifie que la Led existe dans la base de données, sinon l'ajoute.
-                $led = $this->getDoctrine()->getRepository(Led::class)->findOneBy(array(
-                    'wavelength' => $channel["wl"],
-                    'type' => $channel["type"],
-                    'manufacturer' => $channel["manuf"]));
+   //              # Vérifie que la Led existe dans la base de données, sinon l'ajoute.
+   //              $led = $this->getDoctrine()->getRepository(Led::class)->findOneBy(array(
+   //                  'wavelength' => $channel["wl"],
+   //                  'type' => $channel["type"],
+   //                  'manufacturer' => $channel["manuf"]));
 
-                // die(var_dump(count($led)));
+   //              // die(var_dump(count($led)));
 
-                if ($led == null) {
-                    $l = new Led;
-                    $l->setWavelength($channel["wl"]);
-                    $l->setType($channel["type"]);
-                    $l->setManufacturer($channel["manuf"]);
-                    $l->addChannel($c);
-                    $em->persist($l);
-                    $em->flush();
-                } else {
-                    $c->setLed($led);
-                }
+   //              if ($led == null) {
+   //                  $l = new Led;
+   //                  $l->setWavelength($channel["wl"]);
+   //                  $l->setType($channel["type"]);
+   //                  $l->setManufacturer($channel["manuf"]);
+   //                  $l->addChannel($c);
+   //                  $em->persist($l);
+   //                  $em->flush();
+   //              } else {
+   //                  $c->setLed($led);
+   //              }
 	
-			}
+			// }
 
 		}
 
 		$em->flush();
 
-		$installed_luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findInstalledLuminaire();
+		// $installed_luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findInstalledLuminaire();
 
 		// add flash messages
 		$session->getFlashBag()->add(

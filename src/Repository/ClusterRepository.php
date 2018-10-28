@@ -45,12 +45,12 @@ class ClusterRepository extends ServiceEntityRepository
             ->where('c.id = :id')
             ->andWhere('r.start <= :today')
             ->andWhere('r.date_end >= :today')
-            ->andWhere('r.status is null')
-            ->orWhere('r.status <> :status')
+            // ->andWhere('r.status is null')
+            // ->orWhere('r.status <> :status')
             // ->andWhere($qb->expr()->neq('r.status', ':status'))
             ->setParameter('id', $id)
             ->setParameter('today', $today)
-            ->setParameter('status', 'pause')
+            // ->setParameter('status', 'pause')
             ;
 
         return $qb
