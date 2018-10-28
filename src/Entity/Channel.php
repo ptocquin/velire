@@ -41,6 +41,11 @@ class Channel
      */
     private $led;
 
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $current_intensity;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -102,6 +107,18 @@ class Channel
     public function setLed(?Led $led): self
     {
         $this->led = $led;
+
+        return $this;
+    }
+
+    public function getCurrentIntensity(): ?int
+    {
+        return $this->current_intensity;
+    }
+
+    public function setCurrentIntensity(?int $current_intensity): self
+    {
+        $this->current_intensity = $current_intensity;
 
         return $this;
     }
