@@ -1,4 +1,9 @@
-# 28/10/2018 
+# 28/10/2018
+
+## v0.84
+
+- Periodic refresh of the dashboard
+- Fix get-data (do not create new PCB)
 
 ## v0.82 v0.83
 
