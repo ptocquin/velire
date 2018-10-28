@@ -352,8 +352,8 @@ class MainController extends AbstractController
         $em->flush();
 
         // Interroger le réseau de luminaires
-        // $process = new Process('./bin/get_connected.R');
-        $process = new Process('./bin/get_data.sh');
+        $process = new Process('./bin/get_connected.R');
+        // $process = new Process('./bin/get_data.sh');
         $process->run();
 
         // executes after the command finishes
@@ -459,8 +459,8 @@ class MainController extends AbstractController
         $session = new Session();
 
         // Interroger le réseau de luminaires
-        // $process = new Process('./bin/info.R');
-        $process = new Process('./bin/get_data.sh');
+        $process = new Process('./bin/info.R');
+        // $process = new Process('./bin/get_data.sh');
         $process->run();
 
         // executes after the command finishes
