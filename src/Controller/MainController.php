@@ -24,7 +24,7 @@ use App\Entity\Led;
 use App\Entity\Recipe;
 use App\Entity\Ingredient;
 use App\Entity\Run;
-
+use App\Entity\Log;
 
 use App\Form\RecipeType;
 use App\Form\IngredientType;
@@ -39,62 +39,14 @@ class MainController extends AbstractController
     {
         $today = new \DateTime();
         $cluster_repo = $this->getDoctrine()->getRepository(Cluster::class);
+        $log_repo = $this->getDoctrine()->getRepository(Log::class);
         $clusters = $cluster_repo->findAll();
-
-        $em = $this->getDoctrine()->getManager();
-
-        // Interroger le réseau de luminaires
-        $process = new Process('./bin/info.R');
-        // $process = new Process('./bin/get_data.sh');
-        $process->run();
-
-        // executes after the command finishes
-        if (!$process->isSuccessful()) {
-            throw new ProcessFailedException($process);
-        }
-
-        $output = $process->getOutput();
-
-        // Decode to array
-        $data = json_decode($output, true);
-
-        $spots = $data['spots'];
-
-        $i = 0;
-
-        foreach ($spots as $spot) {
-
-            $channels = $spot["channels"];
-            $pcbs = $spot["pcb"];
-            $status = $spot["status"];
-
-            $luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->findOneByAddress($spot["address"]);
-
-            foreach ($pcbs as $pcb) {
-                $p = $this->getDoctrine()->getRepository(Pcb::class)->findOneBy(array(
-                    'serial' => $pcb["serial"],
-                    'luminaire' => $luminaire->getId()));
-                $n = $p->getN();
-                $p->setTemperature($spot["temperature"]["led_pcb_".$n]);
-                $em->persist($p);
-            }
-
-            foreach ($channels as $channel) {
-                $c = $this->getDoctrine()->getRepository(Channel::class)->findOneBy(array(
-                    'luminaire' => $luminaire->getId(),
-                    'channel' => $channel["id"]
-                ));
-                $c->setCurrentIntensity($channel["intensity"]);
-                $em->persist($c);
-            }
-        }
-
-        $em->flush();
         
         return $this->render('main/index.html.twig', [
             'controller_name' => 'MainController',
             'clusters' => $clusters,
             'cluster_repo' => $cluster_repo,
+            'log_repo' => $log_repo,
         ]);
     }
 
@@ -251,7 +203,6 @@ class MainController extends AbstractController
 
 		// Interroger le réseau de luminaires
     	$process = new Process('./bin/info.R');
-        // $process = new Process('./bin/get_data.sh');
 		$process->run();
 
 		// executes after the command finishes
@@ -345,7 +296,6 @@ class MainController extends AbstractController
 
         // Interroger le réseau de luminaires
         $process = new Process('./bin/get_connected.R');
-        // $process = new Process('./bin/get_data.sh');
         $process->run();
 
         // executes after the command finishes
@@ -452,7 +402,6 @@ class MainController extends AbstractController
 
         // Interroger le réseau de luminaires
         $process = new Process('./bin/info.R');
-        // $process = new Process('./bin/get_data.sh');
         $process->run();
 
         // executes after the command finishes

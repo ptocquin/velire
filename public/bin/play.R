@@ -46,10 +46,10 @@ zz<-dbDisconnect(con)
 
 DMXcommand <- paste(s.option, c.option, i.option)
 
-command <- paste("python3 ./bin/veliregui-demo.py -p", port, DMXcommand)
-message(command)
-system(command, ignore.stderr = TRUE)
- 
-
+if(!development) {
+	command <- paste("python3 ./bin/veliregui-demo.py -p", port, DMXcommand)
+	message(command)
+	system(command, ignore.stderr = TRUE)
+}
 
 cat("Recipe successfully started on cluster", cluster$label)
