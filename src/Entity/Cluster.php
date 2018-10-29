@@ -38,11 +38,17 @@ class Cluster
      */
     private $runs;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Log", mappedBy="cluster")
+     */
+    private $logs;
+
 
     public function __construct()
     {
         $this->luminaires = new ArrayCollection();
         $this->runs = new ArrayCollection();
+        $this->logs = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -130,6 +136,37 @@ class Cluster
             // set the owning side to null (unless already changed)
             if ($run->getCluster() === $this) {
                 $run->setCluster(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Log[]
+     */
+    public function getLogs(): Collection
+    {
+        return $this->logs;
+    }
+
+    public function addLog(Log $log): self
+    {
+        if (!$this->logs->contains($log)) {
+            $this->logs[] = $log;
+            $log->setCluster($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLog(Log $log): self
+    {
+        if ($this->logs->contains($log)) {
+            $this->logs->removeElement($log);
+            // set the owning side to null (unless already changed)
+            if ($log->getCluster() === $this) {
+                $log->setCluster(null);
             }
         }
 

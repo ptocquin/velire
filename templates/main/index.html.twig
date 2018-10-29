@@ -29,17 +29,18 @@
 	</div>
 </div>
 <div class="row">
+
 {% for cluster in clusters %}
+  {% set log = log_repo.getClusterInfo(cluster.id) %}
   <div class="col col-md-6 col-lg-4">
     <div class="card">
       <div class="card-header">
         <h5 class="card-title d-flex justify-content-between">
           Cluster {{ cluster.label }}
-          <div class="d-inline">
-
-          </div>
         </h5>
-        <h6 class="card-subtitle mb-2 text-muted">{{ cluster.description }}</h6>
+        <h6 class="card-subtitle mb-2 text-muted">
+          {{ log[0].time|date("Y-m-d H:i") }}
+        </h6>
       </div>
       <div class="card-body">
         {% if cluster_repo.getRunningClusters(cluster.id, "now"|date("Y-m-d H:i:s"))|length > 0 %}
@@ -63,7 +64,7 @@
                 <div class="row">
                     <div class="col">
                       <ul class="list-group list-group-flush">
-                      {% for luminaire in cluster.luminaires %}
+                      {% for luminaire in log_repo.getLuminairesInfo(cluster.id, log[0].time) %}
                         {% if loop.index is divisible by(6) %}
                         </ul>
                         </div>
@@ -71,12 +72,9 @@
                           <ul class="list-group list-group-flush">
                         {% endif %}
                         <li class="list-group-item d-flex justify-content-between">
-                          Lighting #{{ luminaire.address }} [ Serial: {{ luminaire.serial }} ] 
-                          {% for pcb in luminaire.pcbs %}
-                            {% set temp = temp + pcb.temperature %}
-                            {% set i = i + 1 %}
-                              <span class="badge badge-success pull-right">{{ pcb.temperature }}°C</span>
-                          {% endfor %}
+                          Lighting #{{ luminaire.value.address }} [ Serial: {{ luminaire.value.serial }} ] 
+                            <span class="badge badge-success pull-right">{{ luminaire.value.led_pcb_0 }}°C</span>
+                            <span class="badge badge-success pull-right">{{ luminaire.value.led_pcb_0 }}°C</span>
                         </li>
                       {% endfor %}
                       </ul>
@@ -101,7 +99,7 @@
                 <div class="row">
                     <div class="col">
                       <ul class="list-group list-group-flush">
-                      {% for luminaire in cluster.luminaires %}
+                      {% for luminaire in log_repo.getLuminairesInfo(cluster.id, log[0].time) %}
                         {% if loop.index is divisible by(6) %}
                         </ul>
                         </div>
@@ -109,17 +107,15 @@
                           <ul class="list-group list-group-flush">
                         {% endif %}
                         <li class="list-group-item d-flex justify-content-between">
-                          {% set n_channels = 0 %}
-                          <span>Lighting #{{ luminaire.address }}</span>
-                          {% set html = '<ul>' %}
-                          {% for channel in luminaire.channels %}
-                            {% if channel.currentintensity > 0 %}
-                              {% set n_channels = n_channels + 1 %}
-                                {% set html = html ~ '<li>' ~ channel.channel ~ ': ' ~ channel.led.type ~ '_' ~ channel.led.wavelength ~ '</li>' %}
-                            {% endif %}
+                          <span>Lighting #{{ luminaire.value.address }}</span>
+{#                           {% set html = '<ul>' %}
+                          {% for channel in luminaire.value.colors %}
+                                {% set html = html ~ '<li>' ~ channel ~ '</li>' %}
                           {% endfor %}
-                          {% set html = html ~ '</ul>' %}
-                          <span class="badge badge-success pull-right" data-toggle="popover" title="Lighting #{{ luminaire.address }}" data-content="{{ html }}" data-html="true" data-placement="left">{{ n_channels }} channels On</span>
+                          {% set html = html ~ '</ul>' %} #}
+                          <span class="badge badge-success pull-right" 
+                          {# data-toggle="popover" title="Lighting #{{ luminaire.address }}" data-content="{{ html }}" data-html="true" data-placement="left" #}
+                          >{{ log[0].value.channels_on }} channels On</span>
                         </li>
                       {% endfor %}
                       </ul>
@@ -131,19 +127,19 @@
         </div><!-- /.modal -->
         <div class="btn-group btn-block">
           <button class="btn btn-xs 
-            {% if (temp/i) < 100 %}
+            {% if log[0].value.mean_temp < 75 %}
               btn-info
             {% else %}
               btn-danger
             {% endif %}
-            btn-info fas fa-thermometer-quarter" data-toggle="modal" data-target="#modal-temp-cluster_{{ cluster.id }}"> {{ temp / i }}°C</button>
+            btn-info fas fa-thermometer-quarter" data-toggle="modal" data-target="#modal-temp-cluster_{{ cluster.id }}"> {{ log[0].value.mean_temp }}°C</button>
           <button class="btn btn-xs 
-          {% if n_channels > 0 %}
+          {% if log[0].value.channels_on > 0 %}
             btn-success
           {% else %}
             btn-light
           {% endif %} 
-          fas fa-sliders-h" data-toggle="modal" data-target="#modal-channels-cluster_{{ cluster.id }}"> {{ n_channels }} Ch.</button>
+          fas fa-sliders-h" data-toggle="modal" data-target="#modal-channels-cluster_{{ cluster.id }}"> {{ log[0].value.channels_on }} Ch.</button>
         </div>
     </div>
   </div>
