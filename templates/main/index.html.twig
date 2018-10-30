@@ -46,9 +46,10 @@
   <div class="col col-md-6 col-lg-4">
     <div class="card">
       <div class="card-header">
-        <h5 class="card-title d-flex justify-content-between">hg pu
+        <h5 class="card-title d-flex justify-content-between">
           Cluster {{ cluster.label }}
-        
+
+        {% if log is not empty %}
         <div class="btn-toolbar mb-2 mb-md-0">
             <div class="btn-group mr-2">
               <button class="btn btn-primary far fa-chart-line" data-toggle="modal" data-target="#modal-plot-cluster_{{ cluster.id }}"></button>
@@ -72,8 +73,9 @@
         </div><!-- /.modal -->
         </h5>
         <h6 class="card-subtitle mb-2 text-muted">
-          {{ log[0].time|date("Y-m-d H:i") }}
+            {{ log[0].time|date("Y-m-d H:i") }}
         </h6>
+        {% endif %}
       </div>
       <div class="card-body">
         {% if cluster_repo.getRunningClusters(cluster.id, "now"|date("Y-m-d H:i:s"))|length > 0 %}
@@ -81,6 +83,8 @@
         {% else %}
           <p>  <span class="fas fa-circle" style="color: red;"></span> No running programs</p>
         {% endif %}
+
+        {% if log is not empty %}
         <div class="modal fade" id="modal-temp-cluster_{{ cluster.id }}">
           <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
@@ -141,14 +145,7 @@
                         {% endif %}
                         <li class="list-group-item d-flex justify-content-between">
                           <span>Lighting #{{ luminaire.value.address }}</span>
-{#                           {% set html = '<ul>' %}
-                          {% for channel in luminaire.value.colors %}
-                                {% set html = html ~ '<li>' ~ channel ~ '</li>' %}
-                          {% endfor %}
-                          {% set html = html ~ '</ul>' %} #}
-                          <span class="badge badge-success pull-right" 
-                          {# data-toggle="popover" title="Lighting #{{ luminaire.address }}" data-content="{{ html }}" data-html="true" data-placement="left" #}
-                          >{{ log[0].value.channels_on }} channels On</span>
+                          <span class="badge badge-success pull-right">{{ log[0].value.channels_on }} channels On</span>
                         </li>
                       {% endfor %}
                       </ul>
@@ -158,6 +155,7 @@
             </div><!-- /.modal-content -->
           </div><!-- /.modal-dialog -->
         </div><!-- /.modal -->
+        
         <div class="btn-group btn-block">
           <button class="btn btn-xs 
             {% if log[0].value.mean_temp < 75 %}
@@ -174,6 +172,7 @@
           {% endif %} 
           fas fa-sliders-h" data-toggle="modal" data-target="#modal-channels-cluster_{{ cluster.id }}"> {{ log[0].value.channels_on }} Ch.</button>
         </div>
+        {% endif %}
     </div>
   </div>
 {% endfor %}
