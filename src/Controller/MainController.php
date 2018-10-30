@@ -187,6 +187,26 @@ class MainController extends AbstractController
     }
 
     /**
+     * @Route("/setup/luminaire/delete/{id}", name="delete-luminaire")
+     */
+    public function deleteLuminaire(Request $request, Luminaire $luminaire)
+    {
+        $em = $this->getDoctrine()->getManager();
+
+        foreach ($luminaire->getPcbs() as $pcb) {
+            $em->remove($pcb);
+        }
+        foreach ($luminaire->getChannels() as $channel) {
+            $em->remove($channel);
+        }
+
+        $em->remove($luminaire);
+        $em->flush();
+        
+        return $this->redirectToRoute('my-lightings');        
+    }
+
+    /**
      * @Route("/setup/get-data", name="get-data")
      */
     public function getData()
