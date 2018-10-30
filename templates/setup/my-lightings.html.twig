@@ -23,15 +23,20 @@
 	<div class="col col-md-12">
 		<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
 			<h1 class="h5">My Lightings</h1>
-			<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-refresh-luminaire"><span data-feather="refresh-cw"></span> Refresh</button>
+			<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-add-luminaire"><span class="fas fa-plus-circle"></span> Add a new lighting</button>
 		</div>
-		<div class="modal fade" id="modal-refresh-luminaire">
+		<div class="modal fade" id="modal-add-luminaire">
 			<div class="modal-dialog modal-dialog-centered" role="document">
 				<div class="modal-content">
 					<div class="modal-body text-center">
-						<p class="alert alert-warning">This will erase the existing list if any !</p>
-						<a href="{{ path('get-my-lightings') }}" class="btn btn-primary">Continue...</a>
-						<button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">Cancel</button>
+						{% form_theme form 
+							'bootstrap_4_horizontal_layout.html.twig' %}
+						{{ form_start(form) }}
+			    		{{ form_widget(form) }}
+			    		<button class="btn">{{ button_label|default('Save') }}</button>
+			    		<button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">Cancel</button>
+						{{ form_end(form) }}
+						
 					</div>
 				</div><!-- /.modal-content -->
 			</div><!-- /.modal-dialog -->

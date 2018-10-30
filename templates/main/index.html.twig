@@ -31,12 +31,45 @@
 <div class="row">
 
 {% for cluster in clusters %}
-  {% set log = log_repo.getClusterInfo(cluster.id) %}
+  {% set log = log_repo.getClusterInfo(cluster.id, 1) %}
+  {% set logs = log_repo.getClusterInfo(cluster.id, 30) %}
+    {% set array_temp = [] %}
+    {% set array_time = [] %}
+    {% for l in logs %}
+        {% set array_temp = array_temp|merge([l.value.mean_temp]) %}
+        {% set array_time = array_time|merge([l.time|date("H:i:s")]) %}
+    {% endfor %}
+    {% set array = { "labels": array_time } %}
+    {% set array = array|merge ({ "datasets": [{ data: array_temp }] }) %}
+    <div id="dataset" data-values="{{ array|json_encode }} "></div>
+</div>
   <div class="col col-md-6 col-lg-4">
     <div class="card">
       <div class="card-header">
-        <h5 class="card-title d-flex justify-content-between">
+        <h5 class="card-title d-flex justify-content-between">hg pu
           Cluster {{ cluster.label }}
+        
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group mr-2">
+              <button class="btn btn-primary far fa-chart-line" data-toggle="modal" data-target="#modal-plot-cluster_{{ cluster.id }}"></button>
+            </div>
+        </div>
+        <div class="modal fade" id="modal-plot-cluster_{{ cluster.id }}">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Cluster {{ cluster.label }} temperatures</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                  <span class="sr-only">Close</span>
+                </button>
+              </div>
+              <div class="modal-body">
+               <canvas id="myChart"></canvas>
+              </div>
+            </div><!-- /.modal-content -->
+          </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
         </h5>
         <h6 class="card-subtitle mb-2 text-muted">
           {{ log[0].time|date("Y-m-d H:i") }}
@@ -144,5 +177,5 @@
     </div>
   </div>
 {% endfor %}
-</div>
+
 {% endblock %}
