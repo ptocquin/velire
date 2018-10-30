@@ -1,4 +1,9 @@
-# 29/10/2018
+# 30/10/2018 v0.87
+
+- Ajout Chart.js (todo: gestion multiple clusters)
+- Ajout formulaire pour ajout formulaire par addresse
+
+# 29/10/2018 v0.86
 
 - Log management
 
