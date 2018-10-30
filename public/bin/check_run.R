@@ -2,7 +2,7 @@
 
 Sys.setenv(TZ="Europe/Paris")
 logfile <- "log.txt"
-uu      <- file(logfile, open = "wt")
+uu      <- file(logfile, open = "at")
 sink(uu, type = "message")
 
 min   <- as.numeric(format(Sys.time(), "%M"))
@@ -12,7 +12,7 @@ day   <- format(Sys.time(), "%Y-%m-%d")
 source("./bin/config.R")
 
 ####
-message(paste("CheckRun at", day, hour, min))
+message(paste("CheckRun at", Sys.time()))
 commands <- read.delim(command.file, header = FALSE, stringsAsFactors = FALSE)
 
 hour2check <- paste0(formatC(hour, flag=0, width = 2), ":",

@@ -195,14 +195,25 @@ class MainController extends AbstractController
 		$session = new Session();
 
 		// Supprimer les luminaires existants
-		$old_luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findAll();
-		// Compter les clusters existants
-		$clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
+        $luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findAll();
+        $clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
 
-		foreach ($clusters as $c) {
-			$em->remove($c);
-		}
-		$em->flush();
+        foreach ($clusters as $cluster) {
+            $em->remove($cluster);
+        }
+
+        $cluster = new Cluster;
+        $cluster->setLabel(1);
+        $em->persist($cluster);
+        
+        foreach ($luminaires as $luminaire) {
+            $luminaire->setCluster($cluster);
+            $em->persist($luminaire);
+        }
+        
+        $em->flush();
+
+
 
 		// Interroger le réseau de luminaires
     	$process = new Process('./bin/info.R');
@@ -241,21 +252,22 @@ class MainController extends AbstractController
             }
 
 			$luminaire->setSerial($spot["serial"]);
-			// $luminaire->setAddress($spot["address"]);
+			// // $luminaire->setAddress($spot["address"]);
 
-			if ($status["config"] == "OK") {
+			// // if ($status["config"] == "OK") {
 				$i++;
-				$cluster = $this->getDoctrine()->getRepository(Cluster::class)->findOneByLabel(1);
-				if(count($cluster) == 0){
-					$cluster = new Cluster;
-					$cluster->setLabel(1);
-                    $cluster->addLuminaire($luminaire);
-					$em->persist($cluster);
-					$em->flush();
-				} else {
-                    $luminaire->setCluster($cluster);
-                }
-			}
+			// 	$cluster = $this->getDoctrine()->getRepository(Cluster::class)->findOneByLabel(1);
+			// 	if(count($cluster) == 0){
+			// 		$cluster = new Cluster;
+			// 		$cluster->setLabel(1);
+   //                  // $luminaire->setCluster($cluster);
+   //                  // $cluster->addLuminaire($luminaire);
+			// 		$em->persist($cluster);
+			// 		$em->flush();
+			// 	} //else {
+   //                  $luminaire->setCluster($cluster);
+   //             // }
+			// // }
             $em->persist($luminaire);
 		}
 
@@ -278,27 +290,36 @@ class MainController extends AbstractController
         $session = new Session();
 
         // Supprimer les luminaires existants
-        $old_luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findAll();
-        // Compter les clusters existants
+        $luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findAll();
         $clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
 
-        foreach ($old_luminaires as $ol) {
-            foreach ($ol->getPcbs() as $pcb) {
+        foreach ($luminaires as $l) {
+            foreach ($l->getPcbs() as $pcb) {
                 $em->remove($pcb);
             }
-            foreach ($ol->getChannels() as $channel) {
+            foreach ($l->getChannels() as $channel) {
                 $em->remove($channel);
             }
-         $em->remove($ol);
+         // $em->remove($l);
         }
 
-        foreach ($clusters as $c) {
-            $em->remove($c);
+        foreach ($clusters as $cluster) {
+            $em->remove($cluster);
         }
+
+        $cluster = new Cluster;
+        $cluster->setLabel(1);
+        $em->persist($cluster);
+        
+        foreach ($luminaires as $luminaire) {
+            $luminaire->setCluster($cluster);
+            $em->persist($luminaire);
+        }
+        
         $em->flush();
 
         // Interroger le réseau de luminaires
-        $process = new Process('./bin/get_connected.R');
+        $process = new Process('./bin/info.R');
         $process->run();
 
         // executes after the command finishes
@@ -321,22 +342,22 @@ class MainController extends AbstractController
             $pcbs = $spot["pcb"];
             $status = $spot["status"];
 
-            $luminaire = new Luminaire;
-            $luminaire->setAddress($spot["address"]);
+            $luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->findOneByAddress($spot["address"]);
+            // $luminaire->setAddress($spot["address"]);
 
             $luminaire->setSerial($spot["serial"]);
 
-            if ($status["config"] == "OK") {
+            // if ($status["config"] == "OK") {
                 $i++;
-                $cluster = $this->getDoctrine()->getRepository(Cluster::class)->findOneByLabel(1);
-                if(count($cluster) == 0){
-                    $cluster = new Cluster;
-                    $cluster->setLabel(1);
-                    $em->persist($cluster);
-                    $em->flush();
-                }
-                $luminaire->setCluster($cluster);
-            }
+            //     $cluster = $this->getDoctrine()->getRepository(Cluster::class)->findOneByLabel(1);
+            //     if(count($cluster) == 0){
+            //         $cluster = new Cluster;
+            //         $cluster->setLabel(1);
+            //         $em->persist($cluster);
+            //         $em->flush();
+            //     }
+            //     $luminaire->setCluster($cluster);
+            // }
 
             foreach ($pcbs as $pcb) {
                 $p = new Pcb;
@@ -358,7 +379,7 @@ class MainController extends AbstractController
                 $c->setIPeek($channel["max"]);
                 $c->setPcb($channel["address"]);
                 $c->setLuminaire($luminaire);
-                
+                // $em->persist($c);
 
                 # Vérifie que la Led existe dans la base de données, sinon l'ajoute.
                 $led = $this->getDoctrine()->getRepository(Led::class)->findOneBy(array(
