@@ -23,7 +23,7 @@ class LogRepository extends ServiceEntityRepository
     * @return Log[] Returns an array of Log objects
     */
     
-    public function getClusterInfo($cluster)
+    public function getClusterInfo($cluster, $n)
     {
         return $this->createQueryBuilder('l')
             ->where('l.cluster = :cluster')
@@ -31,11 +31,13 @@ class LogRepository extends ServiceEntityRepository
             ->setParameter('cluster', $cluster)
             ->setParameter('type', 'cluster_info')
             ->orderBy('l.time', 'DESC')
-            ->setMaxResults(1)
+            ->setMaxResults($n)
             ->getQuery()
             ->getResult()
         ;
     }
+
+
 
    /**
     * @return Log[] Returns an array of Log objects
