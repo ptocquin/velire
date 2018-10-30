@@ -1,0 +1,3 @@
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+./bin/get_data.sh
