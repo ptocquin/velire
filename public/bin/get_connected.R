@@ -1,8 +1,9 @@
 #!/usr/local/bin/Rscript
 
   logfile <- "log.txt"
-  uu      <- file(logfile, open = "wt")
+  uu      <- file(logfile, open = "at")
   sink(uu, type = "message")
+  message(paste("get_connected.R at ", Sys.time()))
 
 #### Librairies ###########################################
 source("./bin/config.R")

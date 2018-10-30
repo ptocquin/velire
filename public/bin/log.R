@@ -9,9 +9,9 @@ if(length(args) == 0) {
 
 } else {
   logfile <- "log.txt"
-  uu      <- file(logfile, open = "wt")
+  uu      <- file(logfile, open = "at")
   sink(uu, type = "message")
-  message("Log.R")
+  message(paste("Log at", Sys.time()))
 }
 
 #### Librairies ###########################################
