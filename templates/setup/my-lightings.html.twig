@@ -51,8 +51,26 @@
 					<div class="col">
 						<ul class="list-group list-group-flush">
 					{% endif %}
-					<li class="list-group-item d-flex justify-content-between">Lighting #{{ luminaire.address }} [ Serial: {{ luminaire.serial }} ] 
+					<li class="list-group-item d-flex justify-content-between">
+						Lighting #{{ luminaire.address }} [ Serial: {{ luminaire.serial }} ]
+						<div class="d-inline">
+							<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-delete-{{ luminaire.id }}">
+					        	<span class="far fa-trash-alt"></span>
+					        </button>
+						</div>
 					</li>
+					<div class="modal fade" id="modal-delete-{{ luminaire.id }}">
+	        			<div class="modal-dialog modal-dialog-centered" role="document">
+	        				<div class="modal-content">
+	        					<div class="modal-body">
+	        						<div class="btn-group btn-group-justified align-content-center">
+	        						<a class="btn btn-danger" role="button" href="{{ path('delete-luminaire', { 'id': luminaire.id }) }}">Confirm delete</a>
+	        						<button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">Cancel</button>
+	        						</div>
+	        					</div>
+	        				</div><!-- /.modal-content -->
+	        			</div><!-- /.modal-dialog -->
+	        		</div><!-- /.modal -->
 				{% endfor %}
 				</ul>
 			</div>
