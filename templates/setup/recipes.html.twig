@@ -5,7 +5,7 @@
 {% block title %}Setup{% endblock %}
 
 {% block panelTitle %}
-<h1 class="h2">Recipes</h1>
+<h1 class="h2" id="top">Recipes</h1>
 <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group mr-2">
 
@@ -31,23 +31,23 @@
 {% endfor %}
 
 <div class="row">
-	<div class="col col-md-6 col-lg-4">
+	<div class="col col-md-12 col-lg-4">
 		<ul class="list-group list-group-flush">
 		{% for recipe in recipes %}
 			{% if loop.index is divisible by(6) %}
 			</ul>
 			</div>
-			<div class="col col-md-6 col-lg-4">
+			<div class="col col-md-12 col-lg-4">
 				<ul class="list-group list-group-flush">
 			{% endif %}
 			<li class="list-group-item d-flex justify-content-between">
 				<span>{{ recipe.label }}</span> 
 				<div class="d-inline">
 					<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#recipe-detail-{{ recipe.id }}">
-			        	<span class="far fa-question-circle"></span>
+			        	<span data-feather="help-circle"></span>
 			        </button>
 			        <a class="btn btn-sm btn-outline-secondary" href="{{ path('delete-recipe', { 'id': recipe.id }) }}">
-						<span class="far fa-trash-alt"></span>
+						<span data-feather="trash-2"></span>
 			        </a>
 				</div>
 			</li>
@@ -87,14 +87,14 @@
 	</div>
 </div>
 
-<div class="row">
-	<div class="col col-md-6 col-lg-4">
+<div class="row" id="new">
+	<div class="col col-md-12 col-lg-4">
 		<ul class="list-group list-group-flush">
 		{% for cluster in clusters %}
 			{% if loop.index is divisible by(6) %}
 			</ul>
 			</div>
-			<div class="col col-md-6 col-lg-4">
+			<div class="col col-md-12 col-lg-4">
 				<ul class="list-group list-group-flush">
 			{% endif %}
 			<li class="list-group-item d-flex justify-content-between">
@@ -102,9 +102,9 @@
 				<div class="d-inline">
 					<div class="btn-group">
 						<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#cluster-detail-{{ cluster.id }}">
-				        	<span class="far fa-question-circle"></span>
+				        	<span data-feather="help-circle"></span>
 				        </button>
-				        <a href="{{ path('new-recipe', {'id': cluster.id }) }}" class="btn btn-sm btn-outline-secondary"><span class="far fa-plus-square"> </span> <span class="d-none d-lg-inline">New recipe</span></a>
+				        <a href="{{ path('new-recipe', {'id': cluster.id }) }}" class="btn btn-sm btn-outline-secondary"><span data-feather="plus-square"> </span> <span class="d-none d-lg-inline">New recipe</span></a>
 			        </div>
 				</div>
 			</li>
@@ -134,5 +134,11 @@
 	</div>
 </div>
 
+{% endblock %}
 
+{% block scrollspy %}
+    {{ parent() }}
+	<li class="nav-item">
+		<a class="btn btn-secondary nav-link" href="#new">New recipes</span></a>
+	</li>
 {% endblock %}

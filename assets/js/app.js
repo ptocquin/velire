@@ -31,6 +31,8 @@ $(document).ready(function () {
 
 	$('[data-toggle="popover"]').popover();
 
+	$('[data-toggle="tooltip"]').tooltip()
+
 	var ctx = document.getElementById('myChart').getContext('2d');
 	var d = document.getElementById('dataset');
 	console.log(typeof(d.dataset.values));

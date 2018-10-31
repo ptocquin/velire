@@ -1,3 +1,21 @@
 Warning message:
 le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
 ./bin/get_data.sh
+info.R at 2018-10-30 19:31:59
+Warning message:
+In as.POSIXlt.POSIXct(x, tz) : unknown timezone 'default/Europe/Brussels'
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+./bin/get_data.sh
+info.R at 2018-10-30 19:32:56
+Warning message:
+In as.POSIXlt.POSIXct(x, tz) : unknown timezone 'default/Europe/Brussels'
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+./bin/get_data.sh
+info.R at 2018-10-31 08:28:39
+Warning message:
+In as.POSIXlt.POSIXct(x, tz) : unknown timezone 'default/Europe/Brussels'
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+./bin/get_data.sh

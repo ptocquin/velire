@@ -18,32 +18,25 @@
         {{ message }}
     </div>
 {% endfor %}
-<div class="row">
-	{# Connected Lightings #}
-	<div class="col col-md-12">
-		<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
-		  	<h1 class="h5">Informations</h1>
-		  	<div class="btn-group">
-		    </div>
-	    </div>
-	</div>
-</div>
 
 <div class="row">	
 
-		<div class="col-md-8">
+		<div class="col-md-12">
 			{% form_theme form 
 				'bootstrap_4_horizontal_layout.html.twig' %}
 			{{ form_start(form) }}
-			{{ form_row(form.label) }}
-			{{ form_row(form.description) }}
-			<h5>Ingredients</h5>
+			{{ form_row(form.label, {'value' : "recipe_" ~ "now"|date("Y-m-d_H:i:s")}) }}
+			{{ form_widget(form.description, {'attr': { "class": "d-none d-lg-block"}}) }}
+			{# <h5>Ingredients</h5> #}
 			
-			<ul>
+			<div class="row">
+				<div class="col">
 				{% for ingredient in form.ingredients %}
-				    <li>{{ form_row(ingredient.level, { 'label': ingredient.vars.data.led.type~' '~ingredient.vars.data.led.wavelength }) }} </li>
+					{% if loop.index is divisible by(2) %}</div><div class="col">{% endif %}
+				    <p>{{ form_row(ingredient.level, { 'label': ingredient.vars.data.led.type, 'value': 0 }) }} </p>
 				{% endfor %}
-			</ul>
+				</div>
+			</div>
     		{{ form_widget(form) }}
     		<button class="btn">{{ button_label|default('Save') }}</button>
     		<a class="btn" href="{{ path('recipes') }}">Cancel</a>

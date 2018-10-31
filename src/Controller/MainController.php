@@ -50,6 +50,7 @@ class MainController extends AbstractController
             'cluster_repo' => $cluster_repo,
             'log_repo' => $log_repo,
             'data' => $data,
+            'navtitle' => 'Dashboard',
         ]);
     }
 
@@ -83,6 +84,7 @@ class MainController extends AbstractController
         	'clusters' => $clusters,
         	'next_cluster' => $cluster_number+1,
             'form' => $form->createView(),
+            'navtitle' => 'My Lightings',
         ]);
     }
 
@@ -111,7 +113,8 @@ class MainController extends AbstractController
         return $this->render('setup/connected-lightings.html.twig', [
         	'installed_luminaires' => $installed_luminaires,
         	'clusters' => $clusters,
-        	'next_cluster' => $cluster_number+1
+        	'next_cluster' => $cluster_number+1,
+            'navtitle' => 'Connected Lightings',
         ]);
     }
 
@@ -132,6 +135,7 @@ class MainController extends AbstractController
             'led_repo' => $led_repo,
             'recipe_repo' => $recipe_repo,
             'recipes' => $recipes,
+            'navtitle' => 'Recipes',
         ]);
     }
 
@@ -165,6 +169,7 @@ class MainController extends AbstractController
         
         return $this->render('setup/new-recipes.html.twig', [
             'form' => $form->createView(),
+            'navtitle' => 'New Recipe',
         ]);
     }
 
@@ -580,7 +585,8 @@ class MainController extends AbstractController
 
         return $this->render('control/control-by-color.html.twig', [
         	'clusters' => $clusters,
-        	'current_cluster' => $current_cluster
+        	'current_cluster' => $current_cluster,
+            'navtitle' => 'Control by Color',
        	]);
 
     }

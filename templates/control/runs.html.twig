@@ -2,17 +2,6 @@
 
 {% block title %}Hello {{ controller_name }}!{% endblock %}
 
-{% block panelTitle %}
-<h1 class="h2">Runs</h1>
-<div class="btn-toolbar mb-2 mb-md-0">
-    <div class="btn-group mr-2">
-		<a class="btn btn-sm btn-outline-secondary" href="{{ path('new-run') }}">
-			<span class="far fa-plus-square"> Add a new run</span>
-	    </a>
-    </div>
-</div>
-{% endblock %}
-
 {% block panelContent %}
 
 {% for message in app.flashes('info') %}
@@ -35,10 +24,10 @@
 				<span>{{ run.label }}</span> 
 				<div class="d-inline">
 					<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#run-detail-{{ run.id }}">
-			        	<span class="far fa-question-circle"></span>
+			        	<span data-feather="help-circle"></span>
 			        </button>
 			        <button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-delete-run-{{ run.id }}">
-			        	<span class="far fa-trash-alt"></span>
+			        	<span data-feather="trash-2"></span>
 			        </button>
 			     
 				</div>
@@ -55,7 +44,7 @@
 								Cancel
 							</button>
 							<a class="btn btn-sm btn-outline-danger" href="{{ path('delete-run', { 'id': run.id }) }}">
-								<span class="far fa-trash-alt"> Confirm delete</span>
+								<span data-feather="trash-2"> Confirm delete</span>
 					        </a>
 						</div>
 					</div><!-- /.modal-content -->
@@ -103,7 +92,13 @@
 		</ul>
 	</div>
 </div>
-
-
-
 {% endblock %}
+
+{% block bottomButton %}
+    	<a class="btn btn-sm btn-secondary" href="{{ path('new-run') }}">
+			<span data-feather="plus-square"> </span>Add a new run
+	    </a>
+{% endblock %}
+
+
+
