@@ -41,7 +41,8 @@ class ProgramController extends AbstractController
 
         return $this->render('program/index.html.twig', [
             'controller_name' => 'ProgramController',
-            'programs' => $programs, 
+            'programs' => $programs,
+            'navtitle' => 'Programs', 
         ]);
     }
 
@@ -68,6 +69,7 @@ class ProgramController extends AbstractController
         return $this->render('program/new-program.html.twig', [
             'controller_name' => 'ProgramController',
             'form' => $form->createView(),
+            'navtitle' => 'New Program',
         ]);
     }
 
@@ -109,6 +111,7 @@ class ProgramController extends AbstractController
         return $this->render('program/new-program.html.twig', [
             'controller_name' => 'ProgramController',
             'form' => $form->createView(),
+            'navtitle' => 'Edit Program',
         ]);
     }
 
@@ -138,7 +141,8 @@ class ProgramController extends AbstractController
 
         return $this->render('control/runs.html.twig', [
             'controller_name' => 'ProgramController',
-            'runs' => $runs, 
+            'runs' => $runs,
+            'navtitle' => 'Runs', 
         ]);
     }
 
@@ -167,6 +171,7 @@ class ProgramController extends AbstractController
         return $this->render('control/new-run.html.twig', [
             'controller_name' => 'ProgramController',
             'form' => $form->createView(),
+            'navtitle' => 'New Run',
         ]);
     }
 
@@ -218,6 +223,7 @@ class ProgramController extends AbstractController
         return $this->render('control/new-run.html.twig', [
             'controller_name' => 'ProgramController',
             'form' => $form->createView(),
+            'navtitle' => 'Edit Run',
         ]);
     }
 
@@ -271,6 +277,7 @@ class ProgramController extends AbstractController
             'clusters' => $clusters,
             'cluster_repo' => $cluster_repo,
             'form' => $form->createView(),
+            'navtitle' => 'Manual Control',
         ]);
     }
 }

@@ -18,7 +18,11 @@ class RunType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('start')
+            ->add('start', null, array(
+                'data' => new \DateTime("now"),
+                'years' => array(2018, 2019, 2020, 2021),
+                'minutes' => array(0,5,10,15,20,25,30,35,40,45,50,55)
+            ))
             ->add('label')
             ->add('description')
             ->add('cluster', EntityType::class, array(

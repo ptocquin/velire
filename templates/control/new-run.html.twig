@@ -14,6 +14,16 @@
  			'jquery.collection.html.twig'
  			 %}
     {{ form_start(form) }}
+    {{ form_row(form.label, {'value' : "run_" ~ "now"|date("Y-m-d_H:i:s")}) }}
+    {{ form_widget(form.description, {'attr': { "class": "d-none d-lg-block"}}) }}
+    <div class="row">
+    	<div class="col">
+    		{{ form_row(form.cluster) }}
+    	</div>
+    	<div class="col">
+    		{{ form_row(form.program) }}
+    	</div>
+    </div>
     {{ form_widget(form) }}
     <button class="btn">{{ button_label|default('Save') }}</button>
     <a class="btn" href="{{ path('run') }}">Cancel</a>

@@ -10,9 +10,9 @@
 {% block panelTitle %}
 <h1 class="h2">Dashboard</h1>
 <div class="btn-toolbar mb-2 mb-md-0">
-    <div class="btn-group mr-2">
+{#     <div class="btn-group mr-2">
       <a href="{{ path('get-info') }}" class="btn btn-sm btn-outline-secondary fas fa-redo"> Refresh</a>
-    </div>
+    </div> #}
 {#     <button class="btn btn-sm btn-outline-secondary dropdown-toggle">
         <span data-feather="calendar"></span>
         This week
@@ -28,8 +28,7 @@
 	    </div>
 	</div>
 </div>
-<div class="row">
-
+<div class="card-columns">
 {% for cluster in clusters %}
   {% set log = log_repo.getClusterInfo(cluster.id, 1) %}
   {% set logs = log_repo.getClusterInfo(cluster.id, 30) %}
@@ -42,8 +41,8 @@
     {% set array = { "labels": array_time } %}
     {% set array = array|merge ({ "datasets": [{ data: array_temp }] }) %}
     <div id="dataset" data-values="{{ array|json_encode }} "></div>
-</div>
-  <div class="col col-md-6 col-lg-4">
+
+  
     <div class="card">
       <div class="card-header">
         <h5 class="card-title d-flex justify-content-between">
@@ -52,7 +51,7 @@
         {% if log is not empty %}
         <div class="btn-toolbar mb-2 mb-md-0">
             <div class="btn-group mr-2">
-              <button class="btn btn-primary far fa-chart-line" data-toggle="modal" data-target="#modal-plot-cluster_{{ cluster.id }}"></button>
+              <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#modal-plot-cluster_{{ cluster.id }}"><span data-feather="trending-up"></span></button>
             </div>
         </div>
         <div class="modal fade" id="modal-plot-cluster_{{ cluster.id }}">
@@ -78,12 +77,6 @@
         {% endif %}
       </div>
       <div class="card-body">
-        {% if cluster_repo.getRunningClusters(cluster.id, "now"|date("Y-m-d H:i:s"))|length > 0 %}
-          <p><span class="fas fa-circle" style="color: green;"></span> {{ cluster_repo.getRunningClusters(cluster.id, "now"|date("Y-m-d H:i:s"))|length }} running program</p> 
-        {% else %}
-          <p>  <span class="fas fa-circle" style="color: red;"></span> No running programs</p>
-        {% endif %}
-
         {% if log is not empty %}
         <div class="modal fade" id="modal-temp-cluster_{{ cluster.id }}">
           <div class="modal-dialog modal-dialog-centered" role="document">
@@ -156,25 +149,36 @@
           </div><!-- /.modal-dialog -->
         </div><!-- /.modal -->
         
-        <div class="btn-group btn-block">
+        <div class="btn-group-vertical btn-block">
+          <button type="button" class="btn btn-light">
+            {% if cluster_repo.getRunningClusters(cluster.id, "now"|date("Y-m-d H:i:s"))|length > 0 %}
+              <span data-feather="watch" style="color: green;" data-toggle="tooltip" data-placement="top" title="{{ cluster_repo.getRunningClusters(cluster.id, "now"|date("Y-m-d H:i:s"))|length }} running program"></span> 
+            {% else %}
+              <span style="color: red;" data-feather="watch" data-toggle="tooltip" data-placement="top" title="No running programs"></span> 
+            {% endif %}
+          </button>
           <button class="btn btn-xs 
             {% if log[0].value.mean_temp < 75 %}
               btn-info
             {% else %}
               btn-danger
             {% endif %}
-            btn-info fas fa-thermometer-quarter" data-toggle="modal" data-target="#modal-temp-cluster_{{ cluster.id }}"> {{ log[0].value.mean_temp }}°C</button>
+            btn-info" data-toggle="modal" data-target="#modal-temp-cluster_{{ cluster.id }}">
+            <span data-feather="thermometer"></span> {{ log[0].value.mean_temp|round }}°C </button>
           <button class="btn btn-xs 
           {% if log[0].value.channels_on > 0 %}
             btn-success
           {% else %}
             btn-light
           {% endif %} 
-          fas fa-sliders-h" data-toggle="modal" data-target="#modal-channels-cluster_{{ cluster.id }}"> {{ log[0].value.channels_on }} Ch.</button>
+           " data-toggle="modal" data-target="#modal-channels-cluster_{{ cluster.id }}">
+           <span data-feather="sliders"></span> {{ log[0].value.channels_on }} Ch.</button>
         </div>
         {% endif %}
+      </div>
     </div>
-  </div>
+
 {% endfor %}
+</div>
 
 {% endblock %}

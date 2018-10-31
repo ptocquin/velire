@@ -51,7 +51,7 @@ for (spot in spots) {
   # Temp data du luminaire en version JSON
   luminaire_info <- toJSON(list(address = spot$address, serial = spot$serial, led_pcb_0 = spot$temperature$led_pcb_0, led_pcb_1 = spot$temperature$led_pcb_1), auto_unbox = TRUE)
   # Collecte de l'information température à l'échelle du cluster
-  cluster_array[[as.character(luminaire$cluster_id)]]$temp <- c(cluster_array[[as.character(luminaire$cluster_id)]], spot$temperature$led_pcb_0, spot$temperature$led_pcb_1)
+  cluster_array[[as.character(luminaire$cluster_id)]]$temp <- c(cluster_array[[as.character(luminaire$cluster_id)]]$temp, spot$temperature$led_pcb_0, spot$temperature$led_pcb_1)
 
   dbSendQuery(con, sprintf("INSERT INTO Log (time, type, luminaire_id, cluster_id, value, comment) VALUES ('%s', '%s', '%s', '%s', '%s', '%s')", now, "luminaire_info", luminaire$id, luminaire$cluster_id, luminaire_info, ""))
 

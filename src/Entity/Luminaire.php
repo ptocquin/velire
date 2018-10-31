@@ -34,7 +34,7 @@ class Luminaire
     private $serial;
 
     /**
-     * @ORM\Column(type="string", length=255, nullable=true)
+     * @ORM\Column(type="integer", nullable=true)
      */
     private $address;
 
@@ -141,12 +141,12 @@ class Luminaire
         return $this;
     }
 
-    public function getAddress(): ?string
+    public function getAddress(): ?int
     {
         return $this->address;
     }
 
-    public function setAddress(?string $address): self
+    public function setAddress(?int $address): self
     {
         $this->address = $address;
 
