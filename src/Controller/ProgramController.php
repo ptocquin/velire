@@ -147,11 +147,12 @@ class ProgramController extends AbstractController
     }
 
     /**
-     * @Route("/run/new", name="new-run")
+     * @Route("/run/new/{id}", name="new-run")
      */
-    public function newRun(Request $request)
+    public function newRun(Request $request, Cluster $cluster)
     {
         $run = new Run;
+        $run->setCluster($cluster);
         $form = $this->createForm(RunType::class, $run);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
@@ -166,12 +167,59 @@ class ProgramController extends AbstractController
             $em->persist($run);
             $em->flush();
 
-            return $this->redirectToRoute('run');
+            return $this->redirectToRoute('home');
         }
         return $this->render('control/new-run.html.twig', [
             'controller_name' => 'ProgramController',
             'form' => $form->createView(),
             'navtitle' => 'New Run',
+        ]);
+    }
+
+    /**
+     * @Route("/play/new/{id}", name="new-play")
+     */
+    public function newPlay(Request $request, Cluster $cluster)
+    {
+        # Form to play
+        $form = $this->createFormBuilder()
+            ->add('recipe', EntityType::class, [
+                'class' => Recipe::class,
+                'choice_label' => 'label',
+                'choice_value' => 'id', // <--- default IdReader::getIdValue()
+            ])
+            // ->add('cluster', HiddenType::class, array(
+            //     // 'mapped' => false,
+            // ))
+            ->getForm()
+            ;
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
+            $recipe = $data['recipe'];
+
+            $process = new Process('./bin/play.R '.$cluster->getId().' '.$recipe->getId());
+            $process->run();
+
+            // executes after the command finishes
+            if (!$process->isSuccessful()) {
+                throw new ProcessFailedException($process);
+            } else {
+                            // add flash messages
+                $session->getFlashBag()->add(
+                    'info',
+                    $process->getOutput()
+                );
+            }
+            // die(var_dump($data['cluster']));
+        }
+
+        return $this->render('control/new-play.html.twig', [
+            'controller_name' => 'ProgramController',
+            'form' => $form->createView(),
+            'navtitle' => 'New Play',
         ]);
     }
 

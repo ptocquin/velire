@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block panelContent %}
-  
+    <div>
  	{% 
  		form_theme form 
  			'bootstrap_4_layout.html.twig'
@@ -15,10 +15,14 @@
  			'program/program-form.html.twig'
  			 %}
     {{ form_start(form) }}
+    {{ form_row(form.label, {'value' : "program_" ~ "now"|date("Y-m-d_H:i:s")}) }}
+    {{ form_widget(form.description, {'attr': { "class": "d-none d-lg-block"}}) }}
+    {{ form_row(form.steps) }}
     {{ form_widget(form) }}
     <button class="btn">{{ button_label|default('Save') }}</button>
     <a class="btn" href="{{ path('program') }}">Cancel</a>
 {{ form_end(form) }}
+</div>
 
 
 {% endblock %}

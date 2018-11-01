@@ -79,7 +79,7 @@
 							  	    	<span class="badge badge-info mr-2">{{ step.rank }}</span>
 							  	    	<span class="badge badge-light mr-2">{{ step.type }}</span>
 							  	    	</div>
-							  	    	<span>{{ step.value }}</span> 
+							  	    	<span>{{ step.value }} {% if step.type == 'time' %}// {{ step.recipe }}{% endif %}</span> 
 							  	    </li>
 							  	{% endfor %}
 							 </ul>

@@ -5,21 +5,6 @@
 <meta http-equiv="refresh" content="300">
 {% endblock %}
 
-{% block title %}Hello {{ controller_name }}!{% endblock %}
-
-{% block panelTitle %}
-<h1 class="h2">Dashboard</h1>
-<div class="btn-toolbar mb-2 mb-md-0">
-{#     <div class="btn-group mr-2">
-      <a href="{{ path('get-info') }}" class="btn btn-sm btn-outline-secondary fas fa-redo"> Refresh</a>
-    </div> #}
-{#     <button class="btn btn-sm btn-outline-secondary dropdown-toggle">
-        <span data-feather="calendar"></span>
-        This week
-    </button> #}
-</div>
-{% endblock %}
-
 {% block panelContent %}
 <div class="row">
 	<div class="col col-md-12">
@@ -49,31 +34,8 @@
           Cluster {{ cluster.label }}
 
         {% if log is not empty %}
-        <div class="btn-toolbar mb-2 mb-md-0">
-            <div class="btn-group mr-2">
-              <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#modal-plot-cluster_{{ cluster.id }}"><span data-feather="trending-up"></span></button>
-            </div>
-        </div>
-        <div class="modal fade" id="modal-plot-cluster_{{ cluster.id }}">
-          <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title">Cluster {{ cluster.label }} temperatures</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                  <span class="sr-only">Close</span>
-                </button>
-              </div>
-              <div class="modal-body">
-               <canvas id="myChart"></canvas>
-              </div>
-            </div><!-- /.modal-content -->
-          </div><!-- /.modal-dialog -->
-        </div><!-- /.modal -->
         </h5>
-        <h6 class="card-subtitle mb-2 text-muted">
-            {{ log[0].time|date("Y-m-d H:i") }}
-        </h6>
+
         {% endif %}
       </div>
       <div class="card-body">
@@ -148,15 +110,37 @@
             </div><!-- /.modal-content -->
           </div><!-- /.modal-dialog -->
         </div><!-- /.modal -->
+        <div class="modal fade" id="modal-plot-cluster_{{ cluster.id }}">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Cluster {{ cluster.label }} temperatures</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                  <span class="sr-only">Close</span>
+                </button>
+              </div>
+              <div class="modal-body">
+               <canvas id="myChart"></canvas>
+              </div>
+            </div><!-- /.modal-content -->
+          </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
         
         <div class="btn-group-vertical btn-block">
-          <button type="button" class="btn btn-light">
-            {% if cluster_repo.getRunningClusters(cluster.id, "now"|date("Y-m-d H:i:s"))|length > 0 %}
-              <span data-feather="watch" style="color: green;" data-toggle="tooltip" data-placement="top" title="{{ cluster_repo.getRunningClusters(cluster.id, "now"|date("Y-m-d H:i:s"))|length }} running program"></span> 
-            {% else %}
-              <span style="color: red;" data-feather="watch" data-toggle="tooltip" data-placement="top" title="No running programs"></span> 
-            {% endif %}
-          </button>
+          <div class="btn-group">
+            <a class="btn btn-light" type="button"  href="{{ path('graph', {'id': cluster.id }) }}"><span data-feather="trending-up"></a>
+            <a href="{{ path('new-play', { 'id': cluster.id }) }}" type="button" class="btn btn-light">
+              <span data-feather="play-circle"></span> 
+            </a>
+            <a href="{{ path('new-run', {'id': cluster.id }) }}" type="button" class="btn btn-light">
+              {% if cluster_repo.getRunningClusters(cluster.id, "now"|date("Y-m-d H:i:s"))|length > 0 %}
+                <span data-feather="sliders" style="color: green;" data-toggle="tooltip" data-placement="top" title="{{ cluster_repo.getRunningClusters(cluster.id, "now"|date("Y-m-d H:i:s"))|length }} running program"></span> 
+              {% else %}
+                <span style="color: red;" data-feather="sliders" data-toggle="tooltip" data-placement="top" title="No running programs"></span> 
+              {% endif %}
+            </a>
+          </div>
           <button class="btn btn-xs 
             {% if log[0].value.mean_temp < 75 %}
               btn-info
@@ -181,4 +165,8 @@
 {% endfor %}
 </div>
 
+{% endblock %}
+
+{% block update %}
+    <span class="text-muted text-sm-left">Last update: {{ log_repo.getLastLog()[0].time|date("Y-m-d H:i") }}</span>
 {% endblock %}
