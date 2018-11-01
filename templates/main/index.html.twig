@@ -15,7 +15,7 @@
 </div>
 <div class="card-columns">
 {% for cluster in clusters %}
-  {% set log = log_repo.getClusterInfo(cluster.id, 1) %}
+  {% set log = log_repo.getClusterLastLog(cluster.id)[0] %}
   {% set logs = log_repo.getClusterInfo(cluster.id, 30) %}
     {% set array_temp = [] %}
     {% set array_time = [] %}
@@ -32,8 +32,8 @@
       <div class="card-header">
         <h5 class="card-title d-flex justify-content-between">
           Cluster {{ cluster.label }}
-          <a href="{{ path('set-cluster-off', {'id': cluster.id }) }}" class="text-light">
-            <span data-feather="power"></span>
+          <a href="{{ path('set-cluster-off', {'id': cluster.id }) }}" class="btn btn-xs btn-dark p-0 pb-1" >
+            <span data-feather="power" style="stroke-width: 4px; with: 12; height: 12; color: {% if log.value.channels_on == 0 %}red{% else %}green{% endif %}"></span>
           </a>
         </h5>
       </div>
@@ -55,7 +55,7 @@
                 <div class="row">
                     <div class="col">
                       <ul class="list-group list-group-flush">
-                      {% for luminaire in log_repo.getLuminairesInfo(cluster.id, log[0].time) %}
+                      {% for luminaire in log_repo.getLuminairesInfo(cluster.id, log.time) %}
                         {% if loop.index is divisible by(6) %}
                         </ul>
                         </div>
@@ -90,7 +90,7 @@
                 <div class="row">
                     <div class="col">
                       <ul class="list-group list-group-flush">
-                      {% for luminaire in log_repo.getLuminairesInfo(cluster.id, log[0].time) %}
+                      {% for luminaire in log_repo.getLuminairesInfo(cluster.id, log.time) %}
                         {% if loop.index is divisible by(6) %}
                         </ul>
                         </div>
@@ -99,7 +99,7 @@
                         {% endif %}
                         <li class="list-group-item d-flex justify-content-between">
                           <span>Lighting #{{ luminaire.value.address }}</span>
-                          <span class="badge badge-success pull-right">{{ log[0].value.channels_on }} channels On</span>
+                          <span class="badge badge-success pull-right">{{ log.value.channels_on }} channels On</span>
                         </li>
                       {% endfor %}
                       </ul>
@@ -141,21 +141,21 @@
             </a>
           </div>
           <button class="btn btn-xs 
-            {% if log[0].value.mean_temp < 75 %}
+            {% if log.value.mean_temp < 75 %}
               btn-info
             {% else %}
               btn-danger
             {% endif %}
             btn-info" data-toggle="modal" data-target="#modal-temp-cluster_{{ cluster.id }}">
-            <span data-feather="thermometer"></span> {{ log[0].value.mean_temp|round }}°C </button>
+            <span data-feather="thermometer"></span> {{ log.value.mean_temp|round }}°C </button>
           <button class="btn btn-xs 
-          {% if log[0].value.channels_on > 0 %}
+          {% if log.value.channels_on > 0 %}
             btn-success
           {% else %}
             btn-light
           {% endif %} 
            " data-toggle="modal" data-target="#modal-channels-cluster_{{ cluster.id }}">
-           <span data-feather="sliders"></span> {{ log[0].value.channels_on }} Ch.</button>
+           <span data-feather="sliders"></span> {{ log.value.channels_on }} Ch.</button>
         </div>
         {% endif %}
       </div>
