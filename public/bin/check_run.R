@@ -30,7 +30,7 @@ for (run.id in runs$id) {
 if(i > 0) message (i, "runs set to 'past' status !")
 
 
-if(length(cmd.files <- list.files("commands@", path = "./bin", full.names = TRUE)) == 0) quit(save = FALSE, status = 0)
+if(length(cmd.files <- list.files("commands@", path = "./bin", full.names = TRUE)) == 0) quit(save = "no", status = 0)
 
 for (cmd.file in cmd.files) {
   commands <- read.delim(cmd.file, header = FALSE, stringsAsFactors = FALSE)
