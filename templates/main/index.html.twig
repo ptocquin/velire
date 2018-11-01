@@ -15,8 +15,9 @@
 </div>
 <div class="card-columns">
 {% for cluster in clusters %}
-  {% set log = log_repo.getClusterLastLog(cluster.id)[0] %}
-  {% set logs = log_repo.getClusterInfo(cluster.id, 30) %}
+  {% if log_repo.getClusterLastLog(cluster.id) is not empty %}
+    {% set log = log_repo.getClusterLastLog(cluster.id)[0] %}
+    {% set logs = log_repo.getClusterInfo(cluster.id, 30) %}
     {% set array_temp = [] %}
     {% set array_time = [] %}
     {% for l in logs %}
@@ -26,19 +27,20 @@
     {% set array = { "labels": array_time } %}
     {% set array = array|merge ({ "datasets": [{ data: array_temp }] }) %}
     <div id="dataset" data-values="{{ array|json_encode }} "></div>
-
+  {% endif %}
   
     <div class="card text-white bg-secondary">
       <div class="card-header">
         <h5 class="card-title d-flex justify-content-between">
           Cluster {{ cluster.label }}
+
           <a href="{{ path('set-cluster-off', {'id': cluster.id }) }}" class="btn btn-xs btn-dark p-0 pb-1" >
-            <span data-feather="power" style="stroke-width: 4px; with: 12; height: 12; color: {% if log.value.channels_on == 0 %}red{% else %}green{% endif %}"></span>
+            <span data-feather="power" style="stroke-width: 4px; with: 12; height: 12; color: {% if log is not defined %}grey{% else %}{% if log.value.channels_on == 0 %}red{% else %}green{% endif %}{% endif %}"></span>
           </a>
         </h5>
       </div>
       <div class="card-body">
-        {% if log is not empty %}
+        {% if log is defined %}
         <div class="modal fade" id="modal-temp-cluster_{{ cluster.id }}">
           <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
@@ -125,10 +127,11 @@
             </div><!-- /.modal-content -->
           </div><!-- /.modal-dialog -->
         </div><!-- /.modal -->
+        {% endif %}
         
         <div class="btn-group-vertical btn-block">
           <div class="btn-group">
-            <a class="btn btn-light" type="button"  href="{{ path('graph', {'id': cluster.id }) }}"><span data-feather="trending-up"></a>
+            <a class="btn btn-light {% if log is not defined %}disabled{% endif %}" type="button"  href="{{ path('graph', {'id': cluster.id }) }}"><span data-feather="trending-up"></a>
             <a href="{{ path('new-play', { 'id': cluster.id }) }}" type="button" class="btn btn-light">
               <span data-feather="play-circle"></span> 
             </a>
@@ -140,6 +143,7 @@
               {% endif %}
             </a>
           </div>
+          {% if log is defined %}
           <button class="btn btn-xs 
             {% if log.value.mean_temp < 75 %}
               btn-info
@@ -147,7 +151,8 @@
               btn-danger
             {% endif %}
             btn-info" data-toggle="modal" data-target="#modal-temp-cluster_{{ cluster.id }}">
-            <span data-feather="thermometer"></span> {{ log.value.mean_temp|round }}°C </button>
+            <span data-feather="thermometer"></span> {{ log.value.mean_temp|round }}°C 
+          </button>
           <button class="btn btn-xs 
           {% if log.value.channels_on > 0 %}
             btn-success
@@ -155,9 +160,10 @@
             btn-light
           {% endif %} 
            " data-toggle="modal" data-target="#modal-channels-cluster_{{ cluster.id }}">
-           <span data-feather="sliders"></span> {{ log.value.channels_on }} Ch.</button>
+           <span data-feather="sliders"></span> {{ log.value.channels_on }} Ch.
+         </button>
+          {% endif %}
         </div>
-        {% endif %}
       </div>
     </div>
 
@@ -167,5 +173,7 @@
 {% endblock %}
 
 {% block update %}
+  {% if log_repo.getLastLog() is not empty %}
     <span class="text-muted text-sm-left">Last update: {{ log_repo.getLastLog()[0].time|date("Y-m-d H:i") }}</span>
+    {% endif %}
 {% endblock %}

@@ -1,0 +1,75 @@
+{% extends 'base.html.twig' %}
+
+{% block panelContent %}
+
+{% for message in app.flashes('info') %}
+	<div class="alert alert-success" role="alert">
+        {{ message }}
+    </div>
+{% endfor %}
+
+<div class="row">
+	<div class="col">
+		<ul class="list-group list-group-flush">
+		{% for run in runs %}
+			<li class="list-group-item d-flex justify-content-between">
+				<span>{{ run.label }} // Cluster #{{ run.cluster.label }}</span> 
+				<div class="d-inline">
+					<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#run-detail-{{ run.id }}">
+			        	<span data-feather="help-circle"></span>
+			        </button>
+			        <button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-delete-run-{{ run.id }}">
+			        	<span data-feather="trash-2"></span>
+			        </button>
+			     
+				</div>
+			</li>
+			<div class="modal fade" id="modal-delete-run-{{ run.id }}">
+				<div class="modal-dialog modal-dialog-centered" role="document">
+					<div class="modal-content">
+						<div class="modal-footer">
+							<button type="button" class="btn btn-sm btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+								Cancel
+							</button>
+							<a class="btn btn-sm btn-outline-danger" href="{{ path('delete-run', { 'id': run.id }) }}">
+								<span data-feather="trash-2"> Confirm delete</span>
+					        </a>
+						</div>
+					</div><!-- /.modal-content -->
+				</div><!-- /.modal-dialog -->
+			</div><!-- /.modal -->
+			<div class="modal fade" id="run-detail-{{ run.id }}">
+				<div class="modal-dialog modal-dialog-centered" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h4 class="modal-title">Run #{{ run.id }}</h4>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+								<span aria-hidden="true">&times;</span>
+							</button>
+						</div>
+						<div class="modal-body">
+							<p class="text-muted my-1 border-bottom">{{ run.label }}</p>
+							<p>Start: {{ run.start|date("Y-m-d H:i:s") }}</p>
+							<p>End: {{ run.dateEnd|date("Y-m-d H:i:s") }}</p>
+							<p>Cluster: {{ run.cluster.label }}</p>
+						</div>
+						<div class="modal-footer">
+							<a class="btn btn-sm btn-outline-secondary" href="{{ path('edit-run', { 'id': run.id }) }}">
+								<span data-feather="edit"> Edit</span>
+			        		</a>
+						</div>
+					</div><!-- /.modal-content -->
+				</div><!-- /.modal-dialog -->
+			</div><!-- /.modal -->
+		{% endfor %}
+		</ul>
+	</div>
+</div>
+
+
+
+{% endblock %}
+
+{% block bottomButton %}
+
+{% endblock %}
