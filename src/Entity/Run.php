@@ -24,12 +24,12 @@ class Run
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Program", inversedBy="runs")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=true)
      */
     private $program;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="datetime", nullable=true)
      */
     private $start;
 
