@@ -181,6 +181,8 @@ class ProgramController extends AbstractController
      */
     public function newPlay(Request $request, Cluster $cluster)
     {
+        $session = new Session;
+        
         # Form to play
         $form = $this->createFormBuilder()
             ->add('recipe', EntityType::class, [
