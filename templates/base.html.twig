@@ -47,33 +47,45 @@
         {% block body %}
             <div class="container-fluid">
               <div class="row">
-                <div class="col d-none d-md-block bg-light">
+                <div class="col-md-2 d-none d-md-block bg-light">
                   <nav class="sidebar">
                     <div class="sidebar-sticky">
                       <ul class="nav flex-column">
-                        <li class="nav-item p-2 border">
+                        <li class="nav-item p-2 pl-md-4 border">
                           <a class="nav-link active" href="{{ path('home') }}">
                             <span data-feather="home"></span>
-                            <span class="d-none d-lg-block">Dashboard</span> <span class="sr-only">(current)</span>
+                            <span class="d-none d-lg-inline">Dashboard</span> <span class="sr-only">(current)</span>
                           </a>
                         </li>
-                        <li class="nav-item p-2 border">
+                        <li class="nav-item p-2 pl-md-4 border">
                           <a class="nav-link" href="#submenu1" data-toggle="collapse">
                             <span data-feather="settings"></span>
-                            Setup
+                            <span class="d-none d-lg-inline">Setup</span>
                           </a>
                           <div id="submenu1" class="collapse">
                               <div class="nav-item p-2 border" href="#">
-                                  <a class="nav-link text-right" href="{{ path('my-lightings') }}">My Lightings</a>
+                                  <a class="nav-link text-right" href="{{ path('my-lightings') }}">
+                                    <span data-feather="database"></span>
+                                    <span class="d-none d-lg-inline">My Lightings</span>
+                                  </a>
                               </div>
                               <div class="nav-item p-2 border" href="#">
-                                  <a class="nav-link text-right" href="{{ path('connected-lightings') }}">Connected lighting</a>
+                                  <a class="nav-link text-right" href="{{ path('connected-lightings') }}">
+                                    <span data-feather="activity"></span>
+                                    <span class="d-none d-lg-inline">Connected lighting</span>
+                                  </a>
                               </div>
                               <div class="nav-item p-2 border" href="#">
-                                  <a class="nav-link text-right" href="{{ path('recipes') }}">Recipes</a>
+                                  <a class="nav-link text-right" href="{{ path('recipes') }}">
+                                    <span data-feather="sliders"></span>
+                                    <span class="d-none d-lg-inline">Recipes</span>
+                                  </a>
                               </div>
                               <div class="nav-item p-2 border" href="#">
-                                  <a class="nav-link text-right" href="{{ path('program') }}">Programs</a>
+                                  <a class="nav-link text-right" href="{{ path('program') }}">
+                                    <span data-feather="cpu"></span>
+                                    <span class="d-none d-lg-inline">Programs</span>
+                                  </a>
                               </div>
                           </div>
                         </li>
@@ -81,7 +93,7 @@
                     </div>
                   </nav>
                 </div>
-                <div class="col col-md-8 ml-lg-auto ml-md-1 col-lg-9 px-4 pb-5">
+                <div class="col-md-10 pb-5">
                 <main role="main">
                   <nav id="navbar-scroll" class="navbar navbar-light bg-light fixed-bottom">
                     <ul class="nav nav-pills">
