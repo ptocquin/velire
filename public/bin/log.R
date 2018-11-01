@@ -1,18 +1,11 @@
 #!/usr/local/bin/Rscript
 
 #### Args #################################################
-args         <- commandArgs(TRUE)
 
-# juste pour tester
-if(length(args) == 0) {
-  message("Analyse en mode test...")
-
-} else {
   logfile <- "log.txt"
   uu      <- file(logfile, open = "at")
   sink(uu, type = "message")
   message(paste("Log at", Sys.time()))
-}
 
 #### Librairies ###########################################
 library("RSQLite")
