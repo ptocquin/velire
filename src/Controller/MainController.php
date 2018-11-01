@@ -576,41 +576,6 @@ class MainController extends AbstractController
         return $this->redirectToRoute('connected-lightings');
     }
 
-    /**
-     * @Route("/control/by-color", name="control-by-color")
-     */
-    public function controlByColor()
-    {
-    	$em = $this->getDoctrine()->getManager();
-
-    	$luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findInstalledLuminaire();
-    	$clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
-
-        return $this->render('control/control-by-color.html.twig', [
-        	'clusters' => $clusters,
-        ]);
-
-        return $this->redirectToRoute('control-by-color');
-    }
-
-    /**
-     * @Route("/control/by-color/{id}", name="control-by-color-id")
-     */
-    public function controlByColorId(Request $request, $id)
-    {
-    	$em = $this->getDoctrine()->getManager();
-
-    	$luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findInstalledLuminaire();
-    	$clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
-    	$current_cluster = $this->getDoctrine()->getRepository(Cluster::class)->find($id);
-
-        return $this->render('control/control-by-color.html.twig', [
-        	'clusters' => $clusters,
-        	'current_cluster' => $current_cluster,
-            'navtitle' => 'Control by Color',
-       	]);
-
-    }
 
     /**
      * @Route("/control/{id}/off", name="set-cluster-off")
@@ -631,7 +596,7 @@ class MainController extends AbstractController
 
         $output = $process->getOutput();
 
-        return $this->redirectToRoute('home');
+        return $this->redirectToRoute('update-log');
     }
 
     /**
