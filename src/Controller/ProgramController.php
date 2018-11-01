@@ -151,21 +151,19 @@ class ProgramController extends AbstractController
      */
     public function newRun(Request $request, Cluster $cluster)
     {
+        $em = $this->getDoctrine()->getManager();
+
         $run = new Run;
         $run->setCluster($cluster);
         $form = $this->createForm(RunType::class, $run);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            $em = $this->getDoctrine()->getManager();
-
-            $process = new Process('./bin/run.R');
-            $process->run();
-
-            $date = new \DateTime($process->getOutput());
-            $run->setDateEnd($date);
-
+            $data = $form->getData();
             $em->persist($run);
             $em->flush();
+
+            $process = new Process('./bin/run.R '.$data->getId());
+            $process->run();
 
             return $this->redirectToRoute('home');
         }

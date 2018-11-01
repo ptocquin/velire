@@ -1,4 +1,24 @@
-Off.R
 Warning message:
 le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
-python3 ./bin/veliregui-demo.py -p /dev/ttyUSB1 -s 1 --off
+Le chargement a nécessité le package : methods
+Warning message:
+le package ‘jsonlite’ a été compilé avec la version R 3.3.2 
+Warning message:
+In strptime(run$start, "%Y-%m-%d %H:%M:%S") :
+  unknown timezone 'default/Europe/Brussels'
+2018-11-01 15:20:0060-s 1 -c BL_460 FR_730 GR_525 HR_660 RE_625 WH_4000 YE_590 -i 1 1 1 1 1 1 1
+2018-11-01 15:21:0060-s 1 -c BL_460 FR_730 GR_525 HR_660 RE_625 WH_4000 YE_590 -i 5 5 0 5 5 0 0
+2018-11-01 15:22:0060-s 1 -c BL_460 FR_730 GR_525 HR_660 RE_625 WH_4000 YE_590 -i 0 0 5 0 0 0 5
+2018-11-01 15:23:0060-s 1 -c BL_460 FR_730 GR_525 HR_660 RE_625 WH_4000 YE_590 -i 1 1 1 1 1 1 1
+2018-11-01 15:24:0060-s 1 -c BL_460 FR_730 GR_525 HR_660 RE_625 WH_4000 YE_590 -i 5 5 0 5 5 0 0
+2018-11-01 15:25:0060-s 1 -c BL_460 FR_730 GR_525 HR_660 RE_625 WH_4000 YE_590 -i 0 0 5 0 0 0 5
+2018-11-01 15:26:0060-s 1 -c BL_460 FR_730 GR_525 HR_660 RE_625 WH_4000 YE_590 -i 1 1 1 1 1 1 1
+2018-11-01 15:27:0060-s 1 -c BL_460 FR_730 GR_525 HR_660 RE_625 WH_4000 YE_590 -i 5 5 0 5 5 0 0
+2018-11-01 15:28:0060-s 1 -c BL_460 FR_730 GR_525 HR_660 RE_625 WH_4000 YE_590 -i 0 0 5 0 0 0 5
+2018-11-01 15:29:0060-s 1 -c BL_460 FR_730 GR_525 HR_660 RE_625 WH_4000 YE_590 -i 1 1 1 1 1 1 1
+2018-11-01 15:30:0060-s 1 -c BL_460 FR_730 GR_525 HR_660 RE_625 WH_4000 YE_590 -i 5 5 0 5 5 0 0
+2018-11-01 15:31:0060-s 1 -c BL_460 FR_730 GR_525 HR_660 RE_625 WH_4000 YE_590 -i 0 0 5 0 0 0 5
+2018-11-01 15:32:0060-s 1 -c BL_460 FR_730 GR_525 HR_660 RE_625 WH_4000 YE_590 -i 0 0 5 0 0 0 5
+Warning message:
+In rsqlite_disconnect(conn@ptr) :
+  There are 1 result in use. The connection will be released when they are closed
