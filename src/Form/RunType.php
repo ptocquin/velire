@@ -25,12 +25,12 @@ class RunType extends AbstractType
             ))
             ->add('label')
             ->add('description')
-            ->add('cluster', EntityType::class, array(
-                'class' => Cluster::class,
-                'choice_label' => function($cluster) {
-                    return $cluster->getLabel()." // ".$cluster->getDescription();
-                }
-            ))
+            // ->add('cluster', EntityType::class, array(
+            //     'class' => Cluster::class,
+            //     'choice_label' => function($cluster) {
+            //         return $cluster->getLabel()." // ".$cluster->getDescription();
+            //     }
+            // ))
             ->add('program', EntityType::class, array(
                 'class' => Program::class,
                 'choice_label' => function($program) {

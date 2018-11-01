@@ -15,6 +15,11 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+
+
 use App\Entity\Pcb;
 use App\Entity\Luminaire;
 use App\Entity\Channel;
@@ -29,28 +34,44 @@ use App\Entity\Log;
 use App\Form\RecipeType;
 use App\Form\IngredientType;
 use App\Form\LuminaireType;
+use App\Form\RunType;
+
 
 class MainController extends AbstractController
 {
     /**
      * @Route("/", name="home")
      */
-    public function index()
+    public function index(Request $request)
     {
         $today = new \DateTime();
         $cluster_repo = $this->getDoctrine()->getRepository(Cluster::class);
         $log_repo = $this->getDoctrine()->getRepository(Log::class);
         $clusters = $cluster_repo->findAll();
-
-        $data = '{ "labels": ["January", "February", "March", "April", "May", "June", "July"], "datasets": [{ "label": "My First dataset", "backgroundColor": "rgb(255, 99, 132)", "borderColor": "rgb(255, 99, 132)", "data": ["0", "10", "5", "2", "20", "30", "10"] }] }';
         
         return $this->render('main/index.html.twig', [
             'controller_name' => 'MainController',
             'clusters' => $clusters,
             'cluster_repo' => $cluster_repo,
             'log_repo' => $log_repo,
-            'data' => $data,
             'navtitle' => 'Dashboard',
+        ]);
+    }
+
+    /**
+     * @Route("/cluster/{id}/graph", name="graph")
+     */
+    public function graph(Request $request, Cluster $cluster)
+    {
+        $today = new \DateTime();
+        $log_repo = $this->getDoctrine()->getRepository(Log::class);
+        $logs = $log_repo->getClusterInfo($cluster->getId(), 30);
+        
+        return $this->render('main/graph.html.twig', [
+            'controller_name' => 'MainController',
+            'logs' => $logs,
+            'cluster' => $cluster,
+            'navtitle' => 'Temperature Plot',
         ]);
     }
 

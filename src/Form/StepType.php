@@ -22,18 +22,20 @@ class StepType extends AbstractType
                     'Go To' => 'goto',
                     'Off' => 'off',
                 ),
+                'label' => false,
                 'multiple' => false,
                 'attr' => ['class' => 'select2']
             ))
             ->add('rank', TextType::class, [
+                'label' => false,
                 'attr' => [
                     'readonly' => true,
                     'class'    => 'rank', // selector is the one used on the js side
                     'autocomplete' => 'off',
                 ],
             ])
-            ->add('value')
-            ->add('recipe')
+            ->add('value', null, array('label' => false,))
+            ->add('recipe', null, array('label' => false,))
         ;
     }
 

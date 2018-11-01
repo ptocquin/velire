@@ -46,11 +46,23 @@
 					<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#recipe-detail-{{ recipe.id }}">
 			        	<span data-feather="help-circle"></span>
 			        </button>
-			        <a class="btn btn-sm btn-outline-secondary" href="{{ path('delete-recipe', { 'id': recipe.id }) }}">
+			        <a class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-delete-{{ recipe.id }}" href="{{ path('delete-recipe', { 'id': recipe.id }) }}">
 						<span data-feather="trash-2"></span>
 			        </a>
 				</div>
-			</li>
+			</li>	
+			<div class="modal fade" id="modal-delete-{{ recipe.id }}">
+    			<div class="modal-dialog modal-dialog-centered" role="document">
+    				<div class="modal-content">
+    					<div class="modal-body">
+    						<div class="btn-group btn-group-justified align-content-center">
+    						<a class="btn btn-danger" role="button" href="{{ path('delete-recipe', { 'id': recipe.id }) }}">Confirm delete</a>
+    						<button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">Cancel</button>
+    						</div>
+    					</div>
+    				</div><!-- /.modal-content -->
+    			</div><!-- /.modal-dialog -->
+    		</div><!-- /.modal -->
 			<div class="modal fade" id="recipe-detail-{{ recipe.id }}">
 				<div class="modal-dialog modal-dialog-centered" role="document">
 					<div class="modal-content">

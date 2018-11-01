@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+
+{% block title %}Hello {{ controller_name }}!{% endblock %}
+
+{% block panelContent %}
+<div class="row">
+	<div class="col col-md-12">
+		<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
+	  		<h1 class="h5">Cluster #{{ cluster.label }}</h1>
+	    </div>
+	</div>
+</div>
+
+{% set array_temp = [] %}
+{% set array_time = [] %}
+{% for l in logs %}
+{% set array_temp = array_temp|merge([l.value.mean_temp]) %}
+{% set array_time = array_time|merge([l.time|date("H:i:s")]) %}
+{% endfor %}
+{% set array = { "labels": array_time } %}
+{% set array = array|merge ({ "datasets": [{ data: array_temp }] }) %}
+<div id="dataset" data-values="{{ array|json_encode }} "></div>
+<canvas id="myChart"></canvas>
+
+{% endblock %}
+
+{% block bottomButton %}
+      <a class="btn btn-sm btn-secondary" href="{{ path('home') }}">
+      <span data-feather="x-circle"></span> Back to dashboard
+      </a>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script src="{{ asset('build/graph.js') }}"></script>
+  }
+{% endblock %}
