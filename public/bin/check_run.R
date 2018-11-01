@@ -13,15 +13,16 @@ source("./bin/config.R")
 
 ####
 message(paste("CheckRun at", Sys.time()))
-commands <- read.delim(command.file, header = FALSE, stringsAsFactors = FALSE)
+if(!file.exists(command.file)) quit(save = FALSE, status = 0)
 
+commands <- read.delim(command.file, header = FALSE, stringsAsFactors = FALSE)
 hour2check <- paste0(formatC(hour, flag=0, width = 2), ":",
                      formatC(min, flag=0, width = 2), ":00")
 
 DMXcommand <- commands[commands$V1 == day & commands$V2 == hour2check,]
+command <- paste(python.cmd, "-p", port, DMXcommand$V3)
+message(command)
 
 if(nrow(DMXcommand) == 1){
-  command <- paste(python.cmd, "-p", port, DMXcommand$V3)
-  message(command)
   system(command)
 }
