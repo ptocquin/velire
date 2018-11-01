@@ -34,8 +34,11 @@ DMXcommand <- paste(s.option, "--info")
 if(development) {
   command <- paste("./bin/get_data.sh")
 } else {
-  command <- paste("python3 ./bin/veliregui-demo.py -p", port, DMXcommand)
+  command <- paste(python.cmd, "-p", port, DMXcommand)
 }
+
+message(command)
+
 json <- system(command, intern = TRUE)
 data <- fromJSON(json)
 spots <- data$spots

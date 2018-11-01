@@ -2,7 +2,7 @@
 
 
 {% block meta %}
-<meta http-equiv="refresh" content="300">
+<meta http-equiv="refresh" content="120">
 {% endblock %}
 
 {% block panelContent %}
@@ -28,15 +28,14 @@
     <div id="dataset" data-values="{{ array|json_encode }} "></div>
 
   
-    <div class="card">
+    <div class="card text-white bg-secondary">
       <div class="card-header">
         <h5 class="card-title d-flex justify-content-between">
           Cluster {{ cluster.label }}
-
-        {% if log is not empty %}
+          <a href="{{ path('set-cluster-off', {'id': cluster.id }) }}" class="text-light">
+            <span data-feather="power"></span>
+          </a>
         </h5>
-
-        {% endif %}
       </div>
       <div class="card-body">
         {% if log is not empty %}
