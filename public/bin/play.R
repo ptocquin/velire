@@ -1,7 +1,7 @@
 #!/usr/local/bin/Rscript
 
 logfile <- "log.txt"
-uu      <- file(logfile, open = "wt")
+uu      <- file(logfile, open = "at")
 sink(uu, type = "message")
 
 #### Args #################################################
@@ -45,10 +45,10 @@ for (id in ingredients$id) {
 zz<-dbDisconnect(con)
 
 DMXcommand <- paste(s.option, c.option, i.option)
+command <- paste(python.cmd, "-p", port, DMXcommand)
+message(command)
 
 if(!development) {
-	command <- paste("python3 ./bin/veliregui-demo.py -p", port, DMXcommand)
-	message(command)
 	system(command, ignore.stderr = TRUE)
 }
 

@@ -9,7 +9,7 @@
 			<link rel="stylesheet" href="{{ asset('build/app.css') }}">
         {% endblock %}
     </head>
-    <body style="margin-top: 60px;">
+    <body style="margin-top: 56px;">
         {% block navbar %}
             <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-dark shadow">
               <a href="{{ path('home') }}" class="navbar-brand d-block d-md-none"><span data-feather="home"></span></a>
@@ -47,42 +47,42 @@
         {% block body %}
             <div class="container-fluid">
               <div class="row">
-                <div class="col-md-2 d-none d-md-block bg-light">
-                  <nav class="sidebar">
+                <div class="col-md-2 d-none d-md-block bg-dark">
+                  <nav class="sidebar navbar-dark">
                     <div class="sidebar-sticky">
                       <ul class="nav flex-column">
-                        <li class="nav-item p-2 pl-md-4 border">
-                          <a class="nav-link active" href="{{ path('home') }}">
+                        <li class="nav-item p-1">
+                          <a class="nav-link  btn btn-outline-light" href="{{ path('home') }}">
                             <span data-feather="home"></span>
                             <span class="d-none d-lg-inline">Dashboard</span> <span class="sr-only">(current)</span>
                           </a>
                         </li>
-                        <li class="nav-item p-2 pl-md-4 border">
-                          <a class="nav-link" href="#submenu1" data-toggle="collapse">
+                        <li class="nav-item p-1">
+                          <a class="nav-link  btn btn-outline-light" href="#submenu1" data-toggle="collapse">
                             <span data-feather="settings"></span>
                             <span class="d-none d-lg-inline">Setup</span>
                           </a>
                           <div id="submenu1" class="collapse">
-                              <div class="nav-item p-2 border" href="#">
-                                  <a class="nav-link text-right" href="{{ path('my-lightings') }}">
+                              <div class="nav-item p-1" href="#">
+                                  <a class="nav-link btn btn-outline-light" href="{{ path('my-lightings') }}">
                                     <span data-feather="database"></span>
                                     <span class="d-none d-lg-inline">My Lightings</span>
                                   </a>
                               </div>
-                              <div class="nav-item p-2 border" href="#">
-                                  <a class="nav-link text-right" href="{{ path('connected-lightings') }}">
+                              <div class="nav-item p-1" href="#">
+                                  <a class="nav-link btn btn-outline-light" href="{{ path('connected-lightings') }}">
                                     <span data-feather="activity"></span>
                                     <span class="d-none d-lg-inline">Connected lighting</span>
                                   </a>
                               </div>
-                              <div class="nav-item p-2 border" href="#">
-                                  <a class="nav-link text-right" href="{{ path('recipes') }}">
+                              <div class="nav-item p-1" href="#">
+                                  <a class="nav-link btn btn-outline-light" href="{{ path('recipes') }}">
                                     <span data-feather="sliders"></span>
                                     <span class="d-none d-lg-inline">Recipes</span>
                                   </a>
                               </div>
-                              <div class="nav-item p-2 border" href="#">
-                                  <a class="nav-link text-right" href="{{ path('program') }}">
+                              <div class="nav-item p-1" href="#">
+                                  <a class="nav-link btn btn-outline-light" href="{{ path('program') }}">
                                     <span data-feather="cpu"></span>
                                     <span class="d-none d-lg-inline">Programs</span>
                                   </a>
@@ -93,12 +93,12 @@
                     </div>
                   </nav>
                 </div>
-                <div class="col-md-10 pb-5">
+                <div class="col-md-10 pb-5 {% if navtitle == "Dashboard" %}bg-dark{% endif %}">
                 <main role="main">
-                  <nav id="navbar-scroll" class="navbar navbar-light bg-light fixed-bottom">
-                    <ul class="nav nav-pills">
+                  <nav id="navbar-scroll" class="navbar navbar-dark bg-dark fixed-bottom">
+                    <ul class="nav">
                       <li class="nav-item">
-                        <a class="nav-link" href="#top"><span data-feather="arrow-up-circle"></span></a>
+                        <a class="nav-link text-light" href="#top"><span data-feather="arrow-up-circle"></span></a>
                       </li>
                       <li class="navbar-text">{% block update %}{% endblock %}</li>
                       {% block scrollspy %}

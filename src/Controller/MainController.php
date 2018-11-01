@@ -611,4 +611,26 @@ class MainController extends AbstractController
        	]);
 
     }
+
+    /**
+     * @Route("/control/{id}/off", name="set-cluster-off")
+     */
+    public function setClusterOff(Request $request, Cluster $cluster)
+    {
+        
+        $session = new Session();
+
+        // Interroger le réseau de luminaires
+        $process = new Process('./bin/off.R '.$cluster->getId());
+        $process->run();
+
+        // executes after the command finishes
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        }
+
+        $output = $process->getOutput();
+
+        return $this->redirectToRoute('home');
+    }
 }
