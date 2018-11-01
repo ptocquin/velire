@@ -173,7 +173,9 @@
 {% endblock %}
 
 {% block update %}
-  {% if log_repo.getLastLog() is not empty %}
-    <span class="text-muted text-sm-left">Last update: {{ log_repo.getLastLog()[0].time|date("Y-m-d H:i") }}</span>
+  <span class="text-muted text-sm-left">Last update: 
+    {% if log_repo.getLastLog() is not empty %}
+      {{ log_repo.getLastLog()[0].time|date("Y-m-d H:i") }}
     {% endif %}
+  </span>
 {% endblock %}
