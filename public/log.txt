@@ -22,3 +22,54 @@ In strptime(run$start, "%Y-%m-%d %H:%M:%S") :
 Warning message:
 In rsqlite_disconnect(conn@ptr) :
   There are 1 result in use. The connection will be released when they are closed
+Log at 2018-11-01 17:12:51
+Warning message:
+In as.POSIXlt.POSIXct(x, tz) : unknown timezone 'default/Europe/Brussels'
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+Le chargement a nécessité le package : methods
+Warning message:
+le package ‘jsonlite’ a été compilé avec la version R 3.3.2 
+./bin/get_data.sh
+Warning message:
+Closing open result set, pending rows 
+Warning messages:
+1: Closing open result set, pending rows 
+2: Closing open result set, pending rows 
+Warning message:
+In rsqlite_disconnect(conn@ptr) :
+  There are 1 result in use. The connection will be released when they are closed
+Log at 2018-11-01 17:13:02
+Warning message:
+In as.POSIXlt.POSIXct(x, tz) : unknown timezone 'default/Europe/Brussels'
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+Le chargement a nécessité le package : methods
+Warning message:
+le package ‘jsonlite’ a été compilé avec la version R 3.3.2 
+./bin/get_data.sh
+Warning message:
+Closing open result set, pending rows 
+Warning messages:
+1: Closing open result set, pending rows 
+2: Closing open result set, pending rows 
+Warning message:
+In rsqlite_disconnect(conn@ptr) :
+  There are 1 result in use. The connection will be released when they are closed
+Log at 2018-11-01 17:50:31
+Warning message:
+In as.POSIXlt.POSIXct(x, tz) : unknown timezone 'default/Europe/Brussels'
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+Le chargement a nécessité le package : methods
+Warning message:
+le package ‘jsonlite’ a été compilé avec la version R 3.3.2 
+./bin/get_data.sh
+Warning message:
+Closing open result set, pending rows 
+Warning messages:
+1: Closing open result set, pending rows 
+2: Closing open result set, pending rows 
+Warning message:
+In rsqlite_disconnect(conn@ptr) :
+  There are 1 result in use. The connection will be released when they are closed

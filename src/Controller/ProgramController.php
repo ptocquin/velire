@@ -165,7 +165,7 @@ class ProgramController extends AbstractController
             $process = new Process('./bin/run.R '.$data->getId());
             $process->run();
 
-            return $this->redirectToRoute('home');
+            return $this->redirectToRoute('update-log');
         }
         return $this->render('control/new-run.html.twig', [
             'controller_name' => 'ProgramController',
@@ -213,7 +213,7 @@ class ProgramController extends AbstractController
                     $process->getOutput()
                 );
             }
-            // die(var_dump($data['cluster']));
+            return $this->redirectToRoute('update-log');        
         }
 
         return $this->render('control/new-play.html.twig', [

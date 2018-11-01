@@ -14,12 +14,14 @@
 
 {% set array_temp = [] %}
 {% set array_time = [] %}
+{% set array_data = [] %}
 {% for l in logs %}
+{% set array_data =  array_data|merge([{ x: l.time|date("Y-m-d H:i:s"), y: l.value.mean_temp}]) %}
 {% set array_temp = array_temp|merge([l.value.mean_temp]) %}
-{% set array_time = array_time|merge([l.time|date("H:i:s")]) %}
+{% set array_time = array_time|merge([l.time|date("Y-m-d H:i:s")]) %}
 {% endfor %}
 {% set array = { "labels": array_time } %}
-{% set array = array|merge ({ "datasets": [{ data: array_temp }] }) %}
+{% set array = array|merge ({ "datasets": [{ label: "cluster_" ~ cluster.label, data: array_temp }] }) %}
 <div id="dataset" data-values="{{ array|json_encode }} "></div>
 <canvas id="myChart"></canvas>
 
