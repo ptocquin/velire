@@ -633,4 +633,22 @@ class MainController extends AbstractController
 
         return $this->redirectToRoute('home');
     }
+
+    /**
+     * @Route("/update/log", name="update-log")
+     */
+    public function updateLog()
+    {
+        
+        // Interroger le réseau de luminaires
+        $process = new Process('./bin/log.R');
+        $process->run();
+
+        // executes after the command finishes
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        }
+
+        return $this->redirectToRoute('home');
+    }
 }
