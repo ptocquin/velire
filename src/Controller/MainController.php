@@ -438,9 +438,9 @@ class MainController extends AbstractController
                     $l->setWavelength($channel["wl"]);
                     $l->setType($channel["type"]);
                     $l->setManufacturer($channel["manuf"]);
-                    $l->addChannel($c);
                     $em->persist($l);
                     $em->flush();
+                    $c->setLed($l);
                 } else {
                     $c->setLed($led);
                 }
