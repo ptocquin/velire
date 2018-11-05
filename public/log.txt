@@ -73,3 +73,62 @@ Warning messages:
 Warning message:
 In rsqlite_disconnect(conn@ptr) :
   There are 1 result in use. The connection will be released when they are closed
+Log at 2018-11-01 21:17:21
+Warning message:
+In as.POSIXlt.POSIXct(x, tz) : unknown timezone 'default/Europe/Brussels'
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+Le chargement a nécessité le package : methods
+Warning message:
+le package ‘jsonlite’ a été compilé avec la version R 3.3.2 
+./bin/get_data.sh
+Warning message:
+Closing open result set, pending rows 
+Warning messages:
+1: Closing open result set, pending rows 
+2: Closing open result set, pending rows 
+Warning message:
+In rsqlite_disconnect(conn@ptr) :
+  There are 1 result in use. The connection will be released when they are closed
+Off.R
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+python3 ./bin/veliregui-demo.py -p /dev/ttyUSB1 -s 1 --off
+Log at 2018-11-01 21:25:15
+Warning message:
+In as.POSIXlt.POSIXct(x, tz) : unknown timezone 'default/Europe/Brussels'
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+Le chargement a nécessité le package : methods
+Warning message:
+le package ‘jsonlite’ a été compilé avec la version R 3.3.2 
+./bin/get_data.sh
+Warning message:
+Closing open result set, pending rows 
+Warning messages:
+1: Closing open result set, pending rows 
+2: Closing open result set, pending rows 
+Warning message:
+In rsqlite_disconnect(conn@ptr) :
+  There are 1 result in use. The connection will be released when they are closed
+info.R at 2018-11-05 17:01:54
+Warning message:
+In as.POSIXlt.POSIXct(x, tz) :
+  unknown timezone 'zone/tz/2018f.1.0/zoneinfo/Europe/Brussels'
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+./bin/get_data.sh
+info.R at 2018-11-05 17:02:56
+Warning message:
+In as.POSIXlt.POSIXct(x, tz) :
+  unknown timezone 'zone/tz/2018f.1.0/zoneinfo/Europe/Brussels'
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+./bin/get_data.sh
+info.R at 2018-11-05 17:04:14
+Warning message:
+In as.POSIXlt.POSIXct(x, tz) :
+  unknown timezone 'zone/tz/2018f.1.0/zoneinfo/Europe/Brussels'
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+./bin/get_data.sh

@@ -23,7 +23,7 @@
 {% set array = { "labels": array_time } %}
 {% set array = array|merge ({ "datasets": [{ label: "cluster_" ~ cluster.label, data: array_temp }] }) %}
 <div id="dataset" data-values="{{ array|json_encode }} "></div>
-<canvas id="myChart"></canvas>
+<canvas id="myChart" class="pb-5"></canvas>
 
 {% endblock %}
 
