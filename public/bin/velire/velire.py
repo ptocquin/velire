@@ -431,7 +431,7 @@ class Spot():
 		else:
 			bit1 = 0
 
-		bitmask = str(bit0)+str(bit1)+"000000"
+		bitmask = "0x"+str(bit0)+str(bit1)+"000000"
 		reply_raw = serial_dialog(self.ser, spot_cmd_dict["set_function"]["cmd"], self.address, bitmask)
 
 	def get_cpuinfo(self):
