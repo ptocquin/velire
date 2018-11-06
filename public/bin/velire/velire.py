@@ -413,6 +413,27 @@ class Spot():
 			
 		return temp_dict
 
+	def set_function(self, active, master):
+		""" Attribue le rôle au spot
+
+		"""
+
+		bit0 = 1
+		bit1 = 0
+
+		if active == True:
+			bit0 = 1
+		else:
+			bit0 = 0
+
+		if master == True:
+			bit1 = 1;
+		else:
+			bit1 = 0
+
+		bitmask = str(bit0)+str(bit1)+"000000"
+		reply_raw = serial_dialog(self.ser, spot_cmd_dict["set_function"]["cmd"], self.address)
+
 	def get_cpuinfo(self):
 		""" Renvoie la version du firmware et le numéro de série du CPU
 
@@ -750,7 +771,7 @@ class Grid():
 			print("Unable to close serial port")
 			return
 
-	def add_spot(self, address, grid_id):
+	def add_spot(self, address, grid_id, active, master):
 		""" Ajoute un spot à la liste du réseau
 
 		address: l'adresse du spot sur le réseau (type integer)
@@ -758,6 +779,7 @@ class Grid():
 		if type(address) is int:
 			s = Spot()
 			s.new(ser = self.ser, address = address, grid_id = grid_id)
+			s.set_function(active=active, master=master)
 			self.spots_list.append(s) # ajoute le spot à la liste
 			self.available_colors = sorted(list(set(self.available_colors + s.available_colors))) # ajoute les couleurs disponibles, et élimine les doublons
 			self.available_freq = sorted(list(set(self.available_freq + s.available_freq))) # ajoute les fréquences disponibles, et élimine les doublons
@@ -875,6 +897,14 @@ class Grid():
 					self.boxes[self.spots_list[i].box].remove(self.spots_list[i])
 					self.out_of_boxes.append(self.spots_list[i])
 
+	def set_master(self, spot):
+		""" Définit un spot master sur le réseau
+
+		"""
+
+
+
+
 	def get_info(self):
 		""" Revoi une liste structurée des infos des spots
 
@@ -908,7 +938,11 @@ class Grid():
 		if self.ser.name == port: # port série correctement configuré
 			if type(spots_add) == list:
 				for i in range(0, len(spots_add)):
-					self.add_spot(spots_add[i], grid_id = i)
+					if i == 0:
+						m = True
+					else:
+						m= False
+					self.add_spot(spots_add[i], grid_id = i, active=True, master=m)
 			else:
 				print("Argument 'spots_add' must be a list")
 				return
