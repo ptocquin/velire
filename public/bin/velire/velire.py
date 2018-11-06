@@ -421,17 +421,15 @@ class Spot():
 		bit0 = 1
 		bit1 = 0
 
-		if active == True:
-			bit0 = 1
-		else:
-			bit0 = 0
-
-		if master == True:
-			bit1 = 1;
-		else:
-			bit1 = 0
-
-		bitmask = "0x"+str(bit0)+str(bit1)+"000000"
+		if active == True and master == True:
+			bitmask == "0x00000003"
+		if active == False and master == False:
+			bitmask == "0x00000000"
+		if active == True and master == False:
+			bitmask == "0x00000001"
+		if active == False and master == True:
+			bitmask == "0x00000002"
+	
 		reply_raw = serial_dialog(self.ser, spot_cmd_dict["set_function"]["cmd"], self.address, bitmask)
 
 	def get_cpuinfo(self):
