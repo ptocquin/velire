@@ -777,7 +777,7 @@ class Grid():
 		if type(address) is int:
 			s = Spot()
 			s.new(ser = self.ser, address = address, grid_id = grid_id)
-			s.set_function(active=active, master=master)
+			# s.set_function(active=active, master=master)
 			self.spots_list.append(s) # ajoute le spot à la liste
 			self.available_colors = sorted(list(set(self.available_colors + s.available_colors))) # ajoute les couleurs disponibles, et élimine les doublons
 			self.available_freq = sorted(list(set(self.available_freq + s.available_freq))) # ajoute les fréquences disponibles, et élimine les doublons
