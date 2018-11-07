@@ -30,7 +30,7 @@ class LogRepository extends ServiceEntityRepository
             ->andWhere('l.type = :type')
             ->setParameter('cluster', $cluster)
             ->setParameter('type', 'cluster_info')
-            ->orderBy('l.time', 'ASC')
+            ->orderBy('l.time', 'DESC')
             ->setMaxResults($n)
             ->getQuery()
             ->getResult()
