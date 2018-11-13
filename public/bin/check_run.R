@@ -5,9 +5,6 @@ logfile <- "log.txt"
 uu      <- file(logfile, open = "at")
 sink(uu, type = "message")
 
-min   <- as.numeric(format(Sys.time(), "%M"))
-hour  <- as.numeric(format(Sys.time(), "%H"))
-day   <- format(Sys.time(), "%Y-%m-%d")
 time  <- format(Sys.time(), "%Y-%m-%d %H:%M:00")
 
 source("./bin/config.R")
@@ -34,14 +31,31 @@ if(length(cmd.files <- list.files("commands@", path = "./bin", full.names = TRUE
 
 for (cmd.file in cmd.files) {
   commands <- read.delim(cmd.file, header = FALSE, stringsAsFactors = FALSE)
-  hour2check <- paste0(formatC(hour, flag=0, width = 2), ":",
-                       formatC(min, flag=0, width = 2), ":00")
+  commands$datetime <- paste(commands$V1, commands$V2)
+  commands <- commands[order(commands$datetime),]
   
-  DMXcommand <- commands[commands$V1 == day & commands$V2 == hour2check,]
+  DMXcommand <- commands[commands$datetime == time,]
   command <- paste(python.cmd, "-p", port, DMXcommand$V3)
-  message(command)
   
   if(nrow(DMXcommand) == 1){
+    message("On lance la commande ", command)
     system(command)
+    commands[commands$datetime == time,]$V4 <- 1
+    write.table(commands, file = cmd.file, sep = "\t", row.names = FALSE, col.names = FALSE)
+  } else {
+    # On vérifie si la dernière commande a bien été exécutée, sinon
+    # on la relance
+    
+    last.cmd <- tail(commands[commands$datetime < time,], 1)
+    if(last.cmd$V4 == 0){
+      # Commande non executée
+      command <- paste(python.cmd, "-p", port, last.cmd$V3)
+      message("On relance la commande non executée: ", command)
+      system(command)
+      commands[last.cmd$datetime,]$V4 <- 1
+      write.table(commands, file = cmd.file, sep = "\t", row.names = FALSE, col.names = FALSE)
+    } else {
+      
+    }
   }
 }

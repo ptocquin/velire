@@ -3624,3 +3624,14 @@ Closing open result set, pending rows
 Warning message:
 In rsqlite_disconnect(conn@ptr) :
   There are 1 result in use. The connection will be released when they are closed
+info.R at 2018-11-09 15:14:01
+./bin/get_data.sh
+Warning message:
+package ‘jsonlite’ was built under R version 3.3.2 
+Error in order(V1, V2) : object 'V1' not found
+Error in order(V1, V2) : object 'V1' not found
+Error in is.finite(x) : default method not implemented for type 'builtin'
+Error in is.finite(x) : default method not implemented for type 'builtin'
+Error in is.finite(x) : default method not implemented for type 'builtin'
+Error: object 'hour2check' not found
+Error in is.finite(x) : default method not implemented for type 'builtin'

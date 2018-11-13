@@ -15,6 +15,7 @@ $(document).ready(function () {
     // Configuration options go here
     // options: {}
     options: {
+        maintainAspectRatio: false,
         scales: {
             xAxes: [{
               type: 'time',
