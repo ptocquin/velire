@@ -23,9 +23,14 @@ library("RSQLite")
 
 #### Parameters
 source("./bin/config.R")
+output <- paste0(command.file, cluster_id)
+
 
 #### Connexion à la base de données
 con <- dbConnect(SQLite(), dbname = db)
+
+day.start  <- format(Sys.time(), "%Y-%m-%d")
+hour.start  <- format(Sys.time(), "%H:%M:00")
 
 cluster   <- dbGetQuery(con, paste0("SELECT * FROM cluster WHERE id='", cluster_id, "'"))
 luminaires <-  dbGetQuery(con, paste0("SELECT * FROM luminaire WHERE cluster_id='", cluster_id, "'"))
@@ -47,6 +52,9 @@ zz<-dbDisconnect(con)
 DMXcommand <- paste(s.option, c.option, i.option)
 command <- paste(python.cmd, "-p", port, DMXcommand)
 message(command)
+
+status <- 0 # status d'une commande non executée // 1=executée
+cat(paste(day.start, hour.start, command, status, sep = "\t"), file = output, append = T, sep = "\n")
 
 if(!development) {
 	system(command, ignore.stderr = TRUE)

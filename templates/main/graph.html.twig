@@ -23,7 +23,9 @@
 {% set array = { "labels": array_time } %}
 {% set array = array|merge ({ "datasets": [{ label: "cluster_" ~ cluster.label, data: array_temp }] }) %}
 <div id="dataset" data-values="{{ array|json_encode }} "></div>
+<div class="chart-container" style="position: relative; height:60vh; width:80vw">
 <canvas id="myChart" class="pb-5"></canvas>
+</div>
 
 {% endblock %}
 
@@ -36,5 +38,4 @@
 {% block javascripts %}
   {{ parent() }}
   <script src="{{ asset('build/graph.js') }}"></script>
-  }
 {% endblock %}
