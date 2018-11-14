@@ -231,7 +231,7 @@ class ProgramController extends AbstractController
         $em = $this->getDoctrine()->getManager();
 
 
-        $process = new Process('./bin/delete_run.sh '.$run->getId());
+        $process = new Process('./bin/delete_run.sh '.$run->getCluster()->getId());
         $process->run();
 
         $em->remove($run);
