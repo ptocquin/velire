@@ -1,3 +1,7 @@
+# 14/11/2018 v0.997
+
+- minor fix in delete_run.sh
+
 # 13/11/2018 v0.996
 
 - Improvement of check_run > managed missed checks
