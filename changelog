@@ -1,3 +1,7 @@
+# 22/11/2018 v0.998
+
+- Added prolonged timeout for processes 
+
 # 14/11/2018 v0.997
 
 - minor fix in delete_run.sh
