@@ -263,6 +263,7 @@ class MainController extends AbstractController
 
 		// Interroger le réseau de luminaires
     	$process = new Process('./bin/info.R');
+        $process->setTimeout(3600);
 		$process->run();
 
 		// executes after the command finishes
@@ -366,6 +367,7 @@ class MainController extends AbstractController
 
         // Interroger le réseau de luminaires
         $process = new Process('./bin/info.R');
+        $process->setTimeout(3600);
         $process->run();
 
         // executes after the command finishes
@@ -472,6 +474,7 @@ class MainController extends AbstractController
 
         // Interroger le réseau de luminaires
         $process = new Process('./bin/info.R');
+        $process->setTimeout(3600);
         $process->run();
 
         // executes after the command finishes
@@ -587,6 +590,7 @@ class MainController extends AbstractController
 
         // Interroger le réseau de luminaires
         $process = new Process('./bin/off.R '.$cluster->getId());
+        $process->setTimeout(3600);
         $process->run();
 
         // executes after the command finishes
@@ -607,6 +611,7 @@ class MainController extends AbstractController
         
         // Interroger le réseau de luminaires
         $process = new Process('./bin/log.R');
+        $process->setTimeout(3600);
         $process->run();
 
         // executes after the command finishes
