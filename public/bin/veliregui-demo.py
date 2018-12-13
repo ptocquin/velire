@@ -33,19 +33,16 @@ parser.add_argument('-i', type=int, nargs='+', dest='intensity', required=False,
 args = vars(parser.parse_args())
 #print(args)
 
-# Création du réseaux de spots
-g = g = velire.Grid()
+# Création du réseau de spots
+g = velire.Grid()
 g.new(spots_add=args["spots"], port=args["port"])
-print(g.spots_list)
-print(g.get_info())
-#g.close()
-#exit()
-#g.set_freq(50) # Hz
+g.set_freq(50) # Hz
 g.open()
 
 # Informations
 if args["info"] == True:
-	print(json.dumps(g.get_info()))
+	pprint.pprint(g.get_info())
+	#print(json.dumps(g.get_info()))
 
 # Off
 if args["off"] == True:
@@ -59,5 +56,4 @@ if args["color"] != None and args["intensity"] != None:
 
 # Sortie
 g.close()
-sleep(1)
 exit()

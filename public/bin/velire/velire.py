@@ -114,11 +114,36 @@ Note: Tous les SPOT's du réseau doivent être programmé avec la même valeur.
 {"cmd": "GE",
 "doc": None,
 "last_update" : "2018-10-04"
+},
+
+# SM
+"set_master":
+{"cmd": "SM",
+"doc": None,
+"last_update" : "2018-11-28"
+},
+
+# SP
+"set_state":
+{"cmd": "SP",
+"doc": None,
+"last_update" : "2018-11-28"
+},
+# SV
+"save_conf":
+{"cmd": "SV",
+"doc": None,
+"last_update" : "2018-11-28"
 }
 }
 
 # ----------------------------------------------------------------------------
 # FONCTIONS
+verbosity = 10
+def verbose(msg, level):
+	global verbosity
+	if level <= verbosity:
+		print(msg)
 
 def serial_dialog(ser, cmd, add, arg="", checksum=True, time_for_reply=15):
 	""" Envoie une commande sur ser et renvoi la réponse
@@ -130,7 +155,7 @@ def serial_dialog(ser, cmd, add, arg="", checksum=True, time_for_reply=15):
 	checksum: vérifie la communication (True/False)
 	time_for_reply: temps d'attente max. pour la réponse (s). Defaut: 15s.
 	"""
-
+	verbose("CALLFCT: serial_dialog", 10)
 	def compute_checksum(string):
 		""" Calcul la somme de contôle
 
@@ -154,7 +179,7 @@ def serial_dialog(ser, cmd, add, arg="", checksum=True, time_for_reply=15):
 			ser.open()
 		except:
 			reply_dict['log'] = "Unable to open serial port"
-			print(reply_dict['log'])
+			verbose(reply_dict['log'], 1)
 			return reply_dict
 
 	# Préparation de la commande balisée
@@ -164,30 +189,33 @@ def serial_dialog(ser, cmd, add, arg="", checksum=True, time_for_reply=15):
 	reply_dict['cmd'] = cmdbal
 
 	# Envoie de la commande
-	#print(cmdbal) # Pour le deboggage
-	reply = ""
-	starttime = datetime.datetime.now()
+	verbose("Sending to serial: "+cmdbal, 10) # Pour le deboggage
 	ser.write(cmdbal.encode()) # encodage ascii nécessaire
 
 	# Écoute de la réponse
+	reply = ""
 	Loop = True
 	x = None
-	while Loop == True:# and (datetime.datetime.now() - starttime).seconds < time_for_reply:
+	while Loop == True:
 		for x in ser.read().decode():
 			if x == "\r":
 				Loop = False
 				break
 			else:
-				if x != "\n": # semble arriver quand on ne ferme pas le port entre deux coomunications
+				if x != "\n": # semble arriver quand on ne ferme pas le port entre deux comunications
 					reply=reply+str(x)
 		if x == None: # le port série n'a rien répondu
 			Loop = False
+	ser.flushInput() # flush, utile si timeout dépassé
+	ser.flushOutput()
+
 	# Sauvegarde de la réponse brute
 	reply_dict['raw'] = reply
+	verbose("Received from serial: "+reply, 10)
 
 	# Vérification de la réponse
 	if reply == "":
-		print("ERROR: reply is empty")
+		verbose(msg="ERROR: reply is empty", level=9)
 		reply_dict['log'] = "reply was empty"
 		return reply_dict
 
@@ -277,28 +305,28 @@ class Channel():
 		# Conversion de 'intensity' en fonction de l'unité
 		self.ch_dict['last_request'] = {'intensity': intensity, 'unit': unit, 'pwm_start': start, 'pwm_stop': stop}
 		if self.ch_dict['max'] == None:
-			#print("Empty channel")
+			#verbose("Empty channel")
 			return None
 		if unit == "%":
 			if (float(intensity) < 0) or (float(intensity) > 100):
-				print("ERROR: intensity out of range (0-100%)")
+				verbose("ERROR: intensity out of range (0-100%)", 3)
 				return None
 			intensity = int(intensity*2)
 			if intensity > self.ch_dict['max']:
-				print("ERROR: intensity greather than current max")
+				verbose("ERROR: intensity greather than current max", 3)
 				return None
 		else:
-			print("ERROR: Undefined unit")
+			verbose("ERROR: Undefined unit", 3)
 			return None
 
 		# Vérification du timing d'allumage
 		if (float(start) < 0 or float(start) > 1) or (float(stop) < 0 or float(stop) > 1):
-			print("ERROR: time out of range (0-1)")
+			verbose("ERROR: time out of range (0-1)", 3)
 			return None
 		start = int(start * 200)
 		stop = int(stop *200)
 		if start > stop:
-			print("ERROR: start define after stop")
+			verbose("ERROR: start define after stop", 3)
 			return None
 
 		# Envoi de la commande
@@ -336,6 +364,7 @@ class Channel():
 		self.ch_dict['pwm_stop'] = config['pwm_stop']
 		self.ch_dict['last_request'] = None
 
+
 class Spot():
 	""" Définit un spot sur le réseau via son numéro de série
 
@@ -361,6 +390,7 @@ class Spot():
 		self.symmetry = None
 		# Recherche des fréquences (en Hz) disponibles (selon code source du driver, com. Pierre Jenard 17/09/18 10:41)
 		self.available_freq = []
+		'''
 		for i in range(1, 100001):
 			periods = [9600,6000,4800,3200]
 			for p in periods:
@@ -369,6 +399,7 @@ class Spot():
 				if timerF <= 48000000 and int(psc*timerF) == 48000000:
 					self.available_freq.append(i/10)
 		self.available_freq = sorted(list(set(self.available_freq)))
+		'''
 		self.frequency = None
 		self.box = None
 		self.errors = {}
@@ -383,11 +414,11 @@ class Spot():
 		try:
 			int(address)
 		except:
-			print("Spot address must be an integer (1-1000000)")
+			verbose("Spot address must be an integer (1-1000000)", 8)
 			return
 		
 		if int(address) < 1 | int(address) > 1000000:
-			print("Spot address must be comprised between 1 and 1000000")
+			verbose("Spot address must be comprised between 1 and 1000000", 8)
 			return
 
 		self.address = str(int(address)) # converti en str pour usage futur
@@ -412,25 +443,6 @@ class Spot():
 			temp_dict["led_pcb_1"] = float(temp[2])
 			
 		return temp_dict
-
-	def set_function(self, active, master):
-		""" Attribue le rôle au spot
-
-		"""
-
-		bit0 = 1
-		bit1 = 0
-
-		if active == True and master == True:
-			bitmask == "0x00000003"
-		if active == False and master == False:
-			bitmask == "0x00000000"
-		if active == True and master == False:
-			bitmask == "0x00000001"
-		if active == False and master == True:
-			bitmask == "0x00000002"
-	
-		reply_raw = serial_dialog(self.ser, spot_cmd_dict["set_function"]["cmd"], self.address, bitmask)
 
 	def get_cpuinfo(self):
 		""" Renvoie la version du firmware et le numéro de série du CPU
@@ -577,7 +589,7 @@ class Spot():
 		"""
 		self.errors["set_freq"] = True
 		if freq not in self.available_freq:
-			print("Frequency not available")
+			verbose("Frequency not available", 8)
 			return
 		reply = serial_dialog(self.ser, spot_cmd_dict["set_frequence"]["cmd"], self.address, freq*10) # itération par 1/10è de Hz (voir doc)
 		self.frequency = self.get_freq()
@@ -591,6 +603,28 @@ class Spot():
 		"""
 		#self.channels[int(conf["channel"])].pass_serial(self.ser)
 		reply = self.channels[int(conf["channel"])].set_config(intensity=conf["intensity"], unit=conf["unit"], start=conf["start"], stop=conf["stop"])
+		return reply
+
+	def set_ms(self, master, state=0):
+		""" Définit le rôle du spot: maître ou esclave
+
+		"""
+		if master == True:
+			reply1 = serial_dialog(self.ser, spot_cmd_dict["set_master"]["cmd"], self.address, 1) # maître
+		else:
+			reply1 = serial_dialog(self.ser, spot_cmd_dict["set_master"]["cmd"], self.address, 0) #esclave
+
+		reply2 = serial_dialog(self.ser, spot_cmd_dict["set_state"]["cmd"], self.address, state) # état du driver
+		reply3 = serial_dialog(self.ser, spot_cmd_dict["save_conf"]["cmd"], self.address) # enregistre dans la mémoire du driver
+		
+		return [reply1, reply2, reply3]
+	
+	def set_state(self, state):
+		""" Défini l'état des drivers
+
+		"""
+		reply = serial_dialog(self.ser, spot_cmd_dict["set_state"]["cmd"], self.address, state)
+		return reply
 
 	def shutdown(self):
 		""" Eteind tous les canaux
@@ -605,14 +639,17 @@ class Spot():
 		""" Allume tout les canaux qui ont la même couleur
 
 		"""
-
 		if conf["colortype"] not in self.channels_color.keys():
-			print("Color '"+conf["colortype"]+"' not available")
-			return None
+			verbose("Color '"+conf["colortype"]+"' not available", 8)
+			return -1
 
+		error = 0
 		for i in self.channels_color[conf["colortype"]]:
 			conf["channel"] = i
-			self.set_channel(conf)
+			reply = self.set_channel(conf)
+			if reply != 0:
+				error += 1
+		return error
 
 	def get_info(self):
 		""" Renvoi une liste détaillé du statut du spot
@@ -630,7 +667,7 @@ class Spot():
 		for c in self.channels:
 			ledinfos = c.get_ledinfo("all")
 			infos["channels"][ledinfos['id']] = ledinfos
-			infos["channels"][ledinfos['id']]['driver_status'] = infos['status']['drivers']['details'][ledinfos['id']]
+			#infos["channels"][ledinfos['id']]['driver_status'] = infos['status']['drivers']['details'][ledinfos['id']]
 		infos["library_version"] = release
 		infos["available_colors"] = self.available_colors
 		infos["available_frequencies"] = self.available_freq
@@ -645,6 +682,10 @@ class Spot():
 		"""
 		self.box = box
 
+	def get_function(self):
+		reply = serial_dialog(self.ser, spot_cmd_dict["get_function"]["cmd"], self.address)
+		return reply
+
 	def new(self, address, ser, grid_id=None):
 		""" Crée un objet à partir des fonctions de base
 
@@ -653,7 +694,7 @@ class Spot():
 		# Adresse sur le réseau
 		address_reply = self.set_address(address)
 		if str(address_reply) != str(address):
-			print("Spot not found at address "+str(address))
+			verbose("Spot not found at address "+str(address), 8)
 			return None
 
 		# Port série
@@ -662,12 +703,25 @@ class Spot():
 		# id sur le réseau
 		self.grid_id = grid_id
 
-		# Chargement
+	def activate(self):
 		self.cpu = self.get_cpuinfo	()
 		self.frequency = self.get_freq() # Fréquence de l'horloge
 		for k,v in self.get_pcbledinfo().items():
 			self.pcb[str(k)] = v['pcb']
 		self.load_channels() # Charge les canaux
+
+	def activate2(self, config, avcol):
+		self.available_colors = avcol
+		self.channels = []
+		for k,v in config.items():
+			c = Channel()
+			c.ser = self.ser
+			c.ch_dict = v
+			if v['color'] not in self.channels_color.keys():
+				self.channels_color[v['color']] = [v['id']]
+			else:
+				self.channels_color[v['color']].append(v['id'])
+			self.channels.append(c)
 
 class Grid():
 	""" Définit le réseau de spots, caractérisé par un port série
@@ -686,7 +740,7 @@ class Grid():
 		self.boxes = []
 		self.out_of_boxes=[]
 
-	def set_serial(self, port, baudrate=115200):
+	def set_serial(self, port, baudrate, timeout):
 		""" Déclare les paramètres du port série
 
 		port: par exemple /dev/ttyUSB0
@@ -697,28 +751,28 @@ class Grid():
 		try:
 			f = open(port, "r")
 		except FileNotFoundError:
-			print("Port '"+port+"' not found")
+			verbose("Port '"+port+"' not found", 8)
 			return
 
 		# Vérifie le baudrate
 		try:
 			int(baudrate)
 		except ValueError:
-			print("Baudrate must be an integer")
+			verbose("Baudrate must be an integer", 8)
 			return
 
 		# Tente de configurer le port série + sauvegarde 
 		try:
-			self.ser = serial.Serial(port, int(baudrate))
+			self.ser = serial.Serial(port, int(baudrate), timeout=float(timeout))
 		except:
-			print("Unable to set serial port on '"+port+"'")
+			verbose("Unable to set serial port on '"+port+"'", 8)
 			return
 
 		# Fermeture du port
 		try:
 			self.ser.close()
 		except:
-			print("Unable to close port after initialization")
+			verbose("Unable to close port after initialization", 8)
 			return
 
 		return self.ser
@@ -736,7 +790,7 @@ class Grid():
 
 		# Vérifie que le port a été défini
 		if self.ser == None:
-			print("Serial port not define. Use set_serial first.")
+			verbose("Serial port not define. Use set_serial first.", 8)
 			return False
 
 		# Ouverture du port
@@ -744,7 +798,7 @@ class Grid():
 			try:
 				self.ser.open()
 			except:
-				print("Unable to open serial port")
+				verbose("Unable to open serial port", 8)
 				return False
 		return self.ser.isOpen()
 
@@ -755,21 +809,34 @@ class Grid():
 
 		# Vérifie que le port a été défini
 		if self.ser == None:
-			print("Serial port not define. Use set_serial first.")
+			verbose("Serial port not define. Use set_serial first.", 8)
 			return
 
 		# Configuration le port
 		if not self.ser.isOpen():
-			print("Serial port already closed")
+			verbose("Serial port already closed", 8)
 			return
 
 		try:
 			self.ser.close()
 		except:
-			print("Unable to close serial port")
+			verbose("Unable to close serial port", 8)
 			return
 
-	def add_spot(self, address, grid_id, active, master):
+	def find_spot(self):
+		tm_save = self.ser.timeout
+		self.ser.timeout = 0.1
+		result = {"found":[], "not_found":[]}
+		for s in self.spots_list:
+			reply = s.get_function()
+			if reply["error"] == False:
+				result['found'].append(int(s.address))
+			else:
+				result['not_found'].append(int(s.address))
+		self.ser.timeout = tm_save
+		return result
+
+	def add_spot(self, address, grid_id):
 		""" Ajoute un spot à la liste du réseau
 
 		address: l'adresse du spot sur le réseau (type integer)
@@ -777,12 +844,13 @@ class Grid():
 		if type(address) is int:
 			s = Spot()
 			s.new(ser = self.ser, address = address, grid_id = grid_id)
-			# s.set_function(active=active, master=master)
 			self.spots_list.append(s) # ajoute le spot à la liste
+			'''
 			self.available_colors = sorted(list(set(self.available_colors + s.available_colors))) # ajoute les couleurs disponibles, et élimine les doublons
 			self.available_freq = sorted(list(set(self.available_freq + s.available_freq))) # ajoute les fréquences disponibles, et élimine les doublons
+			'''
 		else:
-			print("Invalid spot address '"+str(address)+"'")
+			verbose("Invalid spot address '"+str(address)+"'", 8)
 
 	def get_spot(self, value, target="id"):
 		""" retourne un objet spot pour le controler indépendament
@@ -819,9 +887,23 @@ class Grid():
 			spots = self.spots_list
 		else:
 			spots = self.boxes[box]
+		error = 0
 		for s in spots:
 			if conf["colortype"] in s.available_colors:
-				s.set_bycolor(conf)
+				reply = s.set_bycolor(conf)
+				if reply > 0:
+					error += 1
+		return error
+
+	def set_state(self, state, box=None):
+		if box == None: # tout le réseau
+			spots = self.spots_list
+		else:
+			spots = self.boxes[box]
+		error = 0
+		for s in spots:
+			s.set_state(state)
+		return error
 
 	def shutdown(self, box = None):
 		""" Mets tous les spots en shutdown
@@ -836,7 +918,7 @@ class Grid():
 			for s in self.boxes[box]:
 				s.shutdown()
 		else:
-			print("Undefined box '"+str(box)+"'")	
+			verbose("Undefined box '"+str(box)+"'", 8)	
 
 	def new_boxes(self, n):
 		""" Crèe n groupe
@@ -844,10 +926,10 @@ class Grid():
 		n: nombre de groupe (max = nombre de spot sur la grille)
 		"""
 		if type(n) is not int:
-			print("'n' must be an integer")
+			verbose("'n' must be an integer", 8)
 			return
 		if n > len(self.spots_list):
-			print("Number of boxes greather than number of available spots")
+			verbose("Number of boxes greather than number of available spots", 8)
 			return
 		self.boxes = {}
 		self.out_of_boxes=[]
@@ -862,11 +944,11 @@ class Grid():
 
 		"""
 		if box not in range(0, len(self.boxes)):
-			print("Undefine box '"+str(box)+"'")
+			verbose("Undefine box '"+str(box)+"'", 8)
 			return
 		for i in spots:
 			if i not in range(0, len(self.spots_list)):
-				print("Undefine spot '"+str(i)+"'")
+				verbose("Undefine spot '"+str(i)+"'", 8)
 				continue
 			if self.spots_list[i] not in self.boxes[box]:
 				# Supprime de l'ancien groupe
@@ -883,25 +965,17 @@ class Grid():
 
 		"""
 		if box not in range(0, len(self.boxes)):
-			print("Undefine box '"+str(box)+"'")
+			verbose("Undefine box '"+str(box)+"'", 8)
 			return
 		for i in spots:
 			if i not in range(0, len(self.spots_list)):
-				print("Undefine spot '"+str(i)+"'")
+				verbose("Undefine spot '"+str(i)+"'", 8)
 				continue
 			if self.spots_list[i] in self.boxes[box]:
 				# Supprime de l'ancien groupe
 				if self.spots_list[i].box != None:
 					self.boxes[self.spots_list[i].box].remove(self.spots_list[i])
 					self.out_of_boxes.append(self.spots_list[i])
-
-	def set_master(self, spot):
-		""" Définit un spot master sur le réseau
-
-		"""
-
-
-
 
 	def get_info(self):
 		""" Revoi une liste structurée des infos des spots
@@ -917,16 +991,59 @@ class Grid():
 		for i in range(0, len(self.boxes)):
 			reply["boxes"][i] = []
 			for j in range(0, len(self.boxes[i])):
-				print(self.boxes[i][j].address)
+				verbose(self.boxes[i][j].address, 8)
 				reply["boxes"][i].append(self.boxes[i][j].address)
 		return(reply)
 
-	def new(self, spots_add, port, baudrate=115200):
+	def set_from_file(self, file, spots_add, port, baudrate=115200, timeout=10):
+		""" Crèe un nouveau réseau à partir d'un fichier de configuration.
+
+		Contrairement à .new, ne charge pas la configuration depuis la mémoire des spots, mais depuis un fichier.
+		Valide la configuration via les numéros de série (driver+pcb)
+		"""
+
+		verbose(file, 8)
+		self.ser = self.set_serial(port=port, baudrate=baudrate, timeout=timeout)
+		if self.ser == None:
+			return
+
+		spots_add = list(set(spots_add)) # adresse unique
+		self.ser.open()
+
+		# Ajoute les spots
+		if self.ser.name == port: # port série correctement configuré
+			for i in range(0, len(spots_add)):
+				if type(address) is int:
+					s = Spot()
+					
+					s.new(ser = self.ser, address = address, grid_id = grid_id)
+					
+					self.spots_list.append(s) # ajoute le spot à la liste
+					self.available_colors = sorted(list(set(self.available_colors + s.available_colors))) # ajoute les couleurs disponibles, et élimine les doublons
+					self.available_freq = sorted(list(set(self.available_freq + s.available_freq))) # ajoute les fréquences disponibles, et élimine les doublons
+				else:
+					verbose("Invalid spot address '"+str(address)+"'", 8)
+
+	def activate(self):
+		for s in self.spots_list:
+			s.activate()
+
+	def activate2(self, config):
+		for s in self.spots_list:
+			verbose(s.address, 8)
+			for k,v in config["spots"].items():
+				if int(v["address"]) == int(s.address):
+					cdict = config["spots"][k]["channels"]
+					s.activate2(cdict, avcol = config["spots"][k]["available_colors"] )
+		self.available_colors = config["spots"]["0"]["available_colors"]
+
+
+	def new(self, spots_add, port, baudrate=115200, timeout=2):
 		""" Crèe un nouveau réseau
 
 		"""
 		# Port Série
-		self.ser = self.set_serial(port=port, baudrate=baudrate)
+		self.ser = self.set_serial(port=port, baudrate=baudrate, timeout=timeout)
 		if self.ser == None:
 			return
 
@@ -934,18 +1051,10 @@ class Grid():
 		spots_add = list(set(spots_add)) # adresse unique
 		self.ser.open()
 		if self.ser.name == port: # port série correctement configuré
-			if type(spots_add) == list:
-				for i in range(0, len(spots_add)):
-					if i == 0:
-						m = True
-					else:
-						m= False
-					self.add_spot(spots_add[i], grid_id = i, active=True, master=m)
-			else:
-				print("Argument 'spots_add' must be a list")
-				return
+			for i in range(0, len(spots_add)):
+				self.add_spot(spots_add[i], grid_id = i)
 		else:
-			print("Serial port '"+port+' is wrong')
+			verbose("Serial port '"+port+"' is wrong", 8)
 		self.ser.close()
 
 

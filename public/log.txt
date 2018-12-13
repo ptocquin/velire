@@ -3635,3 +3635,129 @@ Error in is.finite(x) : default method not implemented for type 'builtin'
 Error in is.finite(x) : default method not implemented for type 'builtin'
 Error: object 'hour2check' not found
 Error in is.finite(x) : default method not implemented for type 'builtin'
+getConnected.R at 2018-12-12 15:55:58
+Warning message:
+In as.POSIXlt.POSIXct(x, tz) :
+  unknown timezone 'zone/tz/2018g.1.0/zoneinfo/Europe/Brussels'
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+./bin/getConnected_dev.sh
+getConnected.R at 2018-12-12 16:46:20
+Warning message:
+In as.POSIXlt.POSIXct(x, tz) :
+  unknown timezone 'zone/tz/2018g.1.0/zoneinfo/Europe/Brussels'
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+./bin/getConnected_dev.sh
+getConnected.R at 2018-12-12 17:05:28
+Warning message:
+In as.POSIXlt.POSIXct(x, tz) :
+  unknown timezone 'zone/tz/2018g.1.0/zoneinfo/Europe/Brussels'
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+./bin/getConnected_dev.sh
+getConnected.R at 2018-12-12 17:06:33
+Warning message:
+In as.POSIXlt.POSIXct(x, tz) :
+  unknown timezone 'zone/tz/2018g.1.0/zoneinfo/Europe/Brussels'
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+./bin/getConnected_dev.sh
+getConnected.R at 2018-12-12 17:06:34
+Warning message:
+In as.POSIXlt.POSIXct(x, tz) :
+  unknown timezone 'zone/tz/2018g.1.0/zoneinfo/Europe/Brussels'
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+./bin/getConnected_dev.sh
+getConnected.R at 2018-12-12 17:08:08
+Warning message:
+In as.POSIXlt.POSIXct(x, tz) :
+  unknown timezone 'zone/tz/2018g.1.0/zoneinfo/Europe/Brussels'
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+./bin/getConnected_dev.sh
+getConnected.R at 2018-12-12 17:09:30
+Warning message:
+In as.POSIXlt.POSIXct(x, tz) :
+  unknown timezone 'zone/tz/2018g.1.0/zoneinfo/Europe/Brussels'
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+./bin/getConnected_dev.sh
+getConnected.R at 2018-12-12 17:10:55
+Warning message:
+In as.POSIXlt.POSIXct(x, tz) :
+  unknown timezone 'zone/tz/2018g.1.0/zoneinfo/Europe/Brussels'
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+./bin/getConnected_dev.sh
+getConnected.R at 2018-12-12 17:12:55
+Warning message:
+In as.POSIXlt.POSIXct(x, tz) :
+  unknown timezone 'zone/tz/2018g.1.0/zoneinfo/Europe/Brussels'
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+./bin/getConnected_dev.sh
+getConnected.R at 2018-12-13 14:19:58
+Warning message:
+In as.POSIXlt.POSIXct(x, tz) :
+  unknown timezone 'zone/tz/2018g.1.0/zoneinfo/Europe/Brussels'
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+./bin/getConnected_dev.sh
+getConnected.R at 2018-12-13 15:27:41
+Warning message:
+In as.POSIXlt.POSIXct(x, tz) :
+  unknown timezone 'zone/tz/2018g.1.0/zoneinfo/Europe/Brussels'
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+./bin/getConnected_dev.sh
+getConnected.R at 2018-12-13 15:30:13
+Warning message:
+In as.POSIXlt.POSIXct(x, tz) :
+  unknown timezone 'zone/tz/2018g.1.0/zoneinfo/Europe/Brussels'
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+./bin/getConnected_dev.sh
+getConnected.R at 2018-12-13 15:35:44
+Warning message:
+In as.POSIXlt.POSIXct(x, tz) :
+  unknown timezone 'zone/tz/2018g.1.0/zoneinfo/Europe/Brussels'
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+./bin/getConnected_dev.sh
+getConnected.R at 2018-12-13 15:35:45
+Warning message:
+In as.POSIXlt.POSIXct(x, tz) :
+  unknown timezone 'zone/tz/2018g.1.0/zoneinfo/Europe/Brussels'
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+./bin/getConnected_dev.sh
+getConnected.R at 2018-12-13 15:36:07
+Warning message:
+In as.POSIXlt.POSIXct(x, tz) :
+  unknown timezone 'zone/tz/2018g.1.0/zoneinfo/Europe/Brussels'
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+./bin/getConnected_dev.sh
+getConnected.R at 2018-12-13 15:37:49
+Warning message:
+In as.POSIXlt.POSIXct(x, tz) :
+  unknown timezone 'zone/tz/2018g.1.0/zoneinfo/Europe/Brussels'
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+./bin/getConnected_dev.sh
+getConnected.R at 2018-12-13 15:54:31
+Warning message:
+In as.POSIXlt.POSIXct(x, tz) :
+  unknown timezone 'zone/tz/2018g.1.0/zoneinfo/Europe/Brussels'
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+./bin/getConnected_dev.sh
+getConnected.R at 2018-12-13 15:56:49
+Warning message:
+In as.POSIXlt.POSIXct(x, tz) :
+  unknown timezone 'zone/tz/2018g.1.0/zoneinfo/Europe/Brussels'
+Warning message:
+le package ‘RSQLite’ a été compilé avec la version R 3.3.2 
+./bin/getConnected_dev.sh

@@ -48,7 +48,16 @@
 						<ul class="list-group list-group-flush">
 					{% endif %}
 					<li class="list-group-item d-flex justify-content-between">
-						Lighting #{{ luminaire.address }} [ Serial: {{ luminaire.serial }} ]
+						Lighting #{{ luminaire.address }}
+						{% set flag = false %}
+						{% for status in luminaire.status %}
+							{% if status.code == 99 %}
+								{% set flag = true %}
+							{% endif %}
+						{% endfor %}
+						{% if flag == true %}
+							<span data-feather="cloud-off" class="pull-right"></span>
+						{% endif %}
 						<div class="d-inline">
 							<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-delete-{{ luminaire.id }}">
 					        	<span data-feather="trash-2"></span>
@@ -98,18 +107,31 @@
 		</div><!-- /.modal -->
 	</div>
 
-	{# Groups #}
-{# 	<div class="col col-md-6">
-		<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
-			<h1 class="h5">Clusters</h1>
-			<a href="#" class="btn btn-sm btn-outline-secondary"><span data-feather="plus-circle"></span> New group</a>
-		</div>
-	  	<ul class="list-group list-group-flush">
-		{% for cluster in clusters %}
-		  <li class="list-group-item">{{ cluster.description }}</li>
-		{% endfor %}
-		</ul>
-	</div> #}
+	<div class="modal fade" id="modal-load-config">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+				<h4 class="modal-title">Load lighting data from file</h4>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+					<span class="sr-only">Close</span>
+				</button>
+			</div>
+			<div class="modal-body">
+					{# {% form_theme form_upload 
+						'bootstrap_4_horizontal_layout.html.twig' %} #}
+					{{ form_start(form_upload) }}
+	    			{{ form_row(form_upload.file, {'label': false }) }}
+					
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					{{ form_widget(form_upload.save, {'attr': {'class': "btn btn-success"}}) }}
+					{{ form_end(form_upload) }}
+				</div>
+			</div><!-- /.modal-content -->
+		</div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->
 
 </div>
 
@@ -117,4 +139,6 @@
 
 {% block bottomButton %}
     <button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-add-luminaire"><span data-feather="plus-circle"></span> Add a new lighting</button>
+    <button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-load-config"><span data-feather="upload"></span> Load from file</button>
+    <a href="{{ path('download-my-lightings') }}" class="btn btn-sm btn-outline-secondary" ><span data-feather="download"></span> Download current configuration</a>
 {% endblock %}

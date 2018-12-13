@@ -6,18 +6,27 @@ use Symfony\Component\Process\Process;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
+
+
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+
 
 
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Routing\Annotation\Route;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+
+use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
 
 use App\Entity\Pcb;
@@ -37,7 +46,7 @@ use App\Form\LuminaireType;
 use App\Form\RunType;
 
 
-class MainController extends AbstractController
+class MainController extends Controller
 {
     /**
      * @Route("/", name="home")
@@ -82,7 +91,6 @@ class MainController extends AbstractController
     {
     	$all_luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findAll();
 
-    	$installed_luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findInstalledLuminaire();
 		$clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
 
 		// Compter les clusters existants
@@ -99,6 +107,97 @@ class MainController extends AbstractController
 
             return $this->redirectToRoute('my-lightings');
         }
+
+        // Formulaire pour charger une config
+        $form_upload = $this->createFormBuilder()
+            ->add('file', FileType::class)
+            ->add('save', SubmitType::class, array('label' => 'Load'))
+            ->getForm();
+        $form_upload->handleRequest($request);
+        if ($form_upload->isSubmitted() && $form_upload->isValid()) {
+
+            $file = $form_upload->get('file')->getData();
+
+            if(!is_null($file)){
+                // Generate a unique name for the file before saving it
+                $fileName = "lightings.json";
+
+                // Move the file to the directory where brochures are stored
+                $file->move(
+                    $this->getParameter('tmp_directory'),
+                    $fileName
+                );
+
+                if($_SERVER['APP_ENV'] == 'dev') {
+                    $json_file = $this->get('kernel')->getProjectDir()."/public/tmp/lightings_dev.json";
+                } else {
+                    $json_file = $this->get('kernel')->getProjectDir()."/public/tmp/lightings.json";
+                }
+
+                $data = json_decode(file_get_contents($json_file), TRUE);
+
+                $em = $this->getDoctrine()->getManager();
+
+                foreach ($data["spots"] as $l) {
+
+                    $_l = count($this->getDoctrine()->getRepository(Luminaire::class)->findBySerial($l['serial']));
+
+                    if($_l == 0) { // On ajoute le luminaire s'il n'existe pas
+                        $luminaire = new Luminaire;
+                        $luminaire->setAddress($l['address']);
+                        $luminaire->setSerial($l['serial']);
+                        // $em->persist($luminaire);
+
+                        foreach ($l['pcb'] as $pcb) {
+                            $p = new Pcb;
+                            $p->setCrc($pcb["crc"]);
+                            $p->setSerial($pcb["serial"]);
+                            $p->setN($pcb["n"]);
+                            $p->setType($pcb["type"]);
+
+                            $em->persist($p);
+
+                            $luminaire->addPcb($p);
+                        }
+
+                        $em->persist($luminaire);
+
+                        foreach ($l['channels'] as $channel) {
+                            $c = new Channel;
+                            $c->setChannel($channel["id"]);
+                            $c->setIPeek($channel["max"]);
+                            // $c->setPcb($channel["pcb"]);
+                            $c->setLuminaire($luminaire);
+                            // $em->persist($c);
+
+                            # Vérifie que la Led existe dans la base de données, sinon l'ajoute.
+                            $led = $this->getDoctrine()->getRepository(Led::class)->findOneBy(array(
+                                'wavelength' => $channel['wl'],
+                                'type' => $channel['type'],
+                                'manufacturer' => $channel['manuf']));
+
+                            if ($led == null) {
+                                $le = new Led;
+                                $le->setWavelength($channel['wl']);
+                                $le->setType($channel['type']);
+                                $le->setManufacturer($channel['manuf']);
+                                $em->persist($le);
+                                $em->flush();
+                                $c->setLed($le);
+                            } else {
+                                $c->setLed($led);
+                            }
+                            $em->persist($c);
+                        }
+                    }
+                }
+
+                $em->flush();
+                
+            }
+
+            return $this->redirectToRoute('my-lightings');
+        }
     	
         return $this->render('setup/my-lightings.html.twig', [
         	'all_luminaires' => $all_luminaires,
@@ -106,7 +205,56 @@ class MainController extends AbstractController
         	'next_cluster' => $cluster_number+1,
             'form' => $form->createView(),
             'navtitle' => 'My Lightings',
+            'form_upload' =>$form_upload->createView(),
         ]);
+    }
+
+    /**
+     * @Route("/setup/my-lightings/download", name="download-my-lightings")
+     */
+    public function downloadMyLightings()
+    {
+
+        $output = array();
+        $luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findAll();
+        foreach ($luminaires as $luminaire) {
+            $pcbs = $luminaire->getPcbs();
+            $p = array();
+            foreach ($pcbs as $pcb) {
+                $p[] = array(
+                    'crc' => $pcb->getCrc(),
+                    'serial' => $pcb->getSerial(),
+                    'n' => $pcb->getN(),
+                    'type' => $pcb->getType()
+                );
+            }
+            $channels = $luminaire->getChannels();
+            $c = array();
+            foreach ($channels as $channel) {
+                $led = $channel->getLed();
+                $c[] = array(
+                    'id' => $channel->getChannel(),
+                    'max' => $channel->getIPeek(),
+                    // 'pcb' => $channel->getPcb(),
+                    'wl' => $led->getWavelength(),
+                    'type' => $led->getType(),
+                    'manuf' => $led->getManufacturer()
+                );
+            }
+            $output[] = array(
+                'serial' => $luminaire->getSerial(), 
+                'address' => $luminaire->getAddress(), 
+                'pcb' => $p,
+                'channels' => $c
+            );
+        }
+
+        $response = new Response(json_encode(array("spots" => $output), JSON_FORCE_OBJECT));
+
+        $response->headers->set('Content-Type', 'application/json');
+        $response->headers->set('Content-Disposition', 'attachment;filename="data.json"');
+
+        return $response;
     }
 
     /**
@@ -114,9 +262,7 @@ class MainController extends AbstractController
      */
     public function connectedLighting()
     {
-        // TODO gestion du status
-    	// $installed_luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findInstalledLuminaire();
-        $installed_luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findAll();
+    	$installed_luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findConnectedLuminaire();
 
 		$clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
 
@@ -142,14 +288,72 @@ class MainController extends AbstractController
     /**
      * @Route("/setup/recipes", name="recipes")
      */
-    public function recipes()
+    public function recipes(Request $request)
     {
         $led_repo = $this->getDoctrine()->getRepository(Led::class);
         $recipe_repo = $this->getDoctrine()->getRepository(Recipe::class);
         $clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
         $recipes = $recipe_repo->findAll();
 
-        $em = $this->getDoctrine()->getManager();
+        // Formulaire pour charger une config
+        $form_upload = $this->createFormBuilder()
+            ->add('file', FileType::class)
+            ->add('save', SubmitType::class, array('label' => 'Load'))
+            ->getForm();
+        $form_upload->handleRequest($request);
+        if ($form_upload->isSubmitted() && $form_upload->isValid()) {
+
+            $file = $form_upload->get('file')->getData();
+
+            if(!is_null($file)){
+                // Generate a unique name for the file before saving it
+                $fileName = "recipes.json";
+
+                // Move the file to the directory where brochures are stored
+                $file->move(
+                    $this->getParameter('tmp_directory'),
+                    $fileName
+                );
+
+                $data = json_decode(file_get_contents($this->get('kernel')->getProjectDir()."/public/tmp/recipes.json"), TRUE);
+
+                $em = $this->getDoctrine()->getManager();
+
+                foreach ($data as $r) {
+                    $recipe = new Recipe;
+                    $recipe->setLabel($r['label']);
+                    $recipe->setDescription($r['description']);
+                    foreach ($r['ingredients'] as $i) {
+                        $ingredient = new Ingredient;
+                        $ingredient->setLevel($i['level']);
+
+                        # Vérifie que la Led existe dans la base de données, sinon l'ajoute.
+                        $led = $this->getDoctrine()->getRepository(Led::class)->findOneBy(array(
+                            'wavelength' => $i['led']["wavelength"],
+                            'type' => $i['led']["type"],
+                            'manufacturer' => $i['led']["manufacturer"]));
+
+                        if ($led == null) {
+                            $le = new Led;
+                            $le->setWavelength($i['led']["wavelength"]);
+                            $le->setType($i['led']["type"]);
+                            $le->setManufacturer($i['led']["manufacturer"]);
+                            $em->persist($le);
+                            $em->flush();
+                            $ingredient->setLed($le);
+                        } else {
+                            $ingredient->setLed($led);
+                        }
+                        $em->persist($ingredient);
+                        $recipe->addIngredient($ingredient);
+                        $em->persist($recipe);
+                    }
+                }
+                $em->flush();
+                
+                return $this->redirectToRoute('recipes');
+            }
+        }
         
         return $this->render('setup/recipes.html.twig', [
             'clusters' => $clusters,
@@ -157,6 +361,7 @@ class MainController extends AbstractController
             'recipe_repo' => $recipe_repo,
             'recipes' => $recipes,
             'navtitle' => 'Recipes',
+            'form_upload' => $form_upload->createView(),
         ]);
     }
 
@@ -307,14 +512,6 @@ class MainController extends AbstractController
 			// 	if(count($cluster) == 0){
 			// 		$cluster = new Cluster;
 			// 		$cluster->setLabel(1);
-   //                  // $luminaire->setCluster($cluster);
-   //                  // $cluster->addLuminaire($luminaire);
-			// 		$em->persist($cluster);
-			// 		$em->flush();
-			// 	} //else {
-   //                  $luminaire->setCluster($cluster);
-   //             // }
-			// // }
             $em->persist($luminaire);
 		}
 
@@ -340,14 +537,16 @@ class MainController extends AbstractController
         $luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findAll();
         $clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
 
-        foreach ($luminaires as $l) {
-            foreach ($l->getPcbs() as $pcb) {
-                $em->remove($pcb);
+        foreach ($luminaires as $luminaire) {
+            $_status = $this->getDoctrine()->getRepository(LuminaireStatus::class)->findByLuminaire($luminaire);
+            foreach ($_status as $s) {
+                $luminaire->removeStatus($s);
             }
-            foreach ($l->getChannels() as $channel) {
-                $em->remove($channel);
-            }
-         // $em->remove($l);
+
+            $status = $this->getDoctrine()->getRepository(LuminaireStatus::class)->findOneByCode(99);
+            $luminaire->addStatus($status);
+            $luminaire->setCluster(null);
+            $em->persist($luminaire);
         }
 
         foreach ($clusters as $cluster) {
@@ -357,16 +556,9 @@ class MainController extends AbstractController
         $cluster = new Cluster;
         $cluster->setLabel(1);
         $em->persist($cluster);
-        
-        foreach ($luminaires as $luminaire) {
-            $luminaire->setCluster($cluster);
-            $em->persist($luminaire);
-        }
-        
-        $em->flush();
 
         // Interroger le réseau de luminaires
-        $process = new Process('./bin/info.R');
+        $process = new Process('./bin/getConnected.R');
         $process->setTimeout(3600);
         $process->run();
 
@@ -380,78 +572,24 @@ class MainController extends AbstractController
         // Decode to array
         $data = json_decode($output, true);
 
-        $spots = $data['spots'];
+        $spots = $data['found'];
 
         $i = 0;
 
         foreach ($spots as $spot) {
 
-            $channels = $spot["channels"];
-            $pcbs = $spot["pcb"];
-            $status = $spot["status"];
+            $luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->findOneByAddress($spot);
 
-            $luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->findOneByAddress($spot["address"]);
-            // $luminaire->setAddress($spot["address"]);
-
-            $luminaire->setSerial($spot["serial"]);
-
-            // if ($status["config"] == "OK") {
-                $i++;
-            //     $cluster = $this->getDoctrine()->getRepository(Cluster::class)->findOneByLabel(1);
-            //     if(count($cluster) == 0){
-            //         $cluster = new Cluster;
-            //         $cluster->setLabel(1);
-            //         $em->persist($cluster);
-            //         $em->flush();
-            //     }
-            //     $luminaire->setCluster($cluster);
-            // }
-
-            foreach ($pcbs as $pcb) {
-                $p = new Pcb;
-                $p->setCrc($pcb["crc"]);
-                $p->setSerial($pcb["serial"]);
-                $p->setN($pcb["n"]);
-                $p->setType($pcb["type"]);
-
-                $em->persist($p);
-
-                $luminaire->addPcb($p);
-            }
-
-            $em->persist($luminaire);
-
-            foreach ($channels as $channel) {
-                $c = new Channel;
-                $c->setChannel($channel["id"]);
-                $c->setIPeek($channel["max"]);
-                $c->setPcb($channel["address"]);
-                $c->setLuminaire($luminaire);
-                // $em->persist($c);
-
-                # Vérifie que la Led existe dans la base de données, sinon l'ajoute.
-                $led = $this->getDoctrine()->getRepository(Led::class)->findOneBy(array(
-                    'wavelength' => $channel["wl"],
-                    'type' => $channel["type"],
-                    'manufacturer' => $channel["manuf"]));
-
-                if ($led == null) {
-                    $l = new Led;
-                    $l->setWavelength($channel["wl"]);
-                    $l->setType($channel["type"]);
-                    $l->setManufacturer($channel["manuf"]);
-                    $em->persist($l);
-                    $em->flush();
-                    $c->setLed($l);
-                } else {
-                    $c->setLed($led);
-                }
-
-                $em->persist($c);
-                
-            }
             
-
+            if(! is_null($luminaire)){
+                $status_on = $this->getDoctrine()->getRepository(LuminaireStatus::class)->findOneByCode(0);
+                $status_off = $this->getDoctrine()->getRepository(LuminaireStatus::class)->findOneByCode(99);
+                $luminaire->removeStatus($status_off);
+                $luminaire->addStatus($status_on);
+                $luminaire->setCluster($cluster);
+                $em->persist($luminaire);
+                $i++;
+            }
         }
 
         $em->flush();
@@ -461,7 +599,7 @@ class MainController extends AbstractController
             'info',
             $i.' lightings were detected and successfully installed.'
         );
-        return $this->redirectToRoute('my-lightings');        
+        return $this->redirectToRoute('connected-lightings');        
     }
 
     /**

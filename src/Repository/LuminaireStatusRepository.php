@@ -3,6 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\LuminaireStatus;
+use App\Entity\Luminaire;
+
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
@@ -19,22 +21,23 @@ class LuminaireStatusRepository extends ServiceEntityRepository
         parent::__construct($registry, LuminaireStatus::class);
     }
 
-//    /**
-//     * @return LuminaireStatus[] Returns an array of LuminaireStatus objects
-//     */
-    /*
-    public function findByExampleField($value)
+   /**
+    * @return LuminaireStatus[] Returns an array of LuminaireStatus objects
+    */
+    
+    public function findByLuminaire(Luminaire $luminaire)
     {
         return $this->createQueryBuilder('l')
-            ->andWhere('l.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('l.id', 'ASC')
-            ->setMaxResults(10)
+            // ->leftjoin('l.luminaires', 'll', 'with', 'l.id = ll.status')
+            ->andWhere(':luminaire MEMBER OF l.luminaires')
+            ->setParameter('luminaire', $luminaire)
+            // ->orderBy('l.id', 'ASC')
+            // ->setMaxResults(10)
             ->getQuery()
             ->getResult()
         ;
     }
-    */
+    
 
     /*
     public function findOneBySomeField($value): ?LuminaireStatus

@@ -24,7 +24,24 @@ class LuminaireRepository extends ServiceEntityRepository
     * @return Luminaire[] Returns an array of Luminaire objects
     */
     
-    public function findInstalledLuminaire()
+    public function findConnectedLuminaire()
+    {
+        return $this->createQueryBuilder('l')
+            ->leftJoin('l.status', 's')
+            ->andWhere('s.code < :val')
+            ->setParameter('val', 99)
+            // ->orderBy('l.id', 'ASC')
+            // ->setMaxResults(10)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+   /**
+    * @return Luminaire[] Returns an array of Luminaire objects
+    */
+    
+    public function getAll()
     {
         return $this->createQueryBuilder('l')
             // ->leftJoin('l.status', 's')
@@ -32,6 +49,7 @@ class LuminaireRepository extends ServiceEntityRepository
             // ->setParameter('val', 99)
             // ->orderBy('l.id', 'ASC')
             // ->setMaxResults(10)
+            ->select(array('l.serial', 'l.address'))
             ->getQuery()
             ->getResult()
         ;
