@@ -539,10 +539,11 @@ class MainController extends Controller
 
         foreach ($luminaires as $luminaire) {
             $_status = $this->getDoctrine()->getRepository(LuminaireStatus::class)->findByLuminaire($luminaire);
-            foreach ($_status as $s) {
-                $luminaire->removeStatus($s);
+            if (! is_null($_status)) {
+                foreach ($_status as $s) {
+                    $luminaire->removeStatus($s);
+                }
             }
-
             $status = $this->getDoctrine()->getRepository(LuminaireStatus::class)->findOneByCode(99);
             $luminaire->addStatus($status);
             $luminaire->setCluster(null);
