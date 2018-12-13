@@ -47,13 +47,13 @@
 			<div class="col">
 				<ul class="list-group list-group-flush">
 				{% for luminaire in installed_luminaires %}
-					{% if loop.index is divisible by(6) %}
+					{% if loop.index0 > 0 and loop.index0 is divisible by(5) %}
 					</ul>
 					</div>
 					<div class="col">
 						<ul class="list-group list-group-flush">
 					{% endif %}
-					<li class="list-group-item d-flex justify-content-between">{{ luminaire.serial }} 
+					<li class="list-group-item d-flex justify-content-between">{{ loop.index }}. Lighting #{{ luminaire.address }} 
 						<div class="d-inline">
 						{% for n in 1..next_cluster %}
 							{% if n == next_cluster %}

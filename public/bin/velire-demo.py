@@ -30,10 +30,20 @@ if True == True:
 	g = velire.Grid()
 	g.new(spots_add=[1], port='/dev/ttyUSB1')
 	g.open()
-	pprint.pprint(g.get_info())
+	#pprint.pprint(g.get_info())
 	g.shutdown()
-	g.set_freq(60)
-	g.set_bycolor({"colortype": "GR_525", "intensity" : 1, "unit": "%", "start": 0., "stop": 0.25}) # No box arg = conf for all spots in grid
+	g.set_freq(1)
+
+	for c in g.available_colors:
+		print(c)
+		g.set_bycolor({"colortype": c, "intensity" : 40, "unit": "%", "start": 0, "stop": 1})
+
+	sleep(4)
+	pprint.pprint(g.get_info())
+	g.set_bycolor({"colortype": "GR_525", "intensity" : 1, "unit": "%", "start": 0, "stop": 0.25}) # No box arg = conf for all spots in grid
+	g.set_bycolor({"colortype": "BL_460", "intensity" : 1, "unit": "%", "start": 0.25, "stop": 0.5})
+	g.set_bycolor({"colortype": "HR_660", "intensity" : 1, "unit": "%", "start": 0.5, "stop": 0.75})
+	g.set_bycolor({"colortype": "WH_4000", "intensity" : 1, "unit": "%", "start": 0.75, "stop": 1})
 	sleep(2)
 	g.shutdown()
 	g.new_boxes(n = 1)
