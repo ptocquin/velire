@@ -162,7 +162,7 @@ class ProgramController extends AbstractController
             $em->persist($run);
             $em->flush();
 
-            $process = new Process('./bin/run.R '.$data->getId());
+            $process = new Process('./bin/velire.sh --run '.$data->getId());
             $process->run();
 
             return $this->redirectToRoute('update-log');
@@ -200,7 +200,7 @@ class ProgramController extends AbstractController
             $data = $form->getData();
             $recipe = $data['recipe'];
 
-            $process = new Process('./bin/play.R '.$cluster->getId().' '.$recipe->getId());
+            $process = new Process('./bin/velire.sh --play '.$cluster->getId().' '.$recipe->getId());
             $process->run();
 
             // executes after the command finishes
@@ -231,7 +231,7 @@ class ProgramController extends AbstractController
         $em = $this->getDoctrine()->getManager();
 
 
-        $process = new Process('./bin/delete_run.sh '.$run->getCluster()->getId());
+        $process = new Process('./bin/velire.sh --delete-run'.$run->getCluster()->getId());
         $process->run();
 
         $em->remove($run);
@@ -253,7 +253,7 @@ class ProgramController extends AbstractController
             
             $em->flush();
             
-            $process = new Process('./bin/run.R');
+            $process = new Process('./bin/velire.sh --run '.$run->getId());
             $process->run();
 
             // executes after the command finishes
@@ -307,7 +307,7 @@ class ProgramController extends AbstractController
             $cluster_id = $data['cluster'];
             $recipe = $data['recipe'];
 
-            $process = new Process('./bin/play.R '.$cluster_id.' '.$recipe->getId());
+            $process = new Process('./bin/velire.sh --play '.$cluster_id.' '.$recipe->getId());
             $process->run();
 
             // executes after the command finishes

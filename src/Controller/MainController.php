@@ -286,6 +286,98 @@ class MainController extends Controller
     }
 
     /**
+     * @Route("/setup/get-connected-lightings", name="get-connected-lightings")
+     */
+    public function getMyLightings()
+    {
+        $em = $this->getDoctrine()->getManager();
+        $session = new Session();
+
+        // Supprimer les luminaires existants
+        $luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findAll();
+        $clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
+
+        foreach ($luminaires as $luminaire) {
+            $_status = $this->getDoctrine()->getRepository(LuminaireStatus::class)->findByLuminaire($luminaire);
+            if (! is_null($_status)) {
+                foreach ($_status as $s) {
+                    $luminaire->removeStatus($s);
+                }
+            }
+            $status = $this->getDoctrine()->getRepository(LuminaireStatus::class)->findOneByCode(99);
+            $luminaire->addStatus($status);
+            $luminaire->setCluster(null);
+            $em->persist($luminaire);
+        }
+
+        foreach ($clusters as $cluster) {
+            $em->remove($cluster);
+        }
+
+        $cluster = new Cluster;
+        $cluster->setLabel(1);
+        $em->persist($cluster);
+
+        // Interroger le réseau de luminaires
+        $process = new Process('./bin/velire.sh --init');
+        $process->setTimeout(3600);
+        $process->run();
+
+        // executes after the command finishes
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        }
+
+        $output = $process->getOutput();
+
+        // Decode to array
+        $data = json_decode($output, true);
+
+        $spots = $data['found'];
+
+        $i = 0;
+
+        foreach ($spots as $spot) {
+
+            $luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->findOneByAddress($spot);
+
+            
+            if(! is_null($luminaire)){
+                $status_on = $this->getDoctrine()->getRepository(LuminaireStatus::class)->findOneByCode(0);
+                $status_off = $this->getDoctrine()->getRepository(LuminaireStatus::class)->findOneByCode(99);
+                $luminaire->removeStatus($status_off);
+                $luminaire->addStatus($status_on);
+                $luminaire->setCluster($cluster);
+                $em->persist($luminaire);
+                $i++;
+            }
+        }
+
+        $em->flush();
+
+        // Initialiser master/slave
+        // $spots = implode(" ", $data['found']);
+
+        // Interroger le réseau de luminaires
+        $process = new Process('./bin/velire.sh --save');
+        $process->setTimeout(3600);
+        $process->run();
+
+        // executes after the command finishes
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        }
+
+
+        // add flash messages
+        $session->getFlashBag()->add(
+            'info',
+            $i.' lightings were detected and successfully installed.'
+        );
+        return $this->redirectToRoute('connected-lightings');        
+    }
+
+    /**
      * @Route("/setup/recipes", name="recipes")
      */
     public function recipes(Request $request)
@@ -526,84 +618,6 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/setup/get-my-lightings", name="get-my-lightings")
-     */
-    public function getMyLightings()
-    {
-        $em = $this->getDoctrine()->getManager();
-        $session = new Session();
-
-        // Supprimer les luminaires existants
-        $luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findAll();
-        $clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
-
-        foreach ($luminaires as $luminaire) {
-            $_status = $this->getDoctrine()->getRepository(LuminaireStatus::class)->findByLuminaire($luminaire);
-            if (! is_null($_status)) {
-                foreach ($_status as $s) {
-                    $luminaire->removeStatus($s);
-                }
-            }
-            $status = $this->getDoctrine()->getRepository(LuminaireStatus::class)->findOneByCode(99);
-            $luminaire->addStatus($status);
-            $luminaire->setCluster(null);
-            $em->persist($luminaire);
-        }
-
-        foreach ($clusters as $cluster) {
-            $em->remove($cluster);
-        }
-
-        $cluster = new Cluster;
-        $cluster->setLabel(1);
-        $em->persist($cluster);
-
-        // Interroger le réseau de luminaires
-        $process = new Process('./bin/getConnected.R');
-        $process->setTimeout(3600);
-        $process->run();
-
-        // executes after the command finishes
-        if (!$process->isSuccessful()) {
-            throw new ProcessFailedException($process);
-        }
-
-        $output = $process->getOutput();
-
-        // Decode to array
-        $data = json_decode($output, true);
-
-        $spots = $data['found'];
-
-        $i = 0;
-
-        foreach ($spots as $spot) {
-
-            $luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->findOneByAddress($spot);
-
-            
-            if(! is_null($luminaire)){
-                $status_on = $this->getDoctrine()->getRepository(LuminaireStatus::class)->findOneByCode(0);
-                $status_off = $this->getDoctrine()->getRepository(LuminaireStatus::class)->findOneByCode(99);
-                $luminaire->removeStatus($status_off);
-                $luminaire->addStatus($status_on);
-                $luminaire->setCluster($cluster);
-                $em->persist($luminaire);
-                $i++;
-            }
-        }
-
-        $em->flush();
-
-        // add flash messages
-        $session->getFlashBag()->add(
-            'info',
-            $i.' lightings were detected and successfully installed.'
-        );
-        return $this->redirectToRoute('connected-lightings');        
-    }
-
-    /**
      * @Route("/setup/get-info", name="get-info")
      */
     public function getInfo()
@@ -728,7 +742,7 @@ class MainController extends Controller
         $session = new Session();
 
         // Interroger le réseau de luminaires
-        $process = new Process('./bin/off.R '.$cluster->getId());
+        $process = new Process('./bin/velire.sh --off '.$cluster->getId());
         $process->setTimeout(3600);
         $process->run();
 
@@ -749,7 +763,7 @@ class MainController extends Controller
     {
         
         // Interroger le réseau de luminaires
-        $process = new Process('./bin/log.R');
+        $process = new Process('./bin/velire.sh --log');
         $process->setTimeout(3600);
         $process->run();
 
