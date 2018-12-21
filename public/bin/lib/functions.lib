@@ -72,22 +72,22 @@ function play {
 		WHERE recipe_id=16 \
 		ORDER BY i.id"
 
-	LIGHTINGS=$(sqlite3 $DB "$SQL1")
-	COLORS=$(sqlite3 -separator "_" $DB "$SQL2")
-	LEVELS=$(sqlite3 $DB "$SQL3")
+	LIGHTINGS=$(sqlite3 -newline " " $DB "$SQL1")
+	COLORS=$(sqlite3 -newline " " -separator "_" $DB "$SQL2")
+	LEVELS=$(sqlite3 -newline " " $DB "$SQL3")
 
 	CMD="$PYTHON_CMD -p $PORT -s $LIGHTINGS -c $COLORS -i $LEVELS --input $CONFIG"
 
 	if [ $DEVELOPMENT = "TRUE" ]
 	then
-		echo "$CMD"
-		echo "Recipe successfully started on cluster $CLUSTER"
+		echo "$CMD" >&3
+		echo "Recipe successfully started on cluster $CLUSTER" >&3
 		printf "$DAYSTART\t$HOURSTART\t$CMD\t0" >> ${CMD_FILE}$CLUSTER
 	else
 		printf "$DAYSTART\t$HOURSTART\t$CMD\t0" >> ${CMD_FILE}$CLUSTER
 		$CMD &&
-		echo "Recipe successfully started on cluster $CLUSTER" ||
-		echo "Problem for starting recipe $RECIPE on cluster $CLUSTER"
+		echo "Recipe successfully started on cluster $CLUSTER" >&3 ||
+		echo "Problem for starting recipe $RECIPE on cluster $CLUSTER" >&3
 	fi
 }
 
@@ -152,7 +152,7 @@ function run {
 			I_OPT="-i $(sqlite3 -newline " " "$DB" "$SQL")"
 			echo $I_OPT
 
-			CMD="$PYTHON_CMD -p $PORT $S_OPT $C_OPT $I_OPT"
+			CMD="$PYTHON_CMD -p $PORT $S_OPT $C_OPT $I_OPT --input $CONFIG"
 			printf "$DAY_START\t$HOUR_START\t$CMD\t0\n" >> ${TMPFILE}
 			echo "$STEP_START + $STEP_VALUE"
 			STEP_START=$(add_duration "${STEP_START}" "${STEP_VALUE}")
