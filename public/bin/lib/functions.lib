@@ -142,14 +142,14 @@ function run {
 				left join ingredient i on r.id = i.recipe_id \
 				left join led l on i.led_id = l.id \
 				where r.id='$RECIPE_ID'"
-			C_OPT="-c $(sqlite3 -separator "_" "$DB" "$SQL")"
+			C_OPT="-c $(sqlite3 -newline " " -separator "_" "$DB" "$SQL")"
 			echo $C_OPT
 
 			SQL="select i.level from recipe r \
 				left join ingredient i on r.id = i.recipe_id \
 				left join led l on i.led_id = l.id \
 				where r.id='$RECIPE_ID'"
-			I_OPT="-i $(sqlite3 "$DB" "$SQL")"
+			I_OPT="-i $(sqlite3 -newline " " "$DB" "$SQL")"
 			echo $I_OPT
 
 			CMD="$PYTHON_CMD -p $PORT $S_OPT $C_OPT $I_OPT"
@@ -212,7 +212,7 @@ function run {
 
 function delete {
 	FILE="${CMD_FILE}$1"
-	if [[ -e $FILE ]]
+	if [ -e $FILE ]
 	then
 		rm -f $FILE
 	fi
