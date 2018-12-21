@@ -2,7 +2,7 @@ function init {
 	if [ $DEVELOPMENT = "TRUE" ]
 	then
 		echo "init_dev" >&3
-		cat "./bin/lib/connected_dev.json" >&3
+		cat "./bin/lib/connected_dev.json"
 	else
 		echo "init_prod" >&3
 		LIGHTINGS=$(sqlite3 $DB "select address from luminaire")

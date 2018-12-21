@@ -359,13 +359,65 @@ class MainController extends Controller
         // $spots = implode(" ", $data['found']);
 
         // Interroger le réseau de luminaires
-        $process = new Process('./bin/velire.sh --save');
+        $process = new Process('./bin/velire.sh --save-config');
         $process->setTimeout(3600);
         $process->run();
 
         // executes after the command finishes
         if (!$process->isSuccessful()) {
             throw new ProcessFailedException($process);
+        }
+
+        $data = json_decode(file_get_contents($this->get('kernel')->getProjectDir()."/var/config.json"), TRUE);
+
+        $luminaires = $data['spots'];
+
+        foreach ($luminaires as $l) { 
+            $luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->findOneByAddress($l['address']);
+            $luminaire->setSerial($l['serial']);
+            // $em->persist($luminaire);
+
+            foreach ($l['pcb'] as $pcb) {
+                $p = new Pcb;
+                $p->setCrc($pcb["crc"]);
+                $p->setSerial($pcb["serial"]);
+                $p->setN($pcb["n"]);
+                $p->setType($pcb["type"]);
+
+                $em->persist($p);
+
+                $luminaire->addPcb($p);
+            }
+
+            $em->persist($luminaire);
+
+            foreach ($l['channels'] as $channel) {
+                $c = new Channel;
+                $c->setChannel($channel["id"]);
+                $c->setIPeek($channel["max"]);
+                // $c->setPcb($channel["pcb"]);
+                $c->setLuminaire($luminaire);
+                // $em->persist($c);
+
+                # Vérifie que la Led existe dans la base de données, sinon l'ajoute.
+                $led = $this->getDoctrine()->getRepository(Led::class)->findOneBy(array(
+                    'wavelength' => $channel["wl"],
+                    'type' => $channel["type"],
+                    'manufacturer' => $channel["manuf"]));
+
+                if ($led == null) {
+                    $le = new Led;
+                    $le->setWavelength($channel["wl"]);
+                    $le->setType($channel["type"]);
+                    $le->setManufacturer($channel["manuf"]);
+                    $em->persist($le);
+                    $em->flush();
+                    $c->setLed($le);
+                } else {
+                    $c->setLed($led);
+                }
+                $em->persist($c);
+            }
         }
 
 
