@@ -260,7 +260,7 @@ function check {
 			then
 				CMD=$(cat $TMPFILE | grep -P "$T" | cut -f4)
 				echo "Commande à executer: [$IDX] $CMD" >&3
-				# $CMD &&
+				$CMD &&
 				cat $TMPFILE | cut -f2- | rev | sed "${IDX}s/^0/1/" | rev > $file
 			else
 				cat $TMPFILE | cut -f2- > $file
@@ -273,7 +273,7 @@ function check {
 			if [ $IDX -eq 0 ]
 			then
 				echo "On relance la commande $IDX" >&3
-				# $CMD &&
+				$CMD &&
 				cat $TMPFILE | cut -f2- | rev | sed '${IDX}s/^0/1/' | rev > $file
 			fi
 		fi
