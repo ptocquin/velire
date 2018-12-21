@@ -115,7 +115,6 @@ function run {
 	SQL="select s.type, s.value, s.recipe_id from run r \
 		left join step s on r.program_id = s.program_id \
 		where r.id = '$RUN_ID'"
-	echo "sqlite3 -csv $DB '$SQL'"
 	STEPS=($(sqlite3 -csv "$DB" "$SQL"))
 
 	# Parse steps
@@ -126,9 +125,9 @@ function run {
 	while [ $STEP_INDEX -lt ${#STEPS[*]} ]
 	do
 		echo "Index1: ${STEP_INDEX}"
-		echo "Step: $STEP"
 		STEP=${STEPS[$STEP_INDEX]}
 		STEP_TYPE=$(echo "$STEP" | cut -d',' -f1)
+		echo "Type: $STEP_TYPE"
 		# Si le step = TIME
 		if [ $STEP_TYPE = "time" ]
 		then
