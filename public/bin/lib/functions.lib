@@ -1,11 +1,11 @@
 function init {
 	if [ $DEVELOPMENT = "TRUE" ]
 	then
-		echo "init_dev" >> error.log
-		cat "./bin/lib/connected_dev.json" 2>> error.log
+		echo "init_dev" >&3
+		cat "./bin/lib/connected_dev.json" >&3
 	else
-		echo "init_prod" >> error.log
-		LIGHTINGS=$(sqlite3 -newline " " $DB "select address from luminaire")
+		echo "init_prod" >&3
+		LIGHTINGS=$(sqlite3 $DB "select address from luminaire")
 		$PYTHON_CMD -p $PORT -s $LIGHTINGS --test --json --init --quiet
 	fi
 }
@@ -18,10 +18,10 @@ function save {
 		WHERE l1_.code < 99;"
 	if [ $DEVELOPMENT = "TRUE" ]
 	then
-		LIGHTINGS=$(sqlite3 -newline " " $DB "$SQL")
+		LIGHTINGS=$(sqlite3 $DB "$SQL")
 		echo "$PYTHON_CMD -p $PORT -s $LIGHTINGS --info all --quiet --json --output $CONFIG"
 	else
-		LIGHTINGS=$(sqlite3 -newline " " $DB "$SQL")
+		LIGHTINGS=$(sqlite3 $DB "$SQL")
 		$PYTHON_CMD -p $PORT -s $LIGHTINGS --info all --quiet --json --output $CONFIG
 	fi	
 }
@@ -32,10 +32,10 @@ function off {
 		WHERE cluster_id='$CLUSTER'"
 	if [ $DEVELOPMENT = "TRUE" ]
 	then
-		LIGHTINGS=$(sqlite3 -newline " " $DB "$SQL")
+		LIGHTINGS=$(sqlite3 $DB "$SQL")
 		echo "$PYTHON_CMD -p $PORT -s $LIGHTINGS --input $CONFIG --off"
 	else
-		LIGHTINGS=$(sqlite3 -newline " " $DB "$SQL")
+		LIGHTINGS=$(sqlite3 $DB "$SQL")
 		$PYTHON_CMD -p $PORT -s $LIGHTINGS --input $CONFIG --off 
 	fi
 }
@@ -50,7 +50,7 @@ function log {
 	then
 		cat ./bin/lib/info_dev.json | ./bin/log.R
 	else
-		LIGHTINGS=$(sqlite3 -newline " " $DB "$SQL")
+		LIGHTINGS=$(sqlite3 $DB "$SQL")
 		$PYTHON_CMD -p $PORT -s $LIGHTINGS --info all --quiet --json | ./bin/log.R
 	fi	
 }
@@ -72,9 +72,9 @@ function play {
 		WHERE recipe_id=16 \
 		ORDER BY i.id"
 
-	LIGHTINGS=$(sqlite3 -newline " " $DB "$SQL1")
-	COLORS=$(sqlite3 -newline " " -separator "_" $DB "$SQL2")
-	LEVELS=$(sqlite3 -newline " " $DB "$SQL3")
+	LIGHTINGS=$(sqlite3 $DB "$SQL1")
+	COLORS=$(sqlite3 -separator "_" $DB "$SQL2")
+	LEVELS=$(sqlite3 $DB "$SQL3")
 
 	CMD="$PYTHON_CMD -p $PORT -s $LIGHTINGS -c $COLORS -i $LEVELS --input $CONFIG"
 
@@ -108,7 +108,7 @@ function run {
 	SQL="select l.address from run r \
 		left join luminaire l on r.cluster_id = l.cluster_id \
 		where r.cluster_id = '$CLUSTER'"
-	LIGHTINGS=$(sqlite3 -newline " " $DB "$SQL")
+	LIGHTINGS=$(sqlite3 $DB "$SQL")
 	S_OPT="-s $LIGHTINGS"
 
 	# Fetch Steps
@@ -143,14 +143,14 @@ function run {
 				left join ingredient i on r.id = i.recipe_id \
 				left join led l on i.led_id = l.id \
 				where r.id='$RECIPE_ID'"
-			C_OPT="-c $(sqlite3 -newline " " -separator "_" "$DB" "$SQL")"
+			C_OPT="-c $(sqlite3 -separator "_" "$DB" "$SQL")"
 			echo $C_OPT
 
 			SQL="select i.level from recipe r \
 				left join ingredient i on r.id = i.recipe_id \
 				left join led l on i.led_id = l.id \
 				where r.id='$RECIPE_ID'"
-			I_OPT="-i $(sqlite3 -newline " " "$DB" "$SQL")"
+			I_OPT="-i $(sqlite3 "$DB" "$SQL")"
 			echo $I_OPT
 
 			CMD="$PYTHON_CMD -p $PORT $S_OPT $C_OPT $I_OPT"
@@ -227,7 +227,7 @@ function check {
 	COUNTER=0
 
 	SQL="SELECT id FROM run WHERE date_end < '$TIME' OR date_end is NULL"
-	RUN_IDS=$(sqlite3 -newline " " "$DB" "$SQL")
+	RUN_IDS=$(sqlite3 "$DB" "$SQL")
 	for RUN_ID in $RUN_IDS
 	do
 		SQL="UPDATE run SET status='past' WHERE id='$RUN_ID'"
