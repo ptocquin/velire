@@ -255,10 +255,10 @@ function check {
 
 		if grep -qP "$T" "$TMPFILE"
 		then
-			IDX=$(cat $TMPFILE | grep $T | cut -f1 | tr -d "[:space:]")
-			if egrep -qP "$T.*0$" "$TMPFILE"
+			IDX=$(cat $TMPFILE | grep -P "$T" | cut -f1 | tr -d "[:space:]")
+			if grep -qP "$T.*0$" "$TMPFILE"
 			then
-				CMD=$(cat $TMPFILE | grep $T | cut -f4)
+				CMD=$(cat $TMPFILE | grep -P "$T" | cut -f4)
 				echo "Commande à executer: [$IDX] $CMD" >&3
 				# $CMD &&
 				cat $TMPFILE | cut -f2- | rev | sed "${IDX}s/^0/1/" | rev > $file
@@ -267,8 +267,8 @@ function check {
 				echo "La commande $IDX a déjà été executée..." >&3
 			fi
 		else
-			IDX=$(cat $TMPFILE | grep -B1 $T | head -n1 | cut -f1 | tr -d "[:space:]")
-			CMD=$(cat $TMPFILE | grep -B1 $T | head -n1 | cut -f4)
+			IDX=$(cat $TMPFILE | grep -PB1 "$T" | head -n1 | cut -f1 | tr -d "[:space:]")
+			CMD=$(cat $TMPFILE | grep -PB1 "$T" | head -n1 | cut -f4)
 			echo "On vérifie la commande précédente: $IDX" >&3
 			if [ $IDX -eq 0 ]
 			then
