@@ -253,10 +253,10 @@ function check {
 		echo "Traitement de $file" >&3
 		sort $file | cat -n > $TMPFILE
 
-		if grep -q "$T" "$file"
+		if grep -qP "$T" "$TMPFILE"
 		then
 			IDX=$(cat $TMPFILE | grep $T | cut -f1 | tr -d "[:space:]")
-			if egrep -q "$T.*0$" "$file"
+			if egrep -qP "$T.*0$" "$TMPFILE"
 			then
 				CMD=$(cat $TMPFILE | grep $T | cut -f4)
 				echo "Commande à executer: [$IDX] $CMD" >&3
