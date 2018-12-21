@@ -3,6 +3,9 @@
 source ./bin/lib/functions.lib
 eval $(parse_yaml ./bin/config.yaml)
 
+exec 3>> messages.log
+exec 2>> error.log
+
 if [ $# = 0 ]
 then
 	echo "No option provided, use --init or --save-config"
