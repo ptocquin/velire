@@ -267,8 +267,8 @@ function check {
 				echo "La commande $IDX a déjà été executée..." >&3
 			fi
 		else
-			IDX=$(cat $TMPFILE | grep -PB1 "$T" | head -n1 | cut -f1 | tr -d "[:space:]")
-			CMD=$(cat $TMPFILE | grep -PB1 "$T" | head -n1 | cut -f4)
+			IDX=$(cat $TMPFILE | grep -P -B1 "$T" | head -n1 | cut -f1 | tr -d "[:space:]")
+			CMD=$(cat $TMPFILE | grep -P -B1 "$T" | head -n1 | cut -f4)
 			echo "On vérifie la commande précédente: $IDX" >&3
 			if [ $IDX -eq 0 ]
 			then
