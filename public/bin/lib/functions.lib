@@ -108,7 +108,7 @@ function run {
 	SQL="select l.address from run r \
 		left join luminaire l on r.cluster_id = l.cluster_id \
 		where r.cluster_id = '$CLUSTER'"
-	LIGHTINGS=$(sqlite3 $DB "$SQL")
+	LIGHTINGS=$(sqlite3 -newline " " $DB "$SQL")
 	S_OPT="-s $LIGHTINGS"
 
 	# Fetch Steps
