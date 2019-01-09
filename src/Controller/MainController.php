@@ -319,7 +319,7 @@ class MainController extends Controller
         $em->persist($cluster);
 
         // Interroger le réseau de luminaires
-        $process = new Process('./bin/velire.sh --init');
+        $process = new Process('python3 ./bin/velire-cmd.py --init');
         $process->setTimeout(3600);
         $process->run();
 
@@ -359,7 +359,7 @@ class MainController extends Controller
         // $spots = implode(" ", $data['found']);
 
         // Interroger le réseau de luminaires
-        $process = new Process('./bin/velire.sh --save-config');
+        $process = new Process('python3 ./bin/velire-cmd.py --config ./bin/config.yaml --info all --quiet --json --output ../var/config.json');
         $process->setTimeout(3600);
         $process->run();
 
@@ -794,7 +794,7 @@ class MainController extends Controller
         $session = new Session();
 
         // Interroger le réseau de luminaires
-        $process = new Process('./bin/velire.sh --off '.$cluster->getId());
+        $process = new Process('python3 ./bin/velire-cmd.py --config ./bin/config.yaml --off --cluster '.$cluster->getId());
         $process->setTimeout(3600);
         $process->run();
 
