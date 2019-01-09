@@ -200,7 +200,7 @@ class ProgramController extends AbstractController
             $data = $form->getData();
             $recipe = $data['recipe'];
 
-            $process = new Process('./bin/velire.sh --play '.$cluster->getId().' '.$recipe->getId());
+            $process = new Process('python3 ./bin/velire-cmd.py -e --config ./bin/config.yaml --input ./bin/config.json --cluster '.$cluster->getId().' --play '.$recipe->getId());
             $process->run();
 
             // executes after the command finishes
@@ -307,7 +307,7 @@ class ProgramController extends AbstractController
             $cluster_id = $data['cluster'];
             $recipe = $data['recipe'];
 
-            $process = new Process('./bin/velire.sh --play '.$cluster_id.' '.$recipe->getId());
+            $process = new Process('python3 ./bin/velire-cmd.py -e --config ./bin/config.yaml --input ./bin/config.json --cluster '.$cluster_id.' --play '.$recipe->getId());
             $process->run();
 
             // executes after the command finishes

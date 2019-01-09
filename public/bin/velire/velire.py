@@ -1038,14 +1038,15 @@ class Grid():
 		self.available_colors = config["spots"]["0"]["available_colors"]
 
 
-	def new(self, spots_add, port, baudrate=115200, timeout=2):
+	def new(self, spots_add, port, baudrate=115200, timeout=2, dev=False):
 		""" Crèe un nouveau réseau
 
 		"""
 		# Port Série
-		self.ser = self.set_serial(port=port, baudrate=baudrate, timeout=timeout)
-		if self.ser == None:
-			return
+		if dev != True:
+			self.ser = self.set_serial(port=port, baudrate=baudrate, timeout=timeout)
+			if self.ser == None:
+				return
 
 		# Ajoute les spots
 		spots_add = list(set(spots_add)) # adresse unique
