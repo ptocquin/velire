@@ -800,7 +800,7 @@ class MainController extends Controller
         $session = new Session();
 
         // Interroger le réseau de luminaires
-        $process = new Process('python3 ./bin/velire-cmd.py --config ./bin/config.yaml --off --cluster '.$cluster->getId());
+        $process = new Process('python3 ./bin/velire-cmd.py --config ./bin/config.yaml --input ../var/config.json --off --cluster '.$cluster->getId());
         $process->setTimeout(3600);
         $process->run();
 
