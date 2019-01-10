@@ -318,20 +318,24 @@ class MainController extends Controller
         $cluster->setLabel(1);
         $em->persist($cluster);
 
-        // Interroger le réseau de luminaires
-        $process = new Process('python3 ./bin/velire-cmd.py --config ./bin/config.yaml --init');
-        $process->setTimeout(3600);
-        $process->run();
+        if($_SERVER['APP_ENV'] == 'dev') {
+            $data = json_decode(file_get_contents($this->get('kernel')->getProjectDir()."/var/test.json"), TRUE);
+        } else {
+            // Interroger le réseau de luminaires
+            $process = new Process('python3 ./bin/velire-cmd.py --config ./bin/config.yaml --test --json --quiet');
+            $process->setTimeout(3600);
+            $process->run();
 
-        // executes after the command finishes
-        if (!$process->isSuccessful()) {
-            throw new ProcessFailedException($process);
+            // executes after the command finishes
+            if (!$process->isSuccessful()) {
+                throw new ProcessFailedException($process);
+            }
+
+            $output = $process->getOutput();
+
+            // Decode to array
+            $data = json_decode($output, true);
         }
-
-        $output = $process->getOutput();
-
-        // Decode to array
-        $data = json_decode($output, true);
 
         $spots = $data['found'];
 
@@ -355,18 +359,20 @@ class MainController extends Controller
 
         $em->flush();
 
-        // Initialiser master/slave
-        // $spots = implode(" ", $data['found']);
+        if($_SERVER['APP_ENV'] == 'prod') {
+            // Initialiser master/slave
+            // $spots = implode(" ", $data['found']);
 
-        // Interroger le réseau de luminaires
-        $process = new Process('python3 ./bin/velire-cmd.py --config ./bin/config.yaml --info all --quiet --json --output ../var/config.json');
-        $process->setTimeout(3600);
-        $process->run();
+            // Interroger le réseau de luminaires
+            $process = new Process('python3 ./bin/velire-cmd.py --config ./bin/config.yaml --info all --quiet --json --output ../var/config.json');
+            $process->setTimeout(3600);
+            $process->run();
 
-        // executes after the command finishes
-        if (!$process->isSuccessful()) {
-            throw new ProcessFailedException($process);
-        }
+            // executes after the command finishes
+            if (!$process->isSuccessful()) {
+                throw new ProcessFailedException($process);
+            }
+        } 
 
         $data = json_decode(file_get_contents($this->get('kernel')->getProjectDir()."/var/config.json"), TRUE);
 
