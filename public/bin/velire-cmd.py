@@ -117,7 +117,6 @@ if args["spots"] == None:
 # -----------------------------------------------------------------------------
 # Création du réseau de spots (non chargés)
 verbose("Initialization")
-g = velire.Grid()
 # -----------------------------------------------------------------------------
 # Liste des spots
 spots_ad_list = []
@@ -133,51 +132,57 @@ if len(spots_ad_list) < 0:
 	verbose("No valid spot address found\nEXIT")
 	sys.exit()
 verbose("... adding spots "+str(spots_ad_list))
+# Nouveau réseau
+g = velire.Grid()
 g.new(spots_add=spots_ad_list, port=args["port"])
 g.open()
+# Vérifie les spots connectés et élimine les autres
+spot_found = g.find_spot()
+verbose("... searching spot on grid")
+spot_found = g.find_spot()
+verbose("... "+str(len(spot_found["found"]))+" spot(s) found")
+verbose("... "+str(len(spot_found["not_found"]))+" spot(s) NOT found")
+if len(spot_found["not_found"]) > 0: # nouvel grille avec seulement les spots détecté
+	g.close()
+	g = velire.Grid() # écrase
+	g.new(spots_add=spot_found["found"], port=args["port"])
+	g.open()
 verbose("... done")
 # -----------------------------------------------------------------------------
 # Recherche des spots sur le réseau
 if args["test"] == True:
-	verbose("Searching spot on grid")
-	reply = g.find_spot()
-	verbose("... "+str(len(reply["found"]))+" spot(s) found")
-	verbose("... "+str(len(reply["not_found"]))+" spot(s) NOT found")
 	if args["json"] == True:
-		print(json.dumps(reply))
+		print(json.dumps(spot_found))
 	else:
-		pprint.pprint(reply)
+		pprint.pprint(spot_found)
 	verbose("... done")
 	sys.exit()
 # -----------------------------------------------------------------------------
 # Défini le rôle de master/slave
 if args["init"] == True:
 	verbose("Setting master/slave")
-	verbose("... searching spots")
-	reply = g.find_spot()
-	verbose("... ... "+str(len(reply["found"]))+" spot(s) found")
-	verbose("... ... "+str(len(reply["not_found"]))+" spot(s) NOT found")
 	verbose("... setting function")
 	for s in g.spots_list:
-		if int(s.address) in reply['found']:
-			if int(s.address) == int(min(reply['found'])):
-				r = s.set_ms(master=True)
-				verbose("... ... spot at "+str(s.address)+" defined as MASTER")
-			else:
-				r = s.set_ms(master=False) # tous esclaves
-				verbose("... ... spot at "+str(s.address)+" defined as slave")
+		if int(s.address) == int(min(spot_found['found'])):
+			r = s.set_ms(master=True)
+			verbose("... ... spot at "+str(s.address)+" defined as MASTER")
 		else:
-			verbose("... ... spot at "+str(s.address)+" not found")
+			r = s.set_ms(master=False) # tous esclaves
+			verbose("... ... spot at "+str(s.address)+" defined as slave")
+	if len(spot_found['not_found']) > 0:
+		verbose("... spot not found: "+str(spot_found['not_found']))
 	verbose("... done")
 # -----------------------------------------------------------------------------
 # Chargement de la configuration des spots: via un fichier ou depuis la mémoire des luminaires
 if args["in_file"] != None:
+	loading_from_hardware = 0
 	verbose("Loading configuration from file "+args["in_file"][0])
 	with open(args["in_file"][0]) as f:
 		data = json.load(f)
 	g.activate2(data)
 	verbose("... done")
 else:
+	loading_from_hardware = 1
 	verbose("Loading configuration from hardware")
 	g.activate() # depuis les infos des luminaires
 	verbose("... done")
@@ -185,8 +190,9 @@ else:
 # Informations
 if args["info"] != None:
 	if "all" in args["info"]:
-		verbose("Loading configuration from hardware")
-		g.activate()
+		if loading_from_hardware != 1:
+			verbose("Loading configuration from hardware")
+			g.activate()
 		infos = g.get_info()
 		if args["out_file"] != None:
 			with open(args["out_file"][0], 'w') as f: # Sauvegarde de la configuration dans un fichier
