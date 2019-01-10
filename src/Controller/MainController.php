@@ -319,7 +319,7 @@ class MainController extends Controller
         $em->persist($cluster);
 
         // Interroger le réseau de luminaires
-        $process = new Process('python3 ./bin/velire-cmd.py --init');
+        $process = new Process('python3 ./bin/velire-cmd.py --config ./bin/config.yaml --init');
         $process->setTimeout(3600);
         $process->run();
 
