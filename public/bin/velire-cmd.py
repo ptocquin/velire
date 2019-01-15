@@ -18,6 +18,8 @@ import os
 import argparse
 from velire import velire
 from time import sleep
+from datetime import datetime
+from datetime import timedelta
 import pprint
 import json
 import yaml
@@ -39,7 +41,8 @@ errors = []
 parser = argparse.ArgumentParser(description='Control VeLiRe Lightings.')
 parser.add_argument('-p', '--port', type=str, dest='port', required=False, help="Serial port (eg. /dev/ttyUSB0). Erased by --config")
 parser.add_argument('-s', '--spot', type=str, nargs='+', dest='spots', required=False, help='Spot list (eg. 1 2 3-10 22). Erased by --config')
-parser.add_argument('--cluster', type=str, nargs='+', dest='cluster', required=False, help='Culters list (eg. 1 2 10). Need --config')
+parser.add_argument('--cluster', type=str, nargs='+', dest='cluster', required=False, help='Clusters list (eg. 1 2 10). Need --config')
+parser.add_argument('--set-run', type=str, nargs=1, dest='set_run', required=False, help='Run id to set. Need --config')
 
 parser.add_argument('--init', action='store_true', help='Define function master/slave')
 parser.add_argument('--test', action='store_true', dest='test', help='Test if spots are connected')
@@ -53,6 +56,7 @@ parser.add_argument('--off', action='store_true', help='Turn off all spots')
 parser.add_argument('--on', action='store_true', help='Turn on all spots')
 parser.add_argument('--shutdown', action='store_true', help='Shutdown all channels')
 
+parser.add_argument('--snapshot', type=str, nargs='+', dest='snapshot', required=False, help='Save a snapshot in file given as first argument. The second argument specify the resolution (default 640x480)')
 parser.add_argument('--info', type=str, nargs='+', dest='info', required=False, help='Return desired spots info')
 parser.add_argument('--output', type=str, nargs=1, required=False, dest="out_file", help='Destination file for info data (ignored if --info is not set to all)')
 parser.add_argument('--input', type=str, nargs=1, dest='in_file', required=False, help="File containing grid settings (as returning by '... --info all --output-file *.json' command) used for faster controls")
@@ -64,6 +68,7 @@ parser.add_argument('--demo', type=str, nargs='+', required=False, dest="demo", 
 parser.add_argument('-v', '--version', action='store_true', dest='version', help='Print version')
 args = vars(parser.parse_args())
 # -----------------------------------------------------------------------------
+print(args)
 # Fonction verbose
 quiet = args["quiet"]
 def verbose(msg):
@@ -74,6 +79,22 @@ if quiet == True:
 	velire.verbosity = 1
 else:
 	velire.verbosity = 5
+# -----------------------------------------------------------------------------
+# Snapshot
+if args['snapshot'] != None:
+	verbose("Capturing image from camera")
+	import subprocess
+	dest_file = args['snapshot'][0]
+	res = "640x480"
+	if len(args['snapshot'])>1 != None: # donne une résolution en argument
+		res = args['snapshot'][1]
+	cmd = "fswebcam -r "+res+" --jpeg 85 -D 1 --quiet "+dest_file
+	exit_code = subprocess.call(cmd, shell=True)
+	if exit_code == 0:
+		verbose("... done")
+	else:
+		verbose("... an error occured")
+	sys.exit()
 # -----------------------------------------------------------------------------
 # Chargement depuis un fichier de configuration (compatibilité avec interface web)
 if args["conf_file"] != None:
@@ -106,6 +127,68 @@ if args["conf_file"] != None:
 				verbose("YAML exeption: "+exc)
 	else:
 		verbose("No file "+str(args["conf_file"][0])+" found")
+# -----------------------------------------------------------------------------
+# Run
+if args['set_run']	!= None:
+	verbose("Setting new run")
+	# Structure de la table 'run' :
+	# id (int, autoincrement), cluster_id (int), program_id (int), start (datetime), label (varchar), description (clob), date_end (datetime), status (varchar)
+	run_column_names = ['id', 'cluster_id', 'program_id', 'start', 'label', 'description', 'date_end', 'status']
+	cursor.execute('SELECT * FROM run WHERE id=?', (str(args['set_run'][0]),))
+	run_row = cursor.fetchone()
+	run_dict = {}
+	for i in range(0, len(run_row)):
+		run_dict[run_column_names[i]] = run_row[i]
+
+	# Structure de la table 'program'
+	# id (int, autoincrement), label (varchar), description (clob)
+	prog_column_names = ['id', 'label', 'description']
+	cursor.execute('SELECT * FROM program WHERE id=?', (run_dict['program_id'],))
+	prog_row = cursor.fetchone()
+	prog_dict = {}
+	for i in range(0, len(prog_row)):
+		prog_dict[prog_column_names[i]] = prog_row[i]
+
+	# Structure de la table 'step'
+	# id (int, autoincrement), program_id (int), recipe_id (int), type (varchar), rank (int), value (varchar)
+	step_column_names = ['id', 'program_id', 'recipe_id', 'type', 'rank', 'value']
+	cursor.execute('SELECT * FROM step WHERE program_id=?', (prog_dict['id'],))
+	step_listdict = []
+	for r in cursor.fetchall():
+		tmp_dict = {}
+		for i in range(0, len(r)):
+			tmp_dict[step_column_names[i]] = r[i]
+		step_listdict.append(tmp_dict)
+
+	# Remplissage de la table run_step
+	time = datetime.strptime(run_dict['start'], "%Y-%m-%d %H:%M:%S")
+	goto = -1
+	i = 0
+	while i <= (len(step_listdict)-1):
+		if step_listdict[i]['type'] != "goto":
+			time = time + timedelta(hours = int(step_listdict[i]['value'].split(":")[0]), minutes = int(step_listdict[i]['value'].split(":")[1]))
+			cmd = "--cluster "+str(run_dict['cluster_id'])
+			if step_listdict[i]['type'] == "off":
+				cmd = cmd+" --off"
+			if step_listdict[i]['type'] == "time":
+				cmd = cmd+" -e --play "+str(step_listdict[i]['recipe_id'])
+			cursor.execute('INSERT INTO run_step(start, command, status) VALUES (?,?,?)', (time, str(cmd), 0,))
+		else:
+			if goto < 0:
+				goto = int(step_listdict[i]['value'].split(":")[1])
+			if goto == 0:
+				goto = -1
+			if goto > 0:
+				i = int(step_listdict[i]['value'].split(":")[0]) -1 # car +1 juste après (boucle)
+				goto = goto - 1			
+		i = i+1
+
+	# Mise à jour de la table run par le champ date_end
+	cursor.execute('UPDATE run SET date_end = ? WHERE id = ?', (time, str(args['set_run'][0]),))
+	# Sauvegarde
+	conn.commit()
+	verbose("... done")
+	sys.exit()
 # -----------------------------------------------------------------------------
 # Vérification du port et de la liste des spots (indispensable)
 if args["port"] == None:
@@ -268,7 +351,7 @@ def demoSeqColors(grid, time_sleep):
 		for c in grid.available_colors:
 			if c != "UV_280":
 				verbose("... color "+str(c))
-				reply = grid.set_bycolor({"colortype": c, "intensity" : 40, "unit": "%", "start": 0, "stop": 1})
+				reply = grid.set_bycolor({"colortype": c, "intensity" : 1, "unit": "%", "start": 0, "stop": 1})
 				sleep(time_sleep)
 				reply = grid.set_bycolor({"colortype": c, "intensity" : 0, "unit": "%", "start": 0, "stop": 1})
 
