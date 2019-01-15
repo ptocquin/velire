@@ -56,6 +56,7 @@ parser.add_argument('--off', action='store_true', help='Turn off all spots')
 parser.add_argument('--on', action='store_true', help='Turn on all spots')
 parser.add_argument('--shutdown', action='store_true', help='Shutdown all channels')
 
+parser.add_argument('--snapshot', type=str, nargs='+', dest='snapshot', required=False, help='Save a snapshot in file given as first argument. The second argument specify the resolution (default 640x480)')
 parser.add_argument('--info', type=str, nargs='+', dest='info', required=False, help='Return desired spots info')
 parser.add_argument('--output', type=str, nargs=1, required=False, dest="out_file", help='Destination file for info data (ignored if --info is not set to all)')
 parser.add_argument('--input', type=str, nargs=1, dest='in_file', required=False, help="File containing grid settings (as returning by '... --info all --output-file *.json' command) used for faster controls")
@@ -67,6 +68,7 @@ parser.add_argument('--demo', type=str, nargs='+', required=False, dest="demo", 
 parser.add_argument('-v', '--version', action='store_true', dest='version', help='Print version')
 args = vars(parser.parse_args())
 # -----------------------------------------------------------------------------
+print(args)
 # Fonction verbose
 quiet = args["quiet"]
 def verbose(msg):
@@ -77,6 +79,22 @@ if quiet == True:
 	velire.verbosity = 1
 else:
 	velire.verbosity = 5
+# -----------------------------------------------------------------------------
+# Snapshot
+if args['snapshot'] != None:
+	verbose("Capturing image from camera")
+	import subprocess
+	dest_file = args['snapshot'][0]
+	res = "640x480"
+	if len(args['snapshot'])>1 != None: # donne une résolution en argument
+		res = args['snapshot'][1]
+	cmd = "fswebcam -r "+res+" --jpeg 85 -D 1 --quiet "+dest_file
+	exit_code = subprocess.call(cmd, shell=True)
+	if exit_code == 0:
+		verbose("... done")
+	else:
+		verbose("... an error occured")
+	sys.exit()
 # -----------------------------------------------------------------------------
 # Chargement depuis un fichier de configuration (compatibilité avec interface web)
 if args["conf_file"] != None:
@@ -164,6 +182,10 @@ if args['set_run']	!= None:
 				i = int(step_listdict[i]['value'].split(":")[0]) -1 # car +1 juste après (boucle)
 				goto = goto - 1			
 		i = i+1
+
+	# Mise à jour de la table run par le champ date_end
+	cursor.execute('UPDATE run SET date_end = ? WHERE id = ?', (time, str(args['set_run'][0]),))
+	# Sauvegarde
 	conn.commit()
 	verbose("... done")
 	sys.exit()
@@ -329,7 +351,7 @@ def demoSeqColors(grid, time_sleep):
 		for c in grid.available_colors:
 			if c != "UV_280":
 				verbose("... color "+str(c))
-				reply = grid.set_bycolor({"colortype": c, "intensity" : 40, "unit": "%", "start": 0, "stop": 1})
+				reply = grid.set_bycolor({"colortype": c, "intensity" : 1, "unit": "%", "start": 0, "stop": 1})
 				sleep(time_sleep)
 				reply = grid.set_bycolor({"colortype": c, "intensity" : 0, "unit": "%", "start": 0, "stop": 1})
 

@@ -162,7 +162,7 @@ class ProgramController extends AbstractController
             $em->persist($run);
             $em->flush();
 
-            $process = new Process('./bin/velire.sh --run '.$data->getId());
+            $process = new Process('python3 ./bin/velire-cmd.py -e --config ./bin/config.yaml --input ../var/config.json --set-run '.$data->getId());
             $process->run();
 
             return $this->redirectToRoute('update-log');
