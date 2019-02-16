@@ -264,6 +264,8 @@ class MainController extends Controller
     {
     	$installed_luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findConnectedLuminaire();
 
+        // die(print_r($installed_luminaires));
+
 		$clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
 
         $empty_clusters = $this->getDoctrine()->getRepository(Cluster::class)->getEmptyClusters();
@@ -339,6 +341,8 @@ class MainController extends Controller
 
         $spots = $data['found'];
 
+
+
         $i = 0;
 
         foreach ($spots as $spot) {
@@ -377,6 +381,7 @@ class MainController extends Controller
         $data = json_decode(file_get_contents($this->get('kernel')->getProjectDir()."/var/config.json"), TRUE);
 
         $luminaires = $data['spots'];
+
 
         foreach ($luminaires as $l) { 
             $luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->findOneByAddress($l['address']);
@@ -769,7 +774,7 @@ class MainController extends Controller
     {
     	$em = $this->getDoctrine()->getManager();
 
-    	$luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findInstalledLuminaire();
+    	$luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findConnectedLuminaire();
     	$clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
 
     	foreach ($clusters as $cluster) {

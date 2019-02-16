@@ -1027,6 +1027,8 @@ class Grid():
 	def activate(self):
 		for s in self.spots_list:
 			s.activate()
+			self.available_colors = sorted(list(set(self.available_colors + s.available_colors))) # ajoute les couleurs disponibles, et élimine les doublons
+			self.available_freq = sorted(list(set(self.available_freq + s.available_freq))) # ajoute les fréquences disponibles, et élimine les doublons
 
 	def activate2(self, config):
 		for s in self.spots_list:
@@ -1038,15 +1040,14 @@ class Grid():
 		self.available_colors = config["spots"]["0"]["available_colors"]
 
 
-	def new(self, spots_add, port, baudrate=115200, timeout=2, dev=False):
+	def new(self, spots_add, port, baudrate=115200, timeout=2):
 		""" Crèe un nouveau réseau
 
 		"""
 		# Port Série
-		if dev != True:
-			self.ser = self.set_serial(port=port, baudrate=baudrate, timeout=timeout)
-			if self.ser == None:
-				return
+		self.ser = self.set_serial(port=port, baudrate=baudrate, timeout=timeout)
+		if self.ser == None:
+			return
 
 		# Ajoute les spots
 		spots_add = list(set(spots_add)) # adresse unique
@@ -1057,5 +1058,3 @@ class Grid():
 		else:
 			verbose("Serial port '"+port+"' is wrong", 8)
 		self.ser.close()
-
-

@@ -68,7 +68,7 @@ parser.add_argument('--demo', type=str, nargs='+', required=False, dest="demo", 
 parser.add_argument('-v', '--version', action='store_true', dest='version', help='Print version')
 args = vars(parser.parse_args())
 # -----------------------------------------------------------------------------
-print(args)
+# print(args)
 # Fonction verbose
 quiet = args["quiet"]
 def verbose(msg):
