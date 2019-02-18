@@ -35,7 +35,7 @@ class Step
     private $value;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Program", inversedBy="steps")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Program", inversedBy="steps", cascade={"remove"})
      */
     private $program;
 

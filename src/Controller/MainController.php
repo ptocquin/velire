@@ -412,7 +412,6 @@ class MainController extends Controller
 
         $luminaires = $data['spots'];
 
-
         foreach ($luminaires as $l) { 
             $luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->findOneByAddress($l['address']);
             $luminaire->setSerial($l['serial']);
@@ -460,6 +459,8 @@ class MainController extends Controller
                 $em->persist($c);
             }
         }
+
+        $em->flush();
 
 
         // add flash messages
@@ -591,10 +592,6 @@ class MainController extends Controller
     public function deleteRecipe(Request $request, Recipe $recipe)
     {
         $em = $this->getDoctrine()->getManager();
-
-        foreach ($recipe->getIngredients() as $ingredient) {
-            $em->remove($ingredient);
-        }
 
         $em->remove($recipe);
         $em->flush();

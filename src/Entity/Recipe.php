@@ -21,7 +21,7 @@ class Recipe
     private $id;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Ingredient", mappedBy="recipe")
+     * @ORM\OneToMany(targetEntity="App\Entity\Ingredient", mappedBy="recipe",cascade={"remove"})
      */
     private $ingredients;
 
@@ -37,7 +37,7 @@ class Recipe
     private $description;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Step", mappedBy="recipe")
+     * @ORM\OneToMany(targetEntity="App\Entity\Step", mappedBy="recipe", cascade={"remove"})
      */
     private $steps;
 

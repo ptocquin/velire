@@ -29,7 +29,7 @@ class Program
     private $description;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Step", mappedBy="program")
+     * @ORM\OneToMany(targetEntity="App\Entity\Step", mappedBy="program", orphanRemoval=true)
      */
     private $steps;
 
