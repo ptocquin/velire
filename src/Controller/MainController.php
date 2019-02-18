@@ -57,8 +57,10 @@ class MainController extends Controller
         $cluster_repo = $this->getDoctrine()->getRepository(Cluster::class);
         $log_repo = $this->getDoctrine()->getRepository(Log::class);
         $luminaire_repo =$this->getDoctrine()->getRepository(Luminaire::class);
-
-        $clusters = $cluster_repo->findAll();
+        $clusters = $cluster_repo->findBy(
+            array(),
+            array('label' => 'ASC')
+        );
         $luminaires = $luminaire_repo->findConnectedLuminaire();
         $x_max = $luminaire_repo->getXMax();
         $y_max = $luminaire_repo->getYMax();
