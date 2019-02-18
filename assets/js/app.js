@@ -18,6 +18,15 @@ require('./jquery.collection.js');
 
 require('chart.js');
 
+
+const routes = require('../../public/js/fos_js_routes.json');
+import Routing from '../../vendor/friendsofsymfony/jsrouting-bundle/Resources/public/js/router.min.js';
+
+Routing.setRoutingData(routes);
+// Routing.generate('rep_log_list');
+console.log(Routing.generate('set-position'));
+console.log(Routing.generate('set-cluster'));
+
 $(document).ready(function () {
   $('.form-collection').collection({
 		position_field_selector: '.rank',
@@ -31,7 +40,107 @@ $(document).ready(function () {
 
 	$('[data-toggle="popover"]').popover();
 
-	$('[data-toggle="tooltip"]').tooltip()
+	$('[data-toggle="tooltip"]').tooltip();
+
+	$('.clk_increment').on('click', function() {
+		console.log("click");
+		var old = parseInt($("input", this).val());
+		if(old < 10) {
+			var next =  old + 1;
+		} else {
+			var next = 1;
+		}
+		console.log(old+" > "+next);
+		$("input", this).val(next);
+		$(".value", this).html(next);
+	});
+
+	// var d = document.getElementById('dataset');
+	// console.log(typeof(d.dataset.values));
+	// console.log(JSON.parse(d.dataset.values));
+
+	$('.set-address').on('click', function(){
+		var address = $(this).next().html();
+		console.log(address.length);
+		if(address.length == 0) {
+			console.log("vide");
+		}
+	})
+
+	$('.cluster-plus').on('click', function(){
+		var label = $(this).next();
+		var input = $('input[name=cluster]', this);
+		var cluster = parseInt($('input[name=cluster]', this).val())+1;
+		var luminaire = $('input[name=luminaire]', this).val();
+		var d = {l: luminaire, c: cluster}
+		$.ajax({
+			type: 'post',
+			url: Routing.generate('set-cluster'),
+			data: {'data': d },
+			beforeSend: function() {
+				console.log('chargement !')
+				console.log(d);
+			},
+			success: function(response) {
+				console.log(response);
+ 				label.text(response.c);
+ 				input.val(response.c);
+ 				if (response.cluster_added == 1) {
+ 					location.reload();
+ 				}
+			}
+		})
+
+		console.log(cluster,luminaire);
+	})
+
+	$('.cluster-minus').on('click', function(){
+		var label = $(this).prev();
+		var input = $('input[name=cluster]', this);
+		var cluster = parseInt($('input[name=cluster]', this).val())-1;
+		var luminaire = $('input[name=luminaire]', this).val();
+		var d = {l: luminaire, c: cluster}
+		$.ajax({
+			type: 'post',
+			url: Routing.generate('set-cluster'),
+			data: {'data': d },
+			beforeSend: function() {
+				console.log('chargement !')
+				console.log(d);
+			},
+			success: function(response) {
+				console.log(response);
+ 				label.text(response.c);
+ 				input.val(response.c);
+ 				if (response.cluster_added == 1) {
+ 					location.reload();
+ 				}
+ 				
+			}
+		})
+
+		console.log(cluster,luminaire);
+	})
+
+	$('.set-position').on('click', function(){
+		var id = $("input", this).val();
+		var x_pos = $("#"+id+"_colonne").val();
+		var y_pos = $("#"+id+"_ligne").val();
+		var positions = {id: id, x: x_pos, y: y_pos};
+  		$.ajax({
+			type: 'post',
+			url: Routing.generate('set-position'),
+			data: {'data': positions },
+			beforeSend: function() {
+				console.log('chargement !')
+				console.log(positions);
+			},
+			success: function(response) {
+				console.log(response);
+ 				location.reload();
+			}
+		})
+	})
 
 	// var ctx = document.getElementById('myChart').getContext('2d');
 	// var d = document.getElementById('dataset');

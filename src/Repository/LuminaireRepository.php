@@ -56,15 +56,42 @@ class LuminaireRepository extends ServiceEntityRepository
     }
     
 
-    /*
-    public function findOneBySomeField($value): ?Luminaire
+    
+    public function getByXY($x, $y): ?Luminaire
     {
         return $this->createQueryBuilder('l')
-            ->andWhere('l.exampleField = :val')
-            ->setParameter('val', $value)
+            ->andWhere('l.ligne = :y')
+            ->andWhere('l.colonne = :x')
+            ->setParameter('y', $y)
+            ->setParameter('x', $x)
             ->getQuery()
             ->getOneOrNullResult()
         ;
     }
-    */
+
+    public function getNotMapped()
+    {
+        return $this->createQueryBuilder('l')
+            ->andWhere('l.ligne is null')
+            ->andWhere('l.colonne is null')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+    
+
+    public function getXMax()
+    {
+        $qb = $this->createQueryBuilder('l');
+        $qb->select('MAX(l.colonne) as x_max');  
+        return $qb->getQuery()->getSingleResult();
+    }
+
+
+    public function getYMax()
+    {
+        $qb = $this->createQueryBuilder('l');
+        $qb->select('MAX(l.ligne) as y_max');  
+        return $qb->getQuery()->getSingleResult();
+    }
 }

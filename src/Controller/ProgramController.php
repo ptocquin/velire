@@ -5,6 +5,8 @@ namespace App\Controller;
 
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -24,6 +26,8 @@ use App\Entity\Step;
 use App\Entity\Run;
 use App\Entity\Cluster;
 use App\Entity\Recipe;
+use App\Entity\Luminaire;
+
 
 
 use App\Form\ProgramType;
@@ -210,7 +214,8 @@ class ProgramController extends AbstractController
                             // add flash messages
                 $session->getFlashBag()->add(
                     'info',
-                    $process->getOutput()
+                    // $process->getOutput()
+                    'Recipe '.$recipe->getLabel().' successfully started on cluster '.$cluster->getLabel()
                 );
             }
             return $this->redirectToRoute('update-log');        
@@ -331,5 +336,46 @@ class ProgramController extends AbstractController
             'form' => $form->createView(),
             'navtitle' => 'Manual Control',
         ]);
+    }
+
+    /**
+     * @Route("/set-position", name="set-position", options={"expose"=true})
+     */
+    public function setPositionAction(Request $request)
+    {
+        $data = $request->get('data');
+        $id = $data['id'];
+        $x = $data['x'];
+        $y = $data['y'];
+
+        $em = $this->getDoctrine()->getManager();
+
+        $test_luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->getByXY($x,$y);
+        $luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->find($id);
+        
+        if(is_null($test_luminaire)) {
+            $luminaire->setColonne($x);
+            $luminaire->setLigne($y);
+            $em->persist($luminaire);
+            $em->flush();
+        } else {
+            $test_luminaire->setColonne(null);
+            $test_luminaire->setLigne(null);
+            $luminaire->setColonne($x);
+            $luminaire->setLigne($y);
+            $em->persist($luminaire);
+            $em->persist($test_luminaire);
+            $em->flush();
+        }
+
+        $x_max = $this->getDoctrine()->getRepository(Luminaire::class)->getXMax();
+        $y_max = $this->getDoctrine()->getRepository(Luminaire::class)->getYMax();
+
+        $response = new JsonResponse(array(
+            'id' => $id,
+            'x_max' => $x_max['x_max'],
+            'y_max' => $y_max['y_max']
+        ));
+        return $response;
     }
 }

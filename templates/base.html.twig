@@ -137,6 +137,8 @@
         {% endblock %}
         {% block javascripts %}
         	<script src="{{ asset('build/app.js') }}"></script>
+          <script src="{{ asset('bundles/fosjsrouting/js/router.min.js') }}"></script>
+          <script src="{{ path('fos_js_routing_js', { callback: 'fos.Router.setData' }) }}"></script>
         {% endblock %}
     </body>
 </html>
