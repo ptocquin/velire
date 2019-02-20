@@ -587,6 +587,29 @@ class MainController extends Controller
         ]);
     }
 
+    /**
+     * @Route("/setup/recipes/edit/{id}", name="edit-recipe")
+     */
+    public function editRecipe(Request $request, Recipe $recipe)
+    {
+        $em = $this->getDoctrine()->getManager();
+
+        $form = $this->createForm(RecipeType::class, $recipe);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($recipe);
+            $em->flush();
+
+            return $this->redirectToRoute('recipes');
+        }
+        
+        return $this->render('setup/edit-recipes.html.twig', [
+            'form' => $form->createView(),
+            'navtitle' => 'Edit Recipe',
+        ]);
+    }
 
     /**
      * @Route("/setup/recipes/delete/{id}", name="delete-recipe")

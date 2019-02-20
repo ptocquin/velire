@@ -31,35 +31,47 @@ function check {
 
 	if [ $COUNT -gt 0 ]
 	then
-		SQL="SELECT id,status,command FROM run_step WHERE start = '$TIME'"
-		ID=$(sqlite3 "$DB" "$SQL" | cut -d'|' -f1)
-		STATUS=$(sqlite3 "$DB" "$SQL" | cut -d'|' -f2)
-		COMMAND=$(sqlite3 "$DB" "$SQL" | cut -d'|' -f3)
+		SQL="SELECT id FROM run_step WHERE start = '$TIME'"
+		IDS=$(sqlite3 -newline ' '  "$DB" "$SQL")
 
-		if [ x$STATUS = "x0" ]
-		then
-			echo "Commande à executer: $PYTHON_CMD $COMMAND" >&3
-			$PYTHON_CMD $COMMAND && {
-				echo "Succès" >&3
-				SQL="UPDATE run_step SET status=1 WHERE id=$ID"
-				sqlite3 "$DB" "$SQL"
-			} || echo "Echec" >&3
-		fi
+		for ID in $IDS
+		do
+			SQL="SELECT status,command FROM run_step WHERE id = '$ID'"
+			STATUS=$(sqlite3 "$DB" "$SQL" | cut -d'|' -f1)
+			COMMAND=$(sqlite3 "$DB" "$SQL" | cut -d'|' -f2)
+
+			if [ x$STATUS = "x0" ]
+			then
+				echo "Commande à executer: $PYTHON_CMD $COMMAND" >&3
+				$PYTHON_CMD $COMMAND && {
+					echo "Succès" >&3
+					SQL="UPDATE run_step SET status=1 WHERE id=$ID"
+					sqlite3 "$DB" "$SQL"
+				} || echo "Echec" >&3
+			fi
+		done
 	else
-		SQL="SELECT id,status,command FROM run_step WHERE start < '$TIME' ORDER BY start DESC limit 1"
-		ID=$(sqlite3 "$DB" "$SQL" | cut -d'|' -f1)
-		STATUS=$(sqlite3 "$DB" "$SQL" | cut -d'|' -f2)
-		COMMAND=$(sqlite3 "$DB" "$SQL" | cut -d'|' -f3)
+		SQL="SELECT id FROM run_step WHERE start < '$TIME' AND status=0"
 
-		if [ x$STATUS = "x0" ]
-		then
-			echo "Commande à relancer: $PYTHON_CMD $COMMAND" >&3
-			$PYTHON_CMD $ARG && {
-				SQL="UPDATE run_step SET status=1 WHERE id=$ID"
-				sqlite3 "$DB" "$SQL"
-				echo "Succès !"
-			}  || echo "Echec ! "
-		fi	
+		IDS=$(sqlite3 -newline ' ' "$DB" "$SQL")
+		echo "ids à relancer: $IDS" >&3
+
+		for ID in $IDS
+		do
+			SQL="SELECT status,command FROM run_step WHERE id = '$ID'"
+			STATUS=$(sqlite3 "$DB" "$SQL" | cut -d'|' -f1)
+			COMMAND=$(sqlite3 "$DB" "$SQL" | cut -d'|' -f2)
+
+			if [ x$STATUS = "x0" ]
+			then
+				echo "Commande à relancer: $PYTHON_CMD $COMMAND" >&3
+				$PYTHON_CMD $COMMAND && {
+					echo "Succès" >&3
+					SQL="UPDATE run_step SET status=1 WHERE id=$ID"
+					sqlite3 "$DB" "$SQL"
+				} || echo "Echec" >&3
+			fi
+		done	
 	fi
 
 	# for file in $CMD_FILES

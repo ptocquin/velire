@@ -172,7 +172,7 @@ if args['set_run']	!= None:
 				cmd = cmd+" --off"
 			if step_listdict[i]['type'] == "time":
 				cmd = cmd+" -e --play "+str(step_listdict[i]['recipe_id'])
-			cursor.execute('INSERT INTO run_step(start, command, status) VALUES (?,?,?)', (time, str(cmd), 0,))
+			cursor.execute('INSERT INTO run_step(run_id, start, command, status) VALUES (?,?,?,?)', (str(args['set_run'][0]),time, str(cmd), 0,))
 			time = time + timedelta(hours = int(step_listdict[i]['value'].split(":")[0]), minutes = int(step_listdict[i]['value'].split(":")[1]))
 		else:
 			if goto < 0:
