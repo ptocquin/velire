@@ -6,6 +6,7 @@
         "ext-ctype": "*",
         "ext-iconv": "*",
         "easycorp/easyadmin-bundle": "^1.17",
+        "friendsofsymfony/jsrouting-bundle": "^2.3",
         "friendsofsymfony/user-bundle": "~2.0",
         "sensio/framework-extra-bundle": "^5.2",
         "symfony/asset": "*",
@@ -28,8 +29,12 @@
         "symfony/yaml": "*"
     },
     "require-dev": {
+        "doctrine/doctrine-fixtures-bundle": "^3.1",
+        "symfony/browser-kit": "*",
+        "symfony/css-selector": "*",
         "symfony/debug-pack": "*",
         "symfony/maker-bundle": "^1.0",
+        "symfony/phpunit-bridge": "*",
         "symfony/profiler-pack": "*",
         "symfony/test-pack": "*",
         "symfony/web-server-bundle": "*"

@@ -1,3 +1,113 @@
+function check {
+	TIME=$(date +"%Y-%m-%d %H:%M:00")
+	T=$(date +"%Y-%m-%d\t%H:%M:00")
+	# T="2018-12-17\t16:03:30"
+	# T="2018-12-17\t16:03:00"
+	COUNTER=0
+
+	SQL="SELECT id FROM run WHERE date_end < '$TIME' OR date_end is NULL"
+	RUN_IDS=$(sqlite3 "$DB" "$SQL")
+	for RUN_ID in $RUN_IDS
+	do
+		SQL="UPDATE run SET status='past' WHERE id='$RUN_ID'"
+		sqlite3 "$DB" "$SQL"
+		#SQL="DELETE FROM run_step WHERE start < '$TIME'"
+		#sqlite3 "$DB" "$SQL"
+		let COUNTER++
+	done
+	echo "$COUNTER runs set to 'past' status !" >&3
+
+	# CMD_FILES=$(ls ${CMD_FILE}*)
+	# if [ ${#CMD_FILES[*]} -eq 0 ]
+	# then
+	# 	exit 0
+	# fi
+
+	# On vérifie si on doit lancer une commande !NOW
+	SQL="SELECT count(id) FROM run_step WHERE start = '$TIME'"
+	echo "sql: $SQL" >&3
+	COUNT=$(sqlite3 "$DB" "$SQL")
+	echo "count: $COUNT" >&3
+
+	if [ $COUNT -gt 0 ]
+	then
+		SQL="SELECT id FROM run_step WHERE start = '$TIME'"
+		IDS=$(sqlite3 -newline ' '  "$DB" "$SQL")
+
+		for ID in $IDS
+		do
+			SQL="SELECT status,command FROM run_step WHERE id = '$ID'"
+			STATUS=$(sqlite3 "$DB" "$SQL" | cut -d'|' -f1)
+			COMMAND=$(sqlite3 "$DB" "$SQL" | cut -d'|' -f2)
+
+			if [ x$STATUS = "x0" ]
+			then
+				echo "Commande à executer: $PYTHON_CMD $COMMAND" >&3
+				$PYTHON_CMD $COMMAND && {
+					echo "Succès" >&3
+					SQL="UPDATE run_step SET status=1 WHERE id=$ID"
+					sqlite3 "$DB" "$SQL"
+				} || echo "Echec" >&3
+			fi
+		done
+	else
+		SQL="SELECT id FROM run_step WHERE start < '$TIME' AND status=0"
+
+		IDS=$(sqlite3 -newline ' ' "$DB" "$SQL")
+		echo "ids à relancer: $IDS" >&3
+
+		for ID in $IDS
+		do
+			SQL="SELECT status,command FROM run_step WHERE id = '$ID'"
+			STATUS=$(sqlite3 "$DB" "$SQL" | cut -d'|' -f1)
+			COMMAND=$(sqlite3 "$DB" "$SQL" | cut -d'|' -f2)
+
+			if [ x$STATUS = "x0" ]
+			then
+				echo "Commande à relancer: $PYTHON_CMD $COMMAND" >&3
+				$PYTHON_CMD $COMMAND && {
+					echo "Succès" >&3
+					SQL="UPDATE run_step SET status=1 WHERE id=$ID"
+					sqlite3 "$DB" "$SQL"
+				} || echo "Echec" >&3
+			fi
+		done	
+	fi
+
+	# for file in $CMD_FILES
+	# do
+	# 	TMPFILE=$(mktemp)
+	# 	echo "Traitement de $file" >&3
+	# 	sort $file | cat -n > $TMPFILE
+
+	# 	if grep -qP "$T" "$TMPFILE"
+	# 	then
+	# 		IDX=$(cat $TMPFILE | grep -P "$T" | cut -f1 | tr -d "[:space:]")
+	# 		if grep -qP "$T.*0$" "$TMPFILE"
+	# 		then
+	# 			CMD=$(cat $TMPFILE | grep -P "$T" | cut -f4)
+	# 			echo "Commande à executer: [$IDX] $CMD" >&3
+	# 			$CMD &&
+	# 			cat $TMPFILE | cut -f2- | rev | sed "${IDX}s/^0/1/" | rev > $file
+	# 		else
+	# 			cat $TMPFILE | cut -f2- > $file
+	# 			echo "La commande $IDX a déjà été executée..." >&3
+	# 		fi
+	# 	else
+	# 		IDX=$(cat $TMPFILE | grep -P -B1 "$T" | head -n1 | cut -f1 | tr -d "[:space:]")
+	# 		CMD=$(cat $TMPFILE | grep -P -B1 "$T" | head -n1 | cut -f4)
+	# 		echo "On vérifie la commande précédente: $IDX" >&3
+	# 		if [ $IDX -eq 0 ]
+	# 		then
+	# 			echo "On relance la commande $IDX" >&3
+	# 			$CMD &&
+	# 			cat $TMPFILE | cut -f2- | rev | sed '${IDX}s/^0/1/' | rev > $file
+	# 		fi
+	# 	fi
+	# 	rm $TMPFILE
+	# done
+}
+
 function init {
 	if [ $DEVELOPMENT = "TRUE" ]
 	then
@@ -216,69 +326,6 @@ function delete {
 	then
 		rm -f $FILE
 	fi
-}
-
-function check {
-	TIME=$(date +"%Y-%m-%d %H:%M:00")
-	T=$(date +"%Y-%m-%d\t%H:%M:00")
-	# T="2018-12-17\t16:03:30"
-	# T="2018-12-17\t16:03:00"
-	COUNTER=0
-
-	SQL="SELECT id FROM run WHERE date_end < '$TIME' OR date_end is NULL"
-	RUN_IDS=$(sqlite3 "$DB" "$SQL")
-	for RUN_ID in $RUN_IDS
-	do
-		SQL="UPDATE run SET status='past' WHERE id='$RUN_ID'"
-		sqlite3 "$DB" "$SQL"
-		CURRENT_FILE="${CMD_FILE}${RUN_ID}"
-		if [ -e $CURRENT_FILE ]
-		then
-			echo "on supprimerait $CURRENT_FILE" >&3
-			rm $CURRENT_FILE
-		fi
-		let COUNTER++
-	done
-	echo "$COUNTER runs set to 'past' status !" >&3
-
-	CMD_FILES=$(ls ${CMD_FILE}*)
-	if [ ${#CMD_FILES[*]} -eq 0 ]
-	then
-		exit 0
-	fi
-
-	for file in $CMD_FILES
-	do
-		TMPFILE=$(mktemp)
-		echo "Traitement de $file" >&3
-		sort $file | cat -n > $TMPFILE
-
-		if grep -qP "$T" "$TMPFILE"
-		then
-			IDX=$(cat $TMPFILE | grep -P "$T" | cut -f1 | tr -d "[:space:]")
-			if grep -qP "$T.*0$" "$TMPFILE"
-			then
-				CMD=$(cat $TMPFILE | grep -P "$T" | cut -f4)
-				echo "Commande à executer: [$IDX] $CMD" >&3
-				$CMD &&
-				cat $TMPFILE | cut -f2- | rev | sed "${IDX}s/^0/1/" | rev > $file
-			else
-				cat $TMPFILE | cut -f2- > $file
-				echo "La commande $IDX a déjà été executée..." >&3
-			fi
-		else
-			IDX=$(cat $TMPFILE | grep -P -B1 "$T" | head -n1 | cut -f1 | tr -d "[:space:]")
-			CMD=$(cat $TMPFILE | grep -P -B1 "$T" | head -n1 | cut -f4)
-			echo "On vérifie la commande précédente: $IDX" >&3
-			if [ $IDX -eq 0 ]
-			then
-				echo "On relance la commande $IDX" >&3
-				$CMD &&
-				cat $TMPFILE | cut -f2- | rev | sed '${IDX}s/^0/1/' | rev > $file
-			fi
-		fi
-		rm $TMPFILE
-	done
 }
 
 function parse_yaml {

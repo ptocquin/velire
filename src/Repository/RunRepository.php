@@ -14,6 +14,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  */
 class RunRepository extends ServiceEntityRepository
 {
+
     public function __construct(RegistryInterface $registry)
     {
         parent::__construct($registry, Run::class);
@@ -23,11 +24,28 @@ class RunRepository extends ServiceEntityRepository
     * @return Run[] Returns an array of Run objects
     */
     
-    public function getRunningRuns($today)
+    public function getRunningRuns()
     {
+        $today = new \DateTime();
         return $this->createQueryBuilder('r')
             ->where('r.start <= :today')
             ->andWhere('r.date_end >= :today')
+            ->setParameter('today', $today)
+            ->orderBy('r.start', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+   /**
+    * @return Run[] Returns an array of Run objects
+    */
+    
+    public function getComingRuns()
+    {
+        $today = new \DateTime();
+        return $this->createQueryBuilder('r')
+            ->where('r.start > :today')
             ->setParameter('today', $today)
             ->orderBy('r.start', 'ASC')
             ->getQuery()

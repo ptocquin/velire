@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello {{ controller_name }}!{% endblock %}
+
+{% block panelTitle %}
+<h1 class="h2">New Run</h1>
+{% endblock %}
+
+{% block panelContent %}
+  
+ 	{% 
+ 		form_theme form 
+ 			'bootstrap_4_layout.html.twig'
+ 			'jquery.collection.html.twig'
+ 			 %}
+    {{ form_start(form) }}
+    <div class="row">
+        <div class="col">
+        {{ form_row(form.label) }}
+        </div>
+        <div class="col">
+            {{ form_row(form.program) }}
+        </div>
+    </div>
+    {{ form_widget(form.description, {'attr': { "class": "d-none d-lg-block"}}) }}
+    <div class="row">
+    	<div class="col">
+    		{{ form_row(form.start) }}
+    	</div>
+    </div>
+    {{ form_widget(form) }}
+    <button class="btn">{{ button_label|default('Save') }}</button>
+    <a class="btn" href="{{ path('home') }}">Cancel</a>
+    {{ form_end(form) }}
+
+
+{% endblock %}

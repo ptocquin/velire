@@ -29,7 +29,7 @@ class Program
     private $description;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Step", mappedBy="program")
+     * @ORM\OneToMany(targetEntity="App\Entity\Step", mappedBy="program", orphanRemoval=true)
      */
     private $steps;
 
@@ -37,6 +37,11 @@ class Program
      * @ORM\OneToMany(targetEntity="App\Entity\Run", mappedBy="program", orphanRemoval=true)
      */
     private $runs;
+
+    public function __toString()
+    {
+        return $this->label;
+    }
 
     public function __construct()
     {

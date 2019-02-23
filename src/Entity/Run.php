@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -53,6 +55,16 @@ class Run
      */
     private $status;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\RunStep", mappedBy="run", cascade={"remove"})
+     */
+    private $steps;
+
+    public function __construct()
+    {
+        $this->steps = new ArrayCollection();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -87,7 +99,7 @@ class Run
         return $this->start;
     }
 
-    public function setStart(\DateTimeInterface $start): self
+    public function setStart(?\DateTimeInterface $start): self
     {
         $this->start = $start;
 
@@ -138,6 +150,37 @@ class Run
     public function setStatus(?string $status): self
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|RunStep[]
+     */
+    public function getSteps(): Collection
+    {
+        return $this->steps;
+    }
+
+    public function addStep(RunStep $step): self
+    {
+        if (!$this->steps->contains($step)) {
+            $this->steps[] = $step;
+            $step->setRun($this);
+        }
+
+        return $this;
+    }
+
+    public function removeStep(RunStep $step): self
+    {
+        if ($this->steps->contains($step)) {
+            $this->steps->removeElement($step);
+            // set the owning side to null (unless already changed)
+            if ($step->getRun() === $this) {
+                $step->setRun(null);
+            }
+        }
 
         return $this;
     }

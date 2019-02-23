@@ -31,6 +31,11 @@ class RunStep
      */
     private $status;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Run", inversedBy="steps")
+     */
+    private $run;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -68,6 +73,18 @@ class RunStep
     public function setStatus(int $status): self
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    public function getRun(): ?Run
+    {
+        return $this->run;
+    }
+
+    public function setRun(?Run $run): self
+    {
+        $this->run = $run;
 
         return $this;
     }

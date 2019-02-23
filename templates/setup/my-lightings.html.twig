@@ -59,11 +59,41 @@
 							<span data-feather="cloud-off" class="pull-right"></span>
 						{% endif %}
 						<div class="d-inline">
+							<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-grid-{{ luminaire.id }}">
+					        	<span data-feather="grid" {% if luminaire.ligne == "" %}style="color: red"{% endif %}></span>
+					        </button>
+						</div>
+						<div class="d-inline">
 							<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-delete-{{ luminaire.id }}">
 					        	<span data-feather="trash-2"></span>
 					        </button>
 						</div>
 					</li>
+					<div class="modal fade" id="modal-grid-{{ luminaire.id }}">
+	        			<div class="modal-dialog modal-dialog-centered" role="document">
+	        				<div class="modal-content">
+	        					<div class="modal-body">
+	        						<div class="btn-group btn-group-justified align-content-center">
+	        							<button id="{{ luminaire.id }}_btn_colonne"type="button" class="btn btn-primary btn-lg clk_increment">x:
+	        								<span class="value">{{ luminaire.colonne | default(1) }}</span>
+	        								<input type="hidden" id="{{ luminaire.id }}_colonne" name="{{ luminaire.id }}_colonne" value="1"></input>
+	        							</button>
+	        							<button id="{{ luminaire.id }}_btn_ligne" type="button" class="btn btn-default btn-lg clk_increment">y:
+	        								<span class="value">{{ luminaire.ligne | default(1) }}</span>
+	        								<input type="hidden" id="{{ luminaire.id }}_ligne" name="{{ luminaire.id }}_ligne" value="1"></input>
+	        							</button>
+	        						</div>
+	        					</div>
+	        					<div class="modal-footer">
+	        						<button type="button" class="btn btn-default set-position" data-dismiss="modal" aria-label="Close">
+	        							<span>Set</span>
+	        							<input type="hidden" name="{{ luminaire.id }}_set_position" value="{{ luminaire.id }}"></input>
+	        						</button>
+	        						<button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">Cancel</button>	        						
+	        					</div>
+	        				</div><!-- /.modal-content -->
+	        			</div><!-- /.modal-dialog -->
+	        		</div><!-- /.modal -->
 					<div class="modal fade" id="modal-delete-{{ luminaire.id }}">
 	        			<div class="modal-dialog modal-dialog-centered" role="document">
 	        				<div class="modal-content">

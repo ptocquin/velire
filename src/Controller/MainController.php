@@ -56,14 +56,25 @@ class MainController extends Controller
         $today = new \DateTime();
         $cluster_repo = $this->getDoctrine()->getRepository(Cluster::class);
         $log_repo = $this->getDoctrine()->getRepository(Log::class);
-        $clusters = $cluster_repo->findAll();
-        
+        $luminaire_repo =$this->getDoctrine()->getRepository(Luminaire::class);
+        $clusters = $cluster_repo->findBy(
+            array(),
+            array('label' => 'ASC')
+        );
+        $luminaires = $luminaire_repo->findConnectedLuminaire();
+        $x_max = $luminaire_repo->getXMax();
+        $y_max = $luminaire_repo->getYMax();
+
         return $this->render('main/index.html.twig', [
             'controller_name' => 'MainController',
             'clusters' => $clusters,
             'cluster_repo' => $cluster_repo,
             'log_repo' => $log_repo,
             'navtitle' => 'Dashboard',
+            'luminaires' => $luminaires,
+            'luminaire_repo' => $luminaire_repo,
+            'x_max' => $x_max['x_max'],
+            'y_max' => $y_max['y_max']
         ]);
     }
 
@@ -264,6 +275,8 @@ class MainController extends Controller
     {
     	$installed_luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findConnectedLuminaire();
 
+        // die(print_r($installed_luminaires));
+
 		$clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
 
         $empty_clusters = $this->getDoctrine()->getRepository(Cluster::class)->getEmptyClusters();
@@ -307,6 +320,8 @@ class MainController extends Controller
             $status = $this->getDoctrine()->getRepository(LuminaireStatus::class)->findOneByCode(99);
             $luminaire->addStatus($status);
             $luminaire->setCluster(null);
+            $luminaire->setLigne(null);
+            $luminaire->setColonne(null);
             $em->persist($luminaire);
         }
 
@@ -321,6 +336,16 @@ class MainController extends Controller
         if($_SERVER['APP_ENV'] == 'dev') {
             $data = json_decode(file_get_contents($this->get('kernel')->getProjectDir()."/var/test.json"), TRUE);
         } else {
+            // réinitialiser + master/slave
+            $process = new Process('python3 ./bin/velire-cmd.py --config ./bin/config.yaml --init --quiet');
+            $process->setTimeout(3600);
+            $process->run();
+
+            // executes after the command finishes
+            if (!$process->isSuccessful()) {
+                throw new ProcessFailedException($process);
+            }
+
             // Interroger le réseau de luminaires
             $process = new Process('python3 ./bin/velire-cmd.py --config ./bin/config.yaml --test --json --quiet');
             $process->setTimeout(3600);
@@ -339,12 +364,15 @@ class MainController extends Controller
 
         $spots = $data['found'];
 
+
+
         $i = 0;
+        $y = 1;
+        $x = 1;
 
         foreach ($spots as $spot) {
 
             $luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->findOneByAddress($spot);
-
             
             if(! is_null($luminaire)){
                 $status_on = $this->getDoctrine()->getRepository(LuminaireStatus::class)->findOneByCode(0);
@@ -352,8 +380,16 @@ class MainController extends Controller
                 $luminaire->removeStatus($status_off);
                 $luminaire->addStatus($status_on);
                 $luminaire->setCluster($cluster);
+                // $luminaire->setColonne($x);
+                // $luminaire->setLigne($y);
                 $em->persist($luminaire);
                 $i++;
+                if($x < 5){
+                    $x++;
+                } else {
+                    $x = 1;
+                    $y++;
+                }
             }
         }
 
@@ -425,6 +461,8 @@ class MainController extends Controller
                 $em->persist($c);
             }
         }
+
+        $em->flush();
 
 
         // add flash messages
@@ -549,6 +587,29 @@ class MainController extends Controller
         ]);
     }
 
+    /**
+     * @Route("/setup/recipes/edit/{id}", name="edit-recipe")
+     */
+    public function editRecipe(Request $request, Recipe $recipe)
+    {
+        $em = $this->getDoctrine()->getManager();
+
+        $form = $this->createForm(RecipeType::class, $recipe);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($recipe);
+            $em->flush();
+
+            return $this->redirectToRoute('recipes');
+        }
+        
+        return $this->render('setup/edit-recipes.html.twig', [
+            'form' => $form->createView(),
+            'navtitle' => 'Edit Recipe',
+        ]);
+    }
 
     /**
      * @Route("/setup/recipes/delete/{id}", name="delete-recipe")
@@ -556,10 +617,6 @@ class MainController extends Controller
     public function deleteRecipe(Request $request, Recipe $recipe)
     {
         $em = $this->getDoctrine()->getManager();
-
-        foreach ($recipe->getIngredients() as $ingredient) {
-            $em->remove($ingredient);
-        }
 
         $em->remove($recipe);
         $em->flush();
@@ -769,7 +826,7 @@ class MainController extends Controller
     {
     	$em = $this->getDoctrine()->getManager();
 
-    	$luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findInstalledLuminaire();
+    	$luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findConnectedLuminaire();
     	$clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
 
     	foreach ($clusters as $cluster) {
@@ -831,5 +888,58 @@ class MainController extends Controller
         }
 
         return $this->redirectToRoute('home');
+    }
+
+    /**
+     * @Route("/setup/set-cluster", name="set-cluster", options={"expose"=true})
+     */
+    public function setCluster(Request $request)
+    {
+        $data = $request->get('data');
+        $l = $data['l'];
+        $c = $data['c'];
+
+        $em = $this->getDoctrine()->getManager();
+        // $session = new Session();
+
+        $luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->findOneByAddress($l);
+        $cluster = $this->getDoctrine()->getRepository(Cluster::class)->findOneByLabel($c);
+        // Compter les clusters existants
+        $cluster_number = count($this->getDoctrine()->getRepository(Cluster::class)->findAll());
+
+        $cluster_added = 0;
+        if (count($cluster) == 0) {
+            $new_cluster = new Cluster;
+            $new_cluster->setLabel($c);
+            $new_cluster->addLuminaire($luminaire);
+            $em->persist($new_cluster);
+            $cluster_added = 1;
+            // $luminaire->setCluster($new_cluster);
+            // $em->persist($luminaire);
+        } else {
+            $luminaire->setCluster($cluster);
+            $em->persist($luminaire);
+        }
+        
+        $em->flush();
+
+        $clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
+        foreach($clusters as $item) {
+            if(count($item->getLuminaires()) == 0){
+                $em->remove($item);
+                // die(print_r($item->getId()));
+                $removed = count($item->getLuminaires());
+                $cluster_added = 1;
+            }
+        }
+
+        $em->flush();
+
+        $response = new JsonResponse(array(
+            'c' => $c,
+            'l' => $l,
+            'cluster_added' => $cluster_added,
+        ));
+        return $response;
     }
 }

@@ -5,6 +5,8 @@ namespace App\Controller;
 
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -24,11 +26,15 @@ use App\Entity\Step;
 use App\Entity\Run;
 use App\Entity\Cluster;
 use App\Entity\Recipe;
+use App\Entity\Luminaire;
+
 
 
 use App\Form\ProgramType;
 use App\Form\StepType;
 use App\Form\RunType;
+use App\Form\RunEditType;
+
 
 class ProgramController extends AbstractController
 {
@@ -82,7 +88,6 @@ class ProgramController extends AbstractController
 
 	   	$originalSteps = new ArrayCollection();
 
-	    // Create an ArrayCollection of the current Tag objects in the database
 	    foreach ($program->getSteps() as $step) {
 	        $originalSteps->add($step);
 	    }
@@ -104,7 +109,27 @@ class ProgramController extends AbstractController
             	$em->persist($step);
             }
             $em->persist($program);
+
             $em->flush();
+
+            // Le Run en cours qui utilisent ce programme doivent être relancés
+            // pour intégrer les modifications
+            $runs = $program->getRuns();
+
+            foreach ($runs as $run) {
+                $run_steps = $run->getSteps();
+                foreach ($run_steps as $run_step) {
+                    $em->remove($run_step);
+                }
+                $em->flush();
+
+                $process = new Process('python3 ./bin/velire-cmd.py -e --config ./bin/config.yaml --input ../var/config.json --set-run '.$run->getId());
+                $process->run();
+            }
+
+            foreach ($runs as $run) {
+                $run_steps = $run->getSteps();
+            }
 
             return $this->redirectToRoute('program');
         }
@@ -137,11 +162,13 @@ class ProgramController extends AbstractController
      */
     public function indexRun()
     {
-        $runs = $this->getDoctrine()->getRepository(Run::class)->findAll();
+        $running_runs = $this->getDoctrine()->getRepository(Run::class)->getRunningRuns();
+        $coming_runs = $this->getDoctrine()->getRepository(Run::class)->getComingRuns();
 
         return $this->render('control/runs.html.twig', [
             'controller_name' => 'ProgramController',
-            'runs' => $runs,
+            'running_runs' => $running_runs,
+            'coming_runs' => $coming_runs,
             'navtitle' => 'Runs', 
         ]);
     }
@@ -165,7 +192,7 @@ class ProgramController extends AbstractController
             $process = new Process('python3 ./bin/velire-cmd.py -e --config ./bin/config.yaml --input ../var/config.json --set-run '.$data->getId());
             $process->run();
 
-            return $this->redirectToRoute('update-log');
+            return $this->redirectToRoute('home');
         }
         return $this->render('control/new-run.html.twig', [
             'controller_name' => 'ProgramController',
@@ -210,7 +237,8 @@ class ProgramController extends AbstractController
                             // add flash messages
                 $session->getFlashBag()->add(
                     'info',
-                    $process->getOutput()
+                    // $process->getOutput()
+                    'Recipe '.$recipe->getLabel().' successfully started on cluster '.$cluster->getLabel()
                 );
             }
             return $this->redirectToRoute('update-log');        
@@ -230,9 +258,14 @@ class ProgramController extends AbstractController
     {
         $em = $this->getDoctrine()->getManager();
 
+        $steps = $run->getSteps();
 
-        $process = new Process('./bin/velire.sh --delete-run'.$run->getCluster()->getId());
-        $process->run();
+        foreach ($steps as $step) {
+            $em->remove($step);
+        }
+
+        // $process = new Process('./bin/velire.sh --delete-run'.$run->getCluster()->getId());
+        // $process->run();
 
         $em->remove($run);
         $em->flush();
@@ -247,14 +280,18 @@ class ProgramController extends AbstractController
     {
         $em = $this->getDoctrine()->getManager();
 
-        $form = $this->createForm(RunType::class, $run);
+        $form = $this->createForm(RunEditType::class, $run);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             
+            $data = $form->getData();
             $em->flush();
-            
-            $process = new Process('./bin/velire.sh --run '.$run->getId());
+
+            $process = new Process('python3 ./bin/velire-cmd.py -e --config ./bin/config.yaml --input ../var/config.json --set-run '.$data->getId());
             $process->run();
+            
+            // $process = new Process('./bin/velire.sh --run '.$run->getId());
+            // $process->run();
 
             // executes after the command finishes
             if (!$process->isSuccessful()) {
@@ -272,7 +309,7 @@ class ProgramController extends AbstractController
 
             return $this->redirectToRoute('run');
         }
-        return $this->render('control/new-run.html.twig', [
+        return $this->render('control/edit-run.html.twig', [
             'controller_name' => 'ProgramController',
             'form' => $form->createView(),
             'navtitle' => 'Edit Run',
@@ -331,5 +368,46 @@ class ProgramController extends AbstractController
             'form' => $form->createView(),
             'navtitle' => 'Manual Control',
         ]);
+    }
+
+    /**
+     * @Route("/set-position", name="set-position", options={"expose"=true})
+     */
+    public function setPositionAction(Request $request)
+    {
+        $data = $request->get('data');
+        $id = $data['id'];
+        $x = $data['x'];
+        $y = $data['y'];
+
+        $em = $this->getDoctrine()->getManager();
+
+        $test_luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->getByXY($x,$y);
+        $luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->find($id);
+
+        if(is_null($test_luminaire)) {
+            $luminaire->setColonne($x);
+            $luminaire->setLigne($y);
+            $em->persist($luminaire);
+            $em->flush();
+        } else {
+            $test_luminaire->setColonne(null);
+            $test_luminaire->setLigne(null);
+            $luminaire->setColonne($x);
+            $luminaire->setLigne($y);
+            $em->persist($luminaire);
+            $em->persist($test_luminaire);
+            $em->flush();
+        }
+
+        $x_max = $this->getDoctrine()->getRepository(Luminaire::class)->getXMax();
+        $y_max = $this->getDoctrine()->getRepository(Luminaire::class)->getYMax();
+
+        $response = new JsonResponse(array(
+            'id' => $id,
+            'x_max' => $x_max['x_max'],
+            'y_max' => $y_max['y_max']
+        ));
+        return $response;
     }
 }

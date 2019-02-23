@@ -68,7 +68,7 @@ parser.add_argument('--demo', type=str, nargs='+', required=False, dest="demo", 
 parser.add_argument('-v', '--version', action='store_true', dest='version', help='Print version')
 args = vars(parser.parse_args())
 # -----------------------------------------------------------------------------
-print(args)
+# print(args)
 # Fonction verbose
 quiet = args["quiet"]
 def verbose(msg):
@@ -134,7 +134,7 @@ if args['set_run']	!= None:
 	# Structure de la table 'run' :
 	# id (int, autoincrement), cluster_id (int), program_id (int), start (datetime), label (varchar), description (clob), date_end (datetime), status (varchar)
 	run_column_names = ['id', 'cluster_id', 'program_id', 'start', 'label', 'description', 'date_end', 'status']
-	cursor.execute('SELECT * FROM run WHERE id=?', (str(args['set_run'][0]),))
+	cursor.execute('SELECT id, cluster_id, program_id, start, label, description, date_end, status FROM run WHERE id=?', (str(args['set_run'][0]),))
 	run_row = cursor.fetchone()
 	run_dict = {}
 	for i in range(0, len(run_row)):
@@ -152,7 +152,7 @@ if args['set_run']	!= None:
 	# Structure de la table 'step'
 	# id (int, autoincrement), program_id (int), recipe_id (int), type (varchar), rank (int), value (varchar)
 	step_column_names = ['id', 'program_id', 'recipe_id', 'type', 'rank', 'value']
-	cursor.execute('SELECT * FROM step WHERE program_id=?', (prog_dict['id'],))
+	cursor.execute('SELECT * FROM step WHERE program_id=? ORDER BY rank ASC', (prog_dict['id'],))
 	step_listdict = []
 	for r in cursor.fetchall():
 		tmp_dict = {}
@@ -161,18 +161,19 @@ if args['set_run']	!= None:
 		step_listdict.append(tmp_dict)
 
 	# Remplissage de la table run_step
+	print(run_dict['start'])
 	time = datetime.strptime(run_dict['start'], "%Y-%m-%d %H:%M:%S")
 	goto = -1
 	i = 0
 	while i <= (len(step_listdict)-1):
 		if step_listdict[i]['type'] != "goto":
-			time = time + timedelta(hours = int(step_listdict[i]['value'].split(":")[0]), minutes = int(step_listdict[i]['value'].split(":")[1]))
 			cmd = "--cluster "+str(run_dict['cluster_id'])
 			if step_listdict[i]['type'] == "off":
 				cmd = cmd+" --off"
 			if step_listdict[i]['type'] == "time":
 				cmd = cmd+" -e --play "+str(step_listdict[i]['recipe_id'])
-			cursor.execute('INSERT INTO run_step(start, command, status) VALUES (?,?,?)', (time, str(cmd), 0,))
+			cursor.execute('INSERT INTO run_step(run_id, start, command, status) VALUES (?,?,?,?)', (str(args['set_run'][0]),time, str(cmd), 0,))
+			time = time + timedelta(hours = int(step_listdict[i]['value'].split(":")[0]), minutes = int(step_listdict[i]['value'].split(":")[1]))
 		else:
 			if goto < 0:
 				goto = int(step_listdict[i]['value'].split(":")[1])

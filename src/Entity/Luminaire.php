@@ -53,6 +53,16 @@ class Luminaire
      */
     private $logs;
 
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $ligne;
+
+    /**
+     * @ORM\Column(type="string", length=1, nullable=true)
+     */
+    private $colonne;
+
 
     public function __construct()
     {
@@ -218,6 +228,30 @@ class Luminaire
                 $log->setLuminaire(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getLigne(): ?int
+    {
+        return $this->ligne;
+    }
+
+    public function setLigne(?int $ligne): self
+    {
+        $this->ligne = $ligne;
+
+        return $this;
+    }
+
+    public function getColonne(): ?string
+    {
+        return $this->colonne;
+    }
+
+    public function setColonne(?string $colonne): self
+    {
+        $this->colonne = $colonne;
 
         return $this;
     }
