@@ -152,7 +152,7 @@ if args['set_run']	!= None:
 	# Structure de la table 'step'
 	# id (int, autoincrement), program_id (int), recipe_id (int), type (varchar), rank (int), value (varchar)
 	step_column_names = ['id', 'program_id', 'recipe_id', 'type', 'rank', 'value']
-	cursor.execute('SELECT * FROM step WHERE program_id=?', (prog_dict['id'],))
+	cursor.execute('SELECT * FROM step WHERE program_id=? ORDER BY rank ASC', (prog_dict['id'],))
 	step_listdict = []
 	for r in cursor.fetchall():
 		tmp_dict = {}

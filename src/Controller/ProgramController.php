@@ -88,7 +88,6 @@ class ProgramController extends AbstractController
 
 	   	$originalSteps = new ArrayCollection();
 
-	    // Create an ArrayCollection of the current Tag objects in the database
 	    foreach ($program->getSteps() as $step) {
 	        $originalSteps->add($step);
 	    }
@@ -110,7 +109,27 @@ class ProgramController extends AbstractController
             	$em->persist($step);
             }
             $em->persist($program);
+
             $em->flush();
+
+            // Le Run en cours qui utilisent ce programme doivent être relancés
+            // pour intégrer les modifications
+            $runs = $program->getRuns();
+
+            foreach ($runs as $run) {
+                $run_steps = $run->getSteps();
+                foreach ($run_steps as $run_step) {
+                    $em->remove($run_step);
+                }
+                $em->flush();
+
+                $process = new Process('python3 ./bin/velire-cmd.py -e --config ./bin/config.yaml --input ../var/config.json --set-run '.$run->getId());
+                $process->run();
+            }
+
+            foreach ($runs as $run) {
+                $run_steps = $run->getSteps();
+            }
 
             return $this->redirectToRoute('program');
         }
@@ -173,7 +192,7 @@ class ProgramController extends AbstractController
             $process = new Process('python3 ./bin/velire-cmd.py -e --config ./bin/config.yaml --input ../var/config.json --set-run '.$data->getId());
             $process->run();
 
-            return $this->redirectToRoute('update-log');
+            return $this->redirectToRoute('home');
         }
         return $this->render('control/new-run.html.twig', [
             'controller_name' => 'ProgramController',
