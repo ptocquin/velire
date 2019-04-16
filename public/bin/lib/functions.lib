@@ -58,17 +58,23 @@ function check {
 
 		for ID in $IDS
 		do
-			SQL="SELECT status,command FROM run_step WHERE id = '$ID'"
-			STATUS=$(sqlite3 "$DB" "$SQL" | cut -d'|' -f1)
-			COMMAND=$(sqlite3 "$DB" "$SQL" | cut -d'|' -f2)
+			SQL="SELECT status,command, run_id FROM run_step WHERE id = '$ID'"
+			RESULT=$(sqlite3 "$DB" "$SQL")
+			STATUS=$(echo $RESULT | cut -d'|' -f1)
+			COMMAND=$(echo $RESULT | cut -d'|' -f2)
+			RUN_ID=$(echo $RESULT | cut -d'|' -f3)
 
 			if [ x$STATUS = "x0" ]
 			then
 				echo "Commande à relancer: $PYTHON_CMD $COMMAND" >&3
 				$PYTHON_CMD $COMMAND && {
 					echo "Succès" >&3
-					SQL="UPDATE run_step SET status=1 WHERE id=$ID"
-					sqlite3 "$DB" "$SQL"
+					cat << EOF | sqlite3 "$DB"
+					BEGIN TRANSACTION;
+					UPDATE run_step SET status=2 WHERE run_id=${RUN_ID} AND status=1;
+					UPDATE run_step SET status=1 WHERE id=$ID;
+					COMMIT;
+					EOF
 				} || echo "Echec" >&3
 			fi
 		done	
