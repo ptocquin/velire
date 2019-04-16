@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ./bin/lib/functions.lib
+source ./bin/lib/functions.sh
 eval $(parse_yaml ./bin/config.yaml)
 
 exec 3>> messages.log
