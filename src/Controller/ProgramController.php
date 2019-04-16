@@ -133,7 +133,7 @@ class ProgramController extends AbstractController
 
             return $this->redirectToRoute('program');
         }
-        return $this->render('program/new-program.html.twig', [
+        return $this->render('program/edit-program.html.twig', [
             'controller_name' => 'ProgramController',
             'form' => $form->createView(),
             'navtitle' => 'Edit Program',
@@ -283,8 +283,13 @@ class ProgramController extends AbstractController
         $form = $this->createForm(RunEditType::class, $run);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            
+
             $data = $form->getData();
+
+            $steps = $run->getSteps();
+            foreach ($steps as $step) {
+                $em->remove($step);
+            }
             $em->flush();
 
             $process = new Process('python3 ./bin/velire-cmd.py -e --config ./bin/config.yaml --input ../var/config.json --set-run '.$data->getId());
