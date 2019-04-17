@@ -284,29 +284,31 @@ class ProgramController extends AbstractController
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
 
-            $data = $form->getData();
+            // $data = $form->getData();
 
             $steps = $run->getSteps();
             foreach ($steps as $step) {
                 $em->remove($step);
             }
+
+            $em->persist($run);
             $em->flush();
 
-            $process = new Process('python3 ./bin/velire-cmd.py -e --config ./bin/config.yaml --input ../var/config.json --set-run '.$data->getId());
+            $process = new Process('python3 ./bin/velire-cmd.py -e --config ./bin/config.yaml --input ../var/config.json --set-run '.$run->getId());
             $process->run();
             
             // $process = new Process('./bin/velire.sh --run '.$run->getId());
             // $process->run();
 
             // executes after the command finishes
-            if (!$process->isSuccessful()) {
-                throw new ProcessFailedException($process);
-            }
+            // if (!$process->isSuccessful()) {
+            //     throw new ProcessFailedException($process);
+            // }
 
             
 
-            $date = new \DateTime($process->getOutput());
-            $run->setDateEnd($date);
+            // $date = new \DateTime($process->getOutput());
+            // $run->setDateEnd($date);
 
             $em->persist($run);
             $em->flush();
