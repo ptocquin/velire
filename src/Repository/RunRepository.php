@@ -41,6 +41,25 @@ class RunRepository extends ServiceEntityRepository
     * @return Run[] Returns an array of Run objects
     */
     
+    public function getRunningRunsForCluster($id)
+    {
+        $today = new \DateTime();
+        return $this->createQueryBuilder('r')
+            ->where('r.start <= :today')
+            ->andWhere('r.date_end >= :today')
+            ->andWhere('r.cluster = :id')
+            ->setParameter('today', $today)
+            ->setParameter('id', $id)
+            ->orderBy('r.start', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+   /**
+    * @return Run[] Returns an array of Run objects
+    */
+    
     public function getComingRuns()
     {
         $today = new \DateTime();

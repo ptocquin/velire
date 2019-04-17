@@ -323,7 +323,8 @@
                       <span data-feather="play-circle"></span> 
                     </a>
                     <a href="{{ path('new-run', {'id': cluster.id }) }}" type="button" class="btn btn-light">
-                      {% if cluster_repo.getRunningClusters(cluster.id, "now"|date("Y-m-d H:i:s"))|length > 0 %}
+                      {% set runs = run_repo.getRunningRunsForCluster(cluster.id) %}
+                      {% if runs|length > 0 %}
                         <span data-feather="clock" style="color: green;" data-toggle="tooltip" data-placement="top" title="{{ cluster_repo.getRunningClusters(cluster.id, "now"|date("Y-m-d H:i:s"))|length }} running program"></span> 
                       {% else %}
                         <span style="color: red;" data-feather="clock" data-toggle="tooltip" data-placement="top" title="No running programs"></span> 
@@ -331,14 +332,16 @@
                     </a>
                   </div>
                 </div>
+                {% if runs|length > 0 %}
                 <div class="btn-group-vertical btn-block">
-                  {% for run in cluster.runs %}
+                  {% for run in runs %}
                     <div class="btn-group" role="group" aria-label="Basic example">
                       <button type="button" class="btn btn-success">Run: {{ run.label }} // {{ run.start|date("Y-m-d H:i:s") }}</button>
                       <a class="btn btn-light" type="button"  href="{{ path('edit-run', {'id': run.id }) }}"><span data-feather="edit"></span></a>
                     </div>
                   {% endfor %}
                 </div>
+                {% endif %}
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>

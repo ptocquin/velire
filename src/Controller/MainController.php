@@ -55,6 +55,7 @@ class MainController extends Controller
     {
         $today = new \DateTime();
         $cluster_repo = $this->getDoctrine()->getRepository(Cluster::class);
+        $run_repo = $this->getDoctrine()->getRepository(Run::class);
         $log_repo = $this->getDoctrine()->getRepository(Log::class);
         $luminaire_repo =$this->getDoctrine()->getRepository(Luminaire::class);
         $clusters = $cluster_repo->findBy(
@@ -69,6 +70,7 @@ class MainController extends Controller
             'controller_name' => 'MainController',
             'clusters' => $clusters,
             'cluster_repo' => $cluster_repo,
+            'run_repo' => $run_repo,
             'log_repo' => $log_repo,
             'navtitle' => 'Dashboard',
             'luminaires' => $luminaires,
