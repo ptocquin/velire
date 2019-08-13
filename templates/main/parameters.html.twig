@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% set colors = ["primary","secondary","success","danger","warning","info"] %}
+
+{% block title %}Setup{% endblock %}
+
+{% block panelTitle %}
+<h1 class="h2">Setup</h1>
+<div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group mr-2">
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block panelContent %}
+
+{% for message in app.flashes('info') %}
+	<div class="alert alert-success" role="alert">
+        {{ message }}
+    </div>
+{% endfor %}
+
+
+<div class="row">
+	<div class="col">
+		{% form_theme form 'bootstrap_4_horizontal_layout.html.twig' %}
+			{{ form_start(form) }}
+			{{ form_row(form.controller_name, {'label' : "Controller name" }) }}
+			<button class="btn">{{ button_label|default('Save') }}</button>
+			{{ form_end(form) }}
+	</div>
+</div>
+
+{% endblock %}

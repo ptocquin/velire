@@ -7,192 +7,18 @@
 
 {% block panelContent %}
 
+<div class="container">
+
 {% for message in app.flashes('info') %}
   <div class="alert alert-success" role="alert">
         {{ message }}
     </div>
 {% endfor %}
-
-{# <div class="row">
-	<div class="col col-md-12">
-		<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
-	  		<h1 class="h5"></h1>
-	    </div>
-	</div>
-</div> #}
-
-{# <div class="card-deck">
-{% for cluster in clusters %}
-  {% if log_repo.getClusterLastLog(cluster.id) is not empty %}
-    {% set log = log_repo.getClusterLastLog(cluster.id)[0] %}
-    {% set logs = log_repo.getClusterInfo(cluster.id, 30) %}
-    {% set array_temp = [] %}
-    {% set array_time = [] %}
-    {% for l in logs %}
-        {% set array_temp = array_temp|merge([l.value.mean_temp]) %}
-        {% set array_time = array_time|merge([l.time|date("H:i:s")]) %}
-    {% endfor %}
-    {% set array = { "labels": array_time } %}
-    {% set array = array|merge ({ "datasets": [{ data: array_temp }] }) %}
-    <div id="dataset" data-values="{{ array|json_encode }} "></div>
-  {% endif %}
-
-    <div class="col">
-      <div class="card text-white bg-secondary">
-      <div class="card-header">
-        <h5 class="card-title d-flex justify-content-between">
-          Cluster {{ cluster.label }}
-
-          <a href="{{ path('set-cluster-off', {'id': cluster.id }) }}" class="btn btn-xs btn-dark p-0 pb-1" >
-            <span data-feather="power" style="stroke-width: 4px; with: 12; height: 12; color: {% if log is not defined %}grey{% else %}{% if log.value.channels_on == 0 %}red{% else %}green{% endif %}{% endif %}"></span>
-          </a>
-        </h5>
-      </div>
-      <div class="card-body">
-        {% if log is defined %}
-        <div class="modal fade" id="modal-temp-cluster_{{ cluster.id }}">
-          <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title">Lighting temperatures, Cluster {{ cluster.label }} </h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                  <span class="sr-only">Close</span>
-                </button>
-              </div>
-              <div class="modal-body">
-                {% set temp = 0 %}
-                {% set i = 0 %}
-                <div class="row">
-                    <div class="col">
-                      <ul class="list-group list-group-flush">
-                      {% for luminaire in log_repo.getLuminairesInfo(cluster.id, log.time) %}
-                        {% if loop.index is divisible by(6) %}
-                        </ul>
-                        </div>
-                        <div class="col">
-                          <ul class="list-group list-group-flush">
-                        {% endif %}
-                        <li class="list-group-item d-flex justify-content-between">
-                          Lighting #{{ luminaire.value.address }} [ Serial: {{ luminaire.value.serial }} ] 
-                            <span class="badge badge-success pull-right">{{ luminaire.value.led_pcb_0 }}°C</span>
-                            <span class="badge badge-success pull-right">{{ luminaire.value.led_pcb_0 }}°C</span>
-                        </li>
-                      {% endfor %}
-                      </ul>
-                    </div>
-                </div>
-              </div>
-            </div><!-- /.modal-content -->
-          </div><!-- /.modal-dialog -->
-        </div><!-- /.modal -->
-        <div class="modal fade" id="modal-channels-cluster_{{ cluster.id }}">
-          <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title">Channels state, Cluster {{ cluster.label }} </h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                  <span class="sr-only">Close</span>
-                </button>
-              </div>
-              <div class="modal-body">
-              {% set n_channels = 0 %}
-                <div class="row">
-                    <div class="col">
-                      <ul class="list-group list-group-flush">
-                      {% for luminaire in log_repo.getLuminairesInfo(cluster.id, log.time) %}
-                        {% if loop.index is divisible by(6) %}
-                        </ul>
-                        </div>
-                        <div class="col">
-                          <ul class="list-group list-group-flush">
-                        {% endif %}
-                        <li class="list-group-item d-flex justify-content-between">
-                          <span>Lighting #{{ luminaire.value.address }}</span>
-                          <span class="badge badge-success pull-right">{{ log.value.channels_on }} channels On</span>
-                        </li>
-                      {% endfor %}
-                      </ul>
-                    </div>
-                </div>
-              </div>
-            </div><!-- /.modal-content -->
-          </div><!-- /.modal-dialog -->
-        </div><!-- /.modal -->
-        <div class="modal fade" id="modal-plot-cluster_{{ cluster.id }}">
-          <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title">Cluster {{ cluster.label }} temperatures</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                  <span class="sr-only">Close</span>
-                </button>
-              </div>
-              <div class="modal-body">
-               <canvas id="myChart"></canvas>
-              </div>
-            </div><!-- /.modal-content -->
-          </div><!-- /.modal-dialog -->
-        </div><!-- /.modal -->
-        {% endif %}
-        
-        <div class="btn-group-vertical btn-block">
-          <div class="btn-group">
-            <a class="btn btn-light {% if log is not defined %}disabled{% endif %}" type="button"  href="{{ path('graph', {'id': cluster.id }) }}"><span data-feather="trending-up"></a>
-            <a href="{{ path('new-play', { 'id': cluster.id }) }}" type="button" class="btn btn-light">
-              <span data-feather="play-circle"></span> 
-            </a>
-            <a href="{{ path('new-run', {'id': cluster.id }) }}" type="button" class="btn btn-light">
-              {% if cluster_repo.getRunningClusters(cluster.id, "now"|date("Y-m-d H:i:s"))|length > 0 %}
-                <span data-feather="sliders" style="color: green;" data-toggle="tooltip" data-placement="top" title="{{ cluster_repo.getRunningClusters(cluster.id, "now"|date("Y-m-d H:i:s"))|length }} running program"></span> 
-              {% else %}
-                <span style="color: red;" data-feather="sliders" data-toggle="tooltip" data-placement="top" title="No running programs"></span> 
-              {% endif %}
-            </a>
-          </div>
-          {% if log is defined %}
-          <button class="btn btn-xs 
-            {% if log.value.mean_temp < 75 %}
-              btn-info
-            {% else %}
-              btn-danger
-            {% endif %}
-            btn-info" data-toggle="modal" data-target="#modal-temp-cluster_{{ cluster.id }}">
-            <span data-feather="thermometer"></span> {{ log.value.mean_temp|round }}°C 
-          </button>
-          <button class="btn btn-xs 
-          {% if log.value.channels_on > 0 %}
-            btn-success
-          {% else %}
-            btn-light
-          {% endif %} 
-           " data-toggle="modal" data-target="#modal-channels-cluster_{{ cluster.id }}">
-           <span data-feather="sliders"></span> {{ log.value.channels_on }} Ch.
-         </button>
-          {% endif %}
-        </div>
-      </div>
-      </div>
-    </div>
-
-  {% if loop.index is divisible by(4) %}
-  </div><div class="card-deck">
-  {% endif %}
-
-{% endfor %}
-</div>
-
-<hr> #}
-
-{# <div class="container"> #}
     {% for y in y_max..1 %}
-    {# <div class="row"> #}
+    
       <div class="card-group">
       {% for x in 1..x_max %}
-{#         <div class="col-sm-3">
- #}          <div class="card w-{{ 100 / x_max }} text-white bg-secondary">
+          <div class="card {% if x_max > 3 %} w-{{ 100 / x_max }} {% else %} col-4 {% endif %} text-white bg-secondary">
                   {% if luminaire_repo.getByXY(x,y) is not null %}
                   {% set luminaire = luminaire_repo.getByXY(x,y) %}
                   <div class="card-body">
@@ -261,13 +87,10 @@
         {% endif %}
       {% endfor %}
       </div>
-    {# </div> #}
     {% endfor %}
-{# </div> #}
 
 <hr>
 
-<div class="container">
   <div class="row">
     {% for luminaire in luminaire_repo.getNotMapped() %}
         <div class="col">

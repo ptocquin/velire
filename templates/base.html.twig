@@ -5,28 +5,29 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         {% block meta %}
         {% endblock %}
-        <title>{% block title %}Velire Controller {{ ":: " ~ navtitle|default("") }} {% endblock %}</title>
+        <title>{% block title %} {{ parameters.getControllerName }} {{ ":: " ~ navtitle|default("") }} {% endblock %}</title>
         {% block stylesheets %}
 			<link rel="stylesheet" href="{{ asset('build/app.css') }}">
         {% endblock %}
     </head>
-    <body style="margin-top: 56px;">
+    <body class="bg-dark" style="margin-top: 75px;">
         {% block navbar %}
             <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-dark shadow">
               <a href="{{ path('home') }}" class="navbar-brand d-block d-md-none"><span data-feather="home"></span></a>
-              <a class="navbar-brand col-sm-3 col-md-2 mr-0 d-none d-md-block" href="{{ path('home') }}">VeLiRe Controller</a>
+              <a class="navbar-brand col-sm-3 col-md-2 mr-0 d-none d-md-block" href="{{ path('home') }}">{{ parameters.getControllerName }}</a>
               <span class="navbar-brand">{{ navtitle|default("") }}</span>
               <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTop" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
               </button>
               <div class="collapse navbar-collapse" id="navbarTop">
                 <ul class="navbar-nav">
-                  <li class="nav-item">
+{#                   <li class="nav-item">
                     <a class="nav-link" href="#">Sign out</a>
                   </li>
                   <li class="nav-item">
                     <a class="nav-link" href="{{ path('admin') }}">Admin</a>
-                  </li>
+                  </li> #}
+                  <li class="nav-item"><a class="nav-link" href="{{ path('parameters') }}" > <span data-feather="settings"></span> </a></li>
                 </ul>
                 <ul class="navbar-nav d-block d-md-none">
                   <div class="nav-item" href="#">
