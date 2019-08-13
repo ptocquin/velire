@@ -12,26 +12,22 @@
     </head>
     <body class="bg-dark" style="margin-top: 75px;">
         {% block navbar %}
-            <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-dark shadow">
-              <a href="{{ path('home') }}" class="navbar-brand d-block d-md-none"><span data-feather="home"></span></a>
-              <a class="navbar-brand col-sm-3 col-md-2 mr-0 d-none d-md-block" href="{{ path('home') }}">{{ parameters.getControllerName }}</a>
+            <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark shadow">
+              <a class="navbar-brand" href="{{ path('home') }}">{{ parameters.getControllerName }}</a>
+              <ul class="navbar-nav m-auto d-block">
+                <li class="navbar-item text-light text-center">{{ navtitle|default("") }}</li>
+              </ul>
               <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTop" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
               </button>
-              <div class="collapse navbar-collapse" id="navbarTop">
-                <ul class="navbar-nav m-auto">
-                  <li class="navbar-brand text-light">{{ navtitle|default("") }}</li>
-                </ul>
-                <ul class="navbar-nav  ml-auto">
-{#                   <li class="nav-item">
-                    <a class="nav-link" href="#">Sign out</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="{{ path('admin') }}">Admin</a>
-                  </li> #}
+              <div class="collapse navbar-collapse col-1" id="navbarTop">
+                <ul class="navbar-nav ml-auto d-none d-md-block">
                   <li class="nav-item"><a class="nav-link" href="{{ path('parameters') }}" > <span data-feather="settings"></span> </a></li>
                 </ul>
                 <ul class="navbar-nav d-block d-md-none">
+                  <div class="nav-item" href="#">
+                      <a class="nav-link" href="{{ path('parameters') }}">Parameters</a>
+                  </div>
                   <div class="nav-item" href="#">
                       <a class="nav-link" href="{{ path('my-lightings') }}">My Lightings</a>
                   </div>
