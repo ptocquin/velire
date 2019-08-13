@@ -14,12 +14,11 @@ class ControllerName
         $filesystem = new Filesystem();
         if ($filesystem->exists("params.yaml")) {
             $values = Yaml::parseFile('params.yaml');
+            $controller_name = $values['controller_name'];
         } else {
-            $values = array(
-                'controller_name' => 'test controller name'
-            );
+            $controller_name = 'test controller name';
         }
 
-        return $values['controller_name'];
+        return $controller_name;
     }
 }

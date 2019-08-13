@@ -15,12 +15,14 @@
             <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-dark shadow">
               <a href="{{ path('home') }}" class="navbar-brand d-block d-md-none"><span data-feather="home"></span></a>
               <a class="navbar-brand col-sm-3 col-md-2 mr-0 d-none d-md-block" href="{{ path('home') }}">{{ parameters.getControllerName }}</a>
-              <span class="navbar-brand">{{ navtitle|default("") }}</span>
               <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTop" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
               </button>
               <div class="collapse navbar-collapse" id="navbarTop">
-                <ul class="navbar-nav">
+                <ul class="navbar-nav m-auto">
+                  <li class="navbar-brand text-light">{{ navtitle|default("") }}</li>
+                </ul>
+                <ul class="navbar-nav  ml-auto">
 {#                   <li class="nav-item">
                     <a class="nav-link" href="#">Sign out</a>
                   </li>

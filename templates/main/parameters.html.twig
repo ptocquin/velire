@@ -2,10 +2,10 @@
 
 {% set colors = ["primary","secondary","success","danger","warning","info"] %}
 
-{% block title %}Setup{% endblock %}
+{% block title %}Parameters{% endblock %}
 
 {% block panelTitle %}
-<h1 class="h2">Setup</h1>
+<h1 class="h2">Parameters</h1>
 <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group mr-2">
         
@@ -26,7 +26,7 @@
 	<div class="col">
 		{% form_theme form 'bootstrap_4_horizontal_layout.html.twig' %}
 			{{ form_start(form) }}
-			{{ form_row(form.controller_name, {'label' : "Controller name" }) }}
+			{{ form_row(form.controller_name, {'label' : "Controller name", 'label_attr': {class: 'text-light'} }) }}
 			<button class="btn">{{ button_label|default('Save') }}</button>
 			{{ form_end(form) }}
 	</div>
