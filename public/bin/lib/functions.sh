@@ -1,34 +1,24 @@
 function check {
-	TIME=$(date +"%Y-%m-%d %H:%M:00")
-	T=$(date +"%Y-%m-%d\t%H:%M:00")
-	# T="2018-12-17\t16:03:30"
-	# T="2018-12-17\t16:03:00"
-	COUNTER=0
+	TIME=$(date +"%Y-%m-%d %H:%M:00") # date dont l'heure est arrondie à la minute
 
+	### Gestion des runs terminés
 	SQL="SELECT id FROM run WHERE date_end < '$TIME' OR date_end is NULL"
 	RUN_IDS=$(sqlite3 "$DB" "$SQL")
 	for RUN_ID in $RUN_IDS
 	do
-		SQL="UPDATE run SET status='past' WHERE id='$RUN_ID'"
+		SQL="UPDATE run SET status='past' WHERE id='$RUN_ID';"
+		SQL="${SQL} DELETE FROM run_step WHERE run_id='$RUN_ID';"
 		sqlite3 "$DB" "$SQL"
-		#SQL="DELETE FROM run_step WHERE start < '$TIME'"
-		#sqlite3 "$DB" "$SQL"
-		let COUNTER++
+
+		echo "${TIME}: Run $RUN_ID set to 'past' status !" >&3
 	done
-	echo "$COUNTER runs set to 'past' status !" >&3
 
-	# CMD_FILES=$(ls ${CMD_FILE}*)
-	# if [ ${#CMD_FILES[*]} -eq 0 ]
-	# then
-	# 	exit 0
-	# fi
-
-	# On vérifie si on doit lancer une commande !NOW
+	### On vérifie si on doit lancer une commande !NOW
 	SQL="SELECT count(id) FROM run_step WHERE start = '$TIME'"
-	echo "sql: $SQL" >&3
 	COUNT=$(sqlite3 "$DB" "$SQL")
-	echo "count: $COUNT" >&3
+	echo "${TIME}: $COUNT step(s) à lancer" >&3
 
+	# si au moins une commande pour ce time point
 	if [ $COUNT -gt 0 ]
 	then
 		SQL="SELECT id FROM run_step WHERE start = '$TIME'"
@@ -36,29 +26,7 @@ function check {
 
 		for ID in $IDS
 		do
-			SQL="SELECT status,command FROM run_step WHERE id = '$ID'"
-			STATUS=$(sqlite3 "$DB" "$SQL" | cut -d'|' -f1)
-			COMMAND=$(sqlite3 "$DB" "$SQL" | cut -d'|' -f2)
-
-			if [ x$STATUS = "x0" ]
-			then
-				echo "Commande à executer: $PYTHON_CMD $COMMAND" >&3
-				$PYTHON_CMD $COMMAND && {
-					echo "Succès" >&3
-					SQL="UPDATE run_step SET status=1 WHERE id=$ID"
-					sqlite3 "$DB" "$SQL"
-				} || echo "Echec" >&3
-			fi
-		done
-	else
-		SQL="SELECT id FROM run_step WHERE start < '$TIME' AND status=0"
-
-		IDS=$(sqlite3 -newline ' ' "$DB" "$SQL")
-		echo "ids à relancer: $IDS" >&3
-
-		for ID in $IDS
-		do
-			SQL="SELECT status,command, run_id FROM run_step WHERE id = '$ID'"
+			SQL="SELECT status,command,run_id FROM run_step WHERE id = '$ID'"
 			RESULT=$(sqlite3 "$DB" "$SQL")
 			STATUS=$(echo $RESULT | cut -d'|' -f1)
 			COMMAND=$(echo $RESULT | cut -d'|' -f2)
@@ -66,47 +34,94 @@ function check {
 
 			if [ x$STATUS = "x0" ]
 			then
-				echo "Commande à relancer: $PYTHON_CMD $COMMAND" >&3
-				$PYTHON_CMD $COMMAND && {
-					echo "Succès" >&3
-					sqlite3 "$DB" "BEGIN TRANSACTION;UPDATE run_step SET status=2 WHERE run_id=${RUN_ID} AND status=1;UPDATE run_step SET status=1 WHERE id=$ID;COMMIT;"
-				} || echo "Echec" >&3
+				MSG="${TIME}: $PYTHON_CMD $COMMAND"
+			else
+				MSG="${TIME}: (status != 0) $PYTHON_CMD $COMMAND"
+				
 			fi
-		done	
+			SQL="BEGIN TRANSACTION;"
+			# les anciennes commandes reçoivent le status 2; seule la dernière
+			# commande exécutée garde le status 1
+			# les commandes anciennes non exécutées (par exemple car le programme 
+			# a été lancé après le start de certaines commandes) reçoivent le status 3
+			SQL="$SQL UPDATE run_step SET status=2 WHERE run_id=${RUN_ID} AND status=1;"
+			SQL="$SQL UPDATE run_step SET status=1 WHERE id=$ID;"
+			SQL="$SQL UPDATE run_step SET status=3 WHERE run_id=${RUN_ID} AND start < '$TIME' AND status=0;"
+			SQL="$SQL COMMIT;"
+			$PYTHON_CMD $COMMAND && { echo "$MSG || Succès" >&3; sqlite3 "$DB" "$SQL"; } || echo "$MSG || Echec" >&3
+		done
 	fi
+	# On vérifie que des commandes antérieures n'ont pas été lancées
+	# Quels sont les runs qui ont des steps antérieurs avec status 0
+	SQL="SELECT DISTINCT run_id FROM run_step WHERE start < '$TIME' AND status=0"
+	RUN_IDS=$(sqlite3 "$DB" "$SQL")
+	for RUN_ID in $RUN_IDS
+	do
+		SQL="SELECT id, status, command FROM run_step WHERE run_id='$RUN_ID' AND start < '$TIME' ORDER BY start DESC LIMIT 1;"
+		RESULT=$(sqlite3 "$DB" "$SQL")
+		ID=$(echo $RESULT | cut -d'|' -f1)
+		STATUS=$(echo $RESULT | cut -d'|' -f2)
+		COMMAND=$(echo $RESULT | cut -d'|' -f3)
 
-	# for file in $CMD_FILES
+		if [ x$STATUS = "x0" ]
+		then
+			MSG="${TIME}: On relance la dernière commande > $PYTHON_CMD $COMMAND"
+			SQL="BEGIN TRANSACTION;"
+			# les anciennes commandes reçoivent le status 2; seule la dernière
+			# commande exécutée garde le status 1
+			# les commandes anciennes non exécutées (par exemple car le programme 
+			# a été lancé après le start de certaines commandes) reçoivent le status 3
+			SQL="$SQL UPDATE run_step SET status=2 WHERE run_id=${RUN_ID} AND status=1;"
+			SQL="$SQL UPDATE run_step SET status=1 WHERE id=$ID;"
+			SQL="$SQL UPDATE run_step SET status=3 WHERE run_id=${RUN_ID} AND start < '$TIME' AND status=0;"
+			SQL="$SQL COMMIT;"
+			$PYTHON_CMD $COMMAND && { echo "$MSG || Succès" >&3; sqlite3 "$DB" "$SQL"; } || echo "$MSG || Echec" >&3
+		else
+			SQL="BEGIN TRANSACTION;"
+			# les anciennes commandes reçoivent le status 2; seule la dernière
+			# commande exécutée garde le status 1
+			# les commandes anciennes non exécutées (par exemple car le programme 
+			# a été lancé après le start de certaines commandes) reçoivent le status 3
+			SQL="$SQL UPDATE run_step SET status=2 WHERE run_id=${RUN_ID} AND status=1;"
+			SQL="$SQL UPDATE run_step SET status=1 WHERE id=$ID;"
+			SQL="$SQL UPDATE run_step SET status=3 WHERE run_id=${RUN_ID} AND start < '$TIME' AND status=0;"
+			SQL="$SQL COMMIT;"
+			sqlite3 "$DB" "$SQL"
+		fi
+	done
+
+
+
+	
+	# SQL="SELECT count(id) FROM run_step WHERE start < '$TIME' AND status=0;"
+	# COUNT=$(sqlite3 "$DB" "$SQL")
+	# echo "${TIME}: $COUNT step(s) à relancer" >&3
+
+	# SQL="SELECT id FROM run_step WHERE start < '$TIME' AND status=0;"
+	# IDS=$(sqlite3 -newline ' ' "$DB" "$SQL")
+
+	# for ID in $IDS
 	# do
-	# 	TMPFILE=$(mktemp)
-	# 	echo "Traitement de $file" >&3
-	# 	sort $file | cat -n > $TMPFILE
+	# 	SQL="SELECT status,command, run_id, start FROM run_step WHERE id = '$ID'"
+	# 	RESULT=$(sqlite3 "$DB" "$SQL")
+	# 	STATUS=$(echo $RESULT | cut -d'|' -f1)
+	# 	COMMAND=$(echo $RESULT | cut -d'|' -f2)
+	# 	RUN_ID=$(echo $RESULT | cut -d'|' -f3)
+	# 	START=$(echo $RESULT | cut -d'|' -f4)
 
-	# 	if grep -qP "$T" "$TMPFILE"
+	# 	if [ x$STATUS = "x0" ]
 	# 	then
-	# 		IDX=$(cat $TMPFILE | grep -P "$T" | cut -f1 | tr -d "[:space:]")
-	# 		if grep -qP "$T.*0$" "$TMPFILE"
-	# 		then
-	# 			CMD=$(cat $TMPFILE | grep -P "$T" | cut -f4)
-	# 			echo "Commande à executer: [$IDX] $CMD" >&3
-	# 			$CMD &&
-	# 			cat $TMPFILE | cut -f2- | rev | sed "${IDX}s/^0/1/" | rev > $file
-	# 		else
-	# 			cat $TMPFILE | cut -f2- > $file
-	# 			echo "La commande $IDX a déjà été executée..." >&3
-	# 		fi
-	# 	else
-	# 		IDX=$(cat $TMPFILE | grep -P -B1 "$T" | head -n1 | cut -f1 | tr -d "[:space:]")
-	# 		CMD=$(cat $TMPFILE | grep -P -B1 "$T" | head -n1 | cut -f4)
-	# 		echo "On vérifie la commande précédente: $IDX" >&3
-	# 		if [ $IDX -eq 0 ]
-	# 		then
-	# 			echo "On relance la commande $IDX" >&3
-	# 			$CMD &&
-	# 			cat $TMPFILE | cut -f2- | rev | sed '${IDX}s/^0/1/' | rev > $file
-	# 		fi
+	# 		MSG="${TIME}: Commande antérieure (${START}) à relancer: $PYTHON_CMD $COMMAND"
+	# 		SQL="BEGIN TRANSACTION;"
+	# 		# les anciennes commandes reçoivent le status 2; seule la dernière
+	# 		# commande exécutée garde le status 1
+	# 		SQL="$SQL UPDATE run_step SET status=2 WHERE run_id=${RUN_ID} AND status=1;"
+	# 		SQL="$SQL UPDATE run_step SET status=1 WHERE id=$ID;"
+	# 		SQL="$SQL COMMIT;"
+	# 		$PYTHON_CMD $COMMAND && { echo "$MSG || Succès" >&3; sqlite3 "$DB" "$SQL"; } || echo "$MSG || Echec" >&3
 	# 	fi
-	# 	rm $TMPFILE
-	# done
+	# done	
+	
 }
 
 function init {
@@ -159,10 +174,10 @@ function log {
 		WHERE l1_.code < 99;"
 	if [ $DEVELOPMENT = "TRUE" ]
 	then
-		cat ./bin/lib/info_dev.json | ./bin/log.R
+		cat ./bin/lib/info_dev.json
 	else
-		LIGHTINGS=$(sqlite3 $DB "$SQL")
-		$PYTHON_CMD -p $PORT -s $LIGHTINGS --info all --quiet --json | ./bin/log.R
+		LIGHTINGS=$(sqlite3 "$DB" "$SQL")
+		$PYTHON_CMD -p $PORT -s $LIGHTINGS --info all --quiet --json
 	fi	
 }
 

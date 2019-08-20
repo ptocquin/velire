@@ -24,9 +24,9 @@
 
 <div class="row">
 	<div class="col">
-		{% form_theme form 'bootstrap_4_horizontal_layout.html.twig' %}
+		{% form_theme form 'bootstrap_4_layout.html.twig' %}
 			{{ form_start(form) }}
-			{{ form_row(form.controller_name, {'label' : "Controller name", 'label_attr': {class: 'text-light'} }) }}
+			{{ form_row(form.controller_name, {'label' : "Controller name", 'label_attr': { class: 'text-light'} }) }}
 			<button class="btn">{{ button_label|default('Save') }}</button>
 			{{ form_end(form) }}
 	</div>

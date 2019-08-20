@@ -27,6 +27,8 @@ use App\Entity\Run;
 use App\Entity\Cluster;
 use App\Entity\Recipe;
 use App\Entity\Luminaire;
+use App\Entity\Ingredient;
+use App\Entity\Led;
 
 
 
@@ -296,23 +298,6 @@ class ProgramController extends AbstractController
 
             $process = new Process('python3 ./bin/velire-cmd.py -e --config ./bin/config.yaml --input ../var/config.json --set-run '.$run->getId());
             $process->run();
-            
-            // $process = new Process('./bin/velire.sh --run '.$run->getId());
-            // $process->run();
-
-            // executes after the command finishes
-            // if (!$process->isSuccessful()) {
-            //     throw new ProcessFailedException($process);
-            // }
-
-            
-
-            // $date = new \DateTime($process->getOutput());
-            // $run->setDateEnd($date);
-
-            $em->persist($run);
-            $em->flush();
-            
 
             return $this->redirectToRoute('run');
         }
@@ -416,5 +401,185 @@ class ProgramController extends AbstractController
             'y_max' => $y_max['y_max']
         ));
         return $response;
+    }
+
+    /**
+     * @Route("/remote/play", name="play-from-remote")
+     */
+    public function playFromRemote(Request $request)
+    {
+        $data = json_decode($request->getContent(), true);
+
+        $em = $this->getDoctrine()->getManager();
+
+        $recipe = $this->getDoctrine()->getRepository(Recipe::class)->findOneByLabel($data['recipe']['label']);
+
+        if(is_null($recipe)){
+            $recipe = new Recipe;
+            $recipe->setLabel($data['recipe']['label']);
+            $recipe->setDescription($data['recipe']['description']);
+            foreach ($data['recipe']['ingredients'] as $i) {
+
+                $led = $this->getDoctrine()->getRepository(Led::class)->findOneBy(
+                    array(
+                        "wavelength" => $i['led']['wavelength'],
+                        "type" => $i['led']['type'],
+                        "manufacturer" => $i['led']['manufacturer']
+                    )
+                );
+
+                if(is_null($led)) {
+                    $led = new Led;
+                    $led->setWavelength($i['led']['wavelength']);
+                    $led->setType($i['led']['type']);
+                    $led->setManufacturer($i['led']['manufacturer']);
+                    $em->persist($led);
+                }
+
+                $ingredient = new Ingredient;
+                $ingredient->setLed($led);
+                $ingredient->setLevel($i['level']);
+                $em->persist($ingredient);
+                $recipe->addIngredient($ingredient);
+            }
+            $em->persist($recipe);
+            $em->flush();
+
+            $msg = "null";
+        } else {
+            $msg = "not null";
+        }
+
+        $cluster = $this->getDoctrine()->getRepository(Cluster::class)->findOneByLabel($data['cluster']);
+
+        $process = new Process('python3 ./bin/velire-cmd.py -e --config ./bin/config.yaml --input ../var/config.json --cluster '.$cluster->getId().' --play '.$recipe->getId());
+        $process->run();
+
+        // executes after the command finishes
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        } else {
+            $msg = $msg.' / pas de problème !';
+        }
+
+        return new Response(
+            'Recipe '.$recipe->getLabel().' successfully started on cluster '.$cluster->getLabel(),
+            Response::HTTP_OK,
+            ['content-type' => 'text/html']
+        );
+    }
+
+    /**
+     * @Route("/remote/shutdown", name="shutdown-from-remote")
+     */
+    public function shutdownFromRemote(Request $request)
+    {
+        $data = json_decode($request->getContent(), true);
+
+        $cluster = $this->getDoctrine()->getRepository(Cluster::class)->findOneByLabel($data['cluster']);
+
+        // Interroger le réseau de luminaires
+        $process = new Process('python3 ./bin/velire-cmd.py --config ./bin/config.yaml --input ../var/config.json --shutdown --cluster '.$cluster->getId());
+        $process->setTimeout(3600);
+        $process->run();
+
+        // executes after the command finishes
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        }
+
+        return new Response(
+            'Cluster '.$cluster->getLabel().' has been switched off.',
+            Response::HTTP_OK,
+            ['content-type' => 'text/html']
+        );
+    }
+
+    /**
+     * @Route("/remote/run", name="run-from-remote")
+     */
+    public function runFromRemote(Request $request)
+    {
+        $data = json_decode($request->getContent(), true);
+
+        $em = $this->getDoctrine()->getManager();
+
+        $program = $this->getDoctrine()->getRepository(Program::class)->findOneByLabel($data['program']['label']);
+
+        if(is_null($program)){
+            $program = new Program;
+            $program->setLabel($data['program']['label']);
+            $program->setDescription($data['program']['description']);
+            foreach ($data['program']['steps'] as $s) {
+                $step = new Step;
+                $step->setType($s['type']);
+                $step->setRank($s['rank']);
+                $step->setValue($s['value']);
+                $step->setProgram($program);
+                if (!is_null($s['recipe'])) {
+                    $recipe = $this->getDoctrine()->getRepository(Recipe::class)->findOneByLabel($s['recipe']['label']);
+                    if(is_null($recipe)){
+                        $recipe = new Recipe;
+                        $recipe->setLabel($s['recipe']['label']);
+                        $recipe->setDescription($s['recipe']['description']);
+                        foreach ($s['recipe']['ingredients'] as $i) {
+
+                            $led = $this->getDoctrine()->getRepository(Led::class)->findOneBy(
+                                array(
+                                    "wavelength" => $i['led']['wavelength'],
+                                    "type" => $i['led']['type'],
+                                    "manufacturer" => $i['led']['manufacturer']
+                                )
+                            );
+
+                            if(is_null($led)) {
+                                $led = new Led;
+                                $led->setWavelength($i['led']['wavelength']);
+                                $led->setType($i['led']['type']);
+                                $led->setManufacturer($i['led']['manufacturer']);
+                                $em->persist($led);
+                            }
+
+                            $ingredient = new Ingredient;
+                            $ingredient->setLed($led);
+                            $ingredient->setLevel($i['level']);
+                            $em->persist($ingredient);
+                            $recipe->addIngredient($ingredient);
+                        }
+                        $em->persist($recipe);
+                    }
+                    $step->setRecipe($recipe);
+                }
+                $em->persist($step);
+            }
+            $em->persist($program);
+            $em->flush();
+        }
+
+        $run = new Run;
+        $run->setStart(new \DateTime($data['run']['start']['date']));
+        $run->setLabel($data['run']['label']);
+        $run->setDescription($data['run']['description']);
+        $cluster = $this->getDoctrine()->getRepository(Cluster::class)->findOneByLabel($data['cluster']);
+        $run->setCluster($cluster);
+        $run->setProgram($program);
+        $em->persist($run);
+        $em->flush();
+
+        $process = new Process('python3 ./bin/velire-cmd.py -e --config ./bin/config.yaml --input ../var/config.json --set-run '.$run->getId());
+        $process->run();
+
+        // executes after the command finishes
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        } else {
+            $msg = $msg.' / pas de problème !';
+        }
+
+        return new Response(
+            'Run '.$run->getLabel().' successfully started on cluster '.$cluster->getLabel(),
+            Response::HTTP_OK,
+            ['content-type' => 'text/html']
+        );
     }
 }

@@ -31,26 +31,24 @@
 {% endfor %}
 
 <div class="row">
-	<div class="col col-md-12 col-lg-4">
-		<ul class="list-group list-group-flush">
+{# 	<div class="col col-md-12 col-lg-4">
+		<ul class="list-group list-group-flush"> #}
 		{% for recipe in recipes %}
-			{% if loop.index is divisible by(6) %}
-			</ul>
-			</div>
-			<div class="col col-md-12 col-lg-4">
-				<ul class="list-group list-group-flush">
-			{% endif %}
-			<li class="list-group-item d-flex justify-content-between">
-				<span>{{ recipe.label }}</span> 
-				<div class="d-inline">
-					<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#recipe-detail-{{ recipe.id }}">
-			        	<span data-feather="help-circle"></span>
-			        </button>
-			        <a class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-delete-{{ recipe.id }}" href="{{ path('delete-recipe', { 'id': recipe.id }) }}">
-						<span data-feather="trash-2"></span>
-			        </a>
+			<div class="col-sm-8 col-md-6">
+				<div class="card">
+					<div class="card-body d-flex justify-content-between">
+						<div class="card-text">{{ recipe.label }}</div> 
+						<div class="d-inline">
+							<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#recipe-detail-{{ recipe.id }}" style="background-color: {{ recipe.color }}">
+					        	<span data-feather="help-circle"></span>
+					        </button>
+					        <a class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-delete-{{ recipe.id }}" href="{{ path('delete-recipe', { 'id': recipe.id }) }}">
+								<span data-feather="trash-2"></span>
+					        </a>
+						</div>
+					</div>
 				</div>
-			</li>	
+			</div>
 			<div class="modal fade" id="modal-delete-{{ recipe.id }}">
     			<div class="modal-dialog modal-dialog-centered" role="document">
     				<div class="modal-content">
@@ -89,15 +87,15 @@
 				</div><!-- /.modal-dialog -->
 			</div><!-- /.modal -->
 		{% endfor %}
-		</ul>
-	</div>
+{# 		</ul>
+	</div> #}
 </div>
 
 <div class="row">
 	{# Connected Lightings #}
 	<div class="col col-md-12">
 		<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mt-5 mb-3">
-		  	<h1 class="h5">Create recipes for existing clusters</h1>
+		  	<h1 class="h5 text-light">Create recipes for existing clusters</h1>
 		  	<div class="btn-group">
 		    </div>
 	    </div>
@@ -105,26 +103,23 @@
 </div>
 
 <div class="row" id="new">
-	<div class="col col-md-12 col-lg-4">
-		<ul class="list-group list-group-flush">
+
 		{% for cluster in clusters %}
-			{% if loop.index is divisible by(6) %}
-			</ul>
-			</div>
-			<div class="col col-md-12 col-lg-4">
-				<ul class="list-group list-group-flush">
-			{% endif %}
-			<li class="list-group-item d-flex justify-content-between">
-				<span>Cluster #{{ cluster.label }}</span> 
-				<div class="d-inline">
-					<div class="btn-group">
-						<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#cluster-detail-{{ cluster.id }}">
-				        	<span data-feather="help-circle"></span>
-				        </button>
-				        <a href="{{ path('new-recipe', {'id': cluster.id }) }}" class="btn btn-sm btn-outline-secondary"><span data-feather="plus-square"> </span> <span class="d-none d-lg-inline">New recipe</span></a>
-			        </div>
+			<div class="col-sm-8 col-md-6">
+				<div class="card">
+					<div class="card-body d-flex justify-content-between">
+						<div class="card-text">Cluster #{{ cluster.label }}</div>
+						<div class="d-inline">
+							<div class="btn-group">
+								<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#cluster-detail-{{ cluster.id }}">
+						        	<span data-feather="help-circle"></span>
+						        </button>
+						        <a href="{{ path('new-recipe', {'id': cluster.id }) }}" class="btn btn-sm btn-outline-secondary"><span data-feather="plus-square"> </span> <span class="d-none d-lg-inline">New recipe</span></a>
+					        </div>
+						</div>
+					</div>
 				</div>
-			</li>
+			</div>
 			<div class="modal fade" id="cluster-detail-{{ cluster.id }}">
 				<div class="modal-dialog" role="document">
 					<div class="modal-content">
@@ -147,8 +142,7 @@
 				</div><!-- /.modal-dialog -->
 			</div><!-- /.modal -->
 		{% endfor %}
-		</ul>
-	</div>
+
 </div>
 
 <div class="modal fade" id="modal-load-config">

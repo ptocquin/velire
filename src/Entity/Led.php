@@ -5,9 +5,14 @@ namespace App\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Component\Serializer\Annotation\Groups;
+
+
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\LedRepository")
+ * @ApiResource
  */
 class Led
 {
@@ -20,16 +25,19 @@ class Led
 
     /**
      * @ORM\Column(type="integer")
+     * @Groups({"luminaire","recipe"})
      */
     private $wavelength;
 
     /**
      * @ORM\Column(type="string", length=2)
+     * @Groups({"luminaire","recipe"})
      */
     private $type;
 
     /**
      * @ORM\Column(type="string", length=1)
+     * @Groups({"luminaire","recipe"})
      */
     private $manufacturer;
 

@@ -3,9 +3,15 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Core\Annotation\ApiResource;
+
+use Symfony\Component\Serializer\Annotation\Groups;
+
+
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\ChannelRepository")
+ * @ApiResource
  */
 class Channel
 {
@@ -18,16 +24,19 @@ class Channel
 
     /**
      * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"luminaire"})
      */
     private $channel;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"luminaire"})
      */
-    private $i_peek;
+    private $iPeek;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"luminaire"})
      */
     private $pcb;
 
@@ -38,13 +47,15 @@ class Channel
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Led", inversedBy="channels")
+     * @Groups({"luminaire"})
      */
     private $led;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"luminaire"})
      */
-    private $current_intensity;
+    private $currentIntensity;
 
     public function getId(): ?int
     {
@@ -65,12 +76,12 @@ class Channel
 
     public function getIPeek(): ?int
     {
-        return $this->i_peek;
+        return $this->iPeek;
     }
 
-    public function setIPeek(?int $i_peek): self
+    public function setIPeek(?int $iPeek): self
     {
-        $this->i_peek = $i_peek;
+        $this->iPeek = $iPeek;
 
         return $this;
     }
@@ -113,12 +124,12 @@ class Channel
 
     public function getCurrentIntensity(): ?int
     {
-        return $this->current_intensity;
+        return $this->currentIntensity;
     }
 
-    public function setCurrentIntensity(?int $current_intensity): self
+    public function setCurrentIntensity(?int $currentIntensity): self
     {
-        $this->current_intensity = $current_intensity;
+        $this->currentIntensity = $currentIntensity;
 
         return $this;
     }

@@ -434,7 +434,7 @@ class Spot():
 		""" Renvoi la température du CPU du driver et des cartes LED en °C
 
 		"""
-		temp_dict = {"cpu": None, "led_pcb_0": None, "led_pcb_1": None, "unit": "°C"}
+		temp_dict = {"cpu": None, "led_pcb_0": None, "led_pcb_1": None, "unit": "C"}
 		reply = serial_dialog(self.ser, spot_cmd_dict["get_temperature"]["cmd"], self.address)
 		if reply['error'] == False:
 			temp = reply['reply'].split(" ")
@@ -706,14 +706,36 @@ class Spot():
 	def activate(self):
 		self.cpu = self.get_cpuinfo	()
 		self.frequency = self.get_freq() # Fréquence de l'horloge
-		for k,v in self.get_pcbledinfo().items():
-			self.pcb[str(k)] = v['pcb']
+		ledinfo = self.get_pcbledinfo()
+		for k,v in ledinfo.items():
+			if v is not None:
+				tmp = v
+		for k in ledinfo.keys():
+			self.pcb[str(k)] = tmp['pcb']
 		self.load_channels() # Charge les canaux
+
+	# def activate(self):
+ #    	self.cpu = self.get_cpuinfo	()
+ #    	self.frequency = self.get_freq() # Fréquence de l'horloge
+ #        ledinfo = self.get_pcbledinfo()
+ #        for k,v in ledinfo.items():
+ #            if v is not None:
+ #                tmp = v
+ #        for k in ledinfo.keys():
+ #            self.pcb[str(k)] = tmp['pcb']
+ #        self.load_channels() # Charge les canaux
 
 	def activate2(self, config, avcol):
 		self.available_colors = avcol
 		self.channels = []
-		for k,v in config.items():
+		keys = []
+		for k in config.keys():
+			keys.append(int(k))
+		keys = sorted(keys)
+		#for k,v in config.items():
+		for k in keys :
+			k = str(k)
+			v = config[k]
 			c = Channel()
 			c.ser = self.ser
 			c.ch_dict = v

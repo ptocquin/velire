@@ -17,10 +17,13 @@
               <ul class="navbar-nav m-auto d-block">
                 <li class="navbar-item text-light text-center">{{ navtitle|default("") }}</li>
               </ul>
+              {% block navbarButton %}
+                  
+              {% endblock %}
               <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTop" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
               </button>
-              <div class="collapse navbar-collapse col-1" id="navbarTop">
+              <div class="collapse navbar-collapse col-md-1" id="navbarTop">
                 <ul class="navbar-nav ml-auto d-none d-md-block">
                   <li class="nav-item"><a class="nav-link" href="{{ path('parameters') }}" > <span data-feather="settings"></span> </a></li>
                 </ul>
@@ -29,7 +32,7 @@
                       <a class="nav-link" href="{{ path('parameters') }}">Parameters</a>
                   </div>
                   <div class="nav-item" href="#">
-                      <a class="nav-link" href="{{ path('my-lightings') }}">My Lightings</a>
+                      <a class="nav-link" href="{{ path('my-lightings') }}">Lightings</a>
                   </div>
                   <div class="nav-item" href="#">
                       <a class="nav-link" href="{{ path('connected-lightings') }}">Clusters</a>
@@ -69,7 +72,7 @@
                               <div class="nav-item p-1" href="#">
                                   <a class="nav-link btn btn-outline-light" href="{{ path('my-lightings') }}">
                                     <span data-feather="database"></span>
-                                    <span class="d-none d-lg-inline">My Lightings</span>
+                                    <span class="d-none d-lg-inline">Lightings</span>
                                   </a>
                               </div>
                               <div class="nav-item p-1" href="#">

@@ -3,5 +3,5 @@ twig:
     debug: '%kernel.debug%'
     strict_variables: '%kernel.debug%'
     globals:
-      parameters: '@App\Services\ControllerName'
+      parameters: '@App\Services\Parameters'
 

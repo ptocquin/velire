@@ -5,9 +5,24 @@ namespace App\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiFilter;
+
+use Symfony\Component\Serializer\Annotation\Groups;
+
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+
+
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\LuminaireRepository")
+ * @ApiResource(normalizationContext={"groups"={"luminaire"}})
+ * @ApiFilter(SearchFilter::class, properties={"address": "exact"})
+ * @UniqueEntity(
+ *  fields={"address","serial"}
+ * )
  */
 class Luminaire
 {
@@ -15,26 +30,31 @@ class Luminaire
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * @Groups({"luminaire"})
      */
     private $id;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Pcb", mappedBy="luminaire", cascade={"remove"})
+     * @Groups({"luminaire"})
      */
     private $pcbs;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Channel", mappedBy="luminaire", cascade={"remove"})
+     * @Groups({"luminaire"})
      */
     private $channels;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"luminaire"})
      */
     private $serial;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"luminaire"})
      */
     private $address;
 
@@ -45,6 +65,7 @@ class Luminaire
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Cluster", inversedBy="luminaires")
+     * @Groups({"luminaire"})
      */
     private $cluster;
 
@@ -55,11 +76,13 @@ class Luminaire
 
     /**
      * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"luminaire"})
      */
     private $ligne;
 
     /**
      * @ORM\Column(type="string", length=1, nullable=true)
+     * @Groups({"luminaire"})
      */
     private $colonne;
 

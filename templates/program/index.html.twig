@@ -22,27 +22,23 @@
 {% endfor %}
 
 <div class="row">
-	<div class="col col-lg-6 col-xl-4">
-		<ul class="list-group list-group-flush">
+
 		{% for program in programs %}
-			{% if loop.index0 > 0 and loop.index0 is divisible by(5) %}
-			</ul>
-			</div>
-			<div class="col col-md-3">
-				<ul class="list-group list-group-flush">
-			{% endif %}
-			<li class="list-group-item d-flex justify-content-between">
-				<span>{{ program.label }}</span> 
-				<div class="d-inline">
-					<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#program-detail-{{ program.id }}">
-			        	<span data-feather="help-circle"></span>
-			        </button>
-			        <button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-delete-program-{{ program.id }}">
-			        	<span data-feather="trash-2"></span>
-			        </button>
-			     
+			<div class="col-sm-8 col-md-6">
+				<div class="card">
+					<div class="card-body d-flex justify-content-between">
+						<div class="card-text">{{ program.label }}</div> 
+						<div class="d-inline">
+							<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#program-detail-{{ program.id }}">
+					        	<span data-feather="help-circle"></span>
+					        </button>
+					        <button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-delete-program-{{ program.id }}">
+					        	<span data-feather="trash-2"></span>
+					        </button>
+						</div>
+					</div>
 				</div>
-			</li>
+			</div>
 			<div class="modal fade" id="modal-delete-program-{{ program.id }}">
 				<div class="modal-dialog modal-dialog-centered" role="document">
 					<div class="modal-content">
@@ -93,8 +89,7 @@
 				</div><!-- /.modal-dialog -->
 			</div><!-- /.modal -->
 		{% endfor %}
-		</ul>
-	</div>
+
 </div>
 
 

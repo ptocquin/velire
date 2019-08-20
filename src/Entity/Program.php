@@ -5,9 +5,12 @@ namespace App\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\ProgramRepository")
+ * @ApiResource(normalizationContext={"groups"={"program"}})
  */
 class Program
 {
@@ -20,16 +23,19 @@ class Program
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"program"})
      */
     private $label;
 
     /**
      * @ORM\Column(type="text", nullable=true)
+     * @Groups({"program"})
      */
     private $description;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Step", mappedBy="program", orphanRemoval=true)
+     * @Groups({"program"})
      */
     private $steps;
 

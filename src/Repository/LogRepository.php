@@ -44,8 +44,8 @@ class LogRepository extends ServiceEntityRepository
     public function getLastLog()
     {
         return $this->createQueryBuilder('l')
-            ->andWhere('l.type = :type')
-            ->setParameter('type', 'cluster_info')
+            // ->andWhere('l.type = :type')
+            // ->setParameter('type', 'cluster_info')
             ->orderBy('l.time', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
@@ -64,6 +64,24 @@ class LogRepository extends ServiceEntityRepository
             ->andWhere('l.type = :type')
             ->setParameter('cluster', $cluster)
             ->setParameter('type', 'cluster_info')
+            ->orderBy('l.time', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+   /**
+    * @return Log[] Returns an array of Log objects
+    */
+    
+    public function getLuminaireLastLog($luminaire)
+    {
+        return $this->createQueryBuilder('l')
+            ->where('l.luminaire = :luminaire')
+            ->andWhere('l.type = :type')
+            ->setParameter('luminaire', $luminaire)
+            ->setParameter('type', 'luminaire_info')
             ->orderBy('l.time', 'DESC')
             ->setMaxResults(1)
             ->getQuery()

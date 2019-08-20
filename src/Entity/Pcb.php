@@ -4,6 +4,9 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
+use Symfony\Component\Serializer\Annotation\Groups;
+
+
 /**
  * @ORM\Entity(repositoryClass="App\Repository\PcbRepository")
  */
@@ -18,21 +21,25 @@ class Pcb
 
     /**
      * @ORM\Column(type="string", length=6, nullable=true)
+     * @Groups({"luminaire"})
      */
     private $crc;
 
     /**
      * @ORM\Column(type="string", length=10, nullable=true)
+     * @Groups({"luminaire"})
      */
     private $serial;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"luminaire"})
      */
     private $n;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"luminaire"})
      */
     private $type;
 
