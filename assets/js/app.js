@@ -31,6 +31,9 @@ console.log(Routing.generate('set-position'));
 console.log(Routing.generate('set-cluster'));
 
 $(document).ready(function () {
+
+	$('.alert').fadeOut(5000);
+	
   $('.form-collection').collection({
 		position_field_selector: '.rank',
 		allow_duplicate: true,
