@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 
 /**
@@ -20,6 +21,7 @@ class Ingredient
 
     /**
      * @ORM\Column(type="integer")
+     * @Groups({"recipe"})
      * @Assert\Range(
      *      min = 0,
      *      max = 100
@@ -35,6 +37,7 @@ class Ingredient
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Led", inversedBy="ingredients")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"recipe"})
      */
     private $led;
 

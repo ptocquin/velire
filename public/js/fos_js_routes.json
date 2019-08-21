@@ -1,0 +1,1 @@
+{"base_url":"","routes":{"set-cluster":{"tokens":[["text","\/setup\/set-cluster"]],"defaults":[],"requirements":[],"hosttokens":[],"methods":[],"schemes":[]},"set-position":{"tokens":[["text","\/set-position"]],"defaults":[],"requirements":[],"hosttokens":[],"methods":[],"schemes":[]}},"prefix":"","host":"localhost","port":"","scheme":"http"}

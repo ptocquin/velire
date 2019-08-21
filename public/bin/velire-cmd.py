@@ -61,6 +61,7 @@ parser.add_argument('--info', type=str, nargs='+', dest='info', required=False, 
 parser.add_argument('--output', type=str, nargs=1, required=False, dest="out_file", help='Destination file for info data (ignored if --info is not set to all)')
 parser.add_argument('--input', type=str, nargs=1, dest='in_file', required=False, help="File containing grid settings (as returning by '... --info all --output-file *.json' command) used for faster controls")
 parser.add_argument('--config', type=str, nargs=1, dest='conf_file', required=False, help='Configuration file (YAML)')
+parser.add_argument('--logdb', action='store_true', required=False, help='Log in database (need --config)')
 
 parser.add_argument('--json', action='store_true', dest='json', help='Print output as json')
 parser.add_argument('-q', '--quiet', action='store_true', dest='quiet', help='No print during execussion')
@@ -68,7 +69,6 @@ parser.add_argument('--demo', type=str, nargs='+', required=False, dest="demo", 
 parser.add_argument('-v', '--version', action='store_true', dest='version', help='Print version')
 args = vars(parser.parse_args())
 # -----------------------------------------------------------------------------
-# print(args)
 # Fonction verbose
 quiet = args["quiet"]
 def verbose(msg):
@@ -107,21 +107,31 @@ if args["conf_file"] != None:
 				args["port"] = config_yaml["PORT"]
 				# Base de données
 				conn = sqlite3.connect(config_yaml["DB"])
+				conn.row_factory = sqlite3.Row # sortie des 'fetch' en dictionnaire
 				cursor = conn.cursor()
 				# Liste des spots
-				spots_add_list = []
-				if args['cluster'] != None:
-					for c in args['cluster']:
-						for r in cursor.execute('SELECT address FROM luminaire WHERE cluster_id=?', (c,)):
-							spots_add_list.append(r)
-				else:
-					cursor.execute("SELECT address FROM luminaire")
-					spots_add_list = cursor.fetchall()
-				# Formatage de la liste
-				if len(spots_add_list) > 0:
-					args["spots"] = list(map(lambda x: int(x[0]),spots_add_list)) # fetchall renvoit une liste de tuple
-				else:
-					args["spots"] = None
+				if args["spots"] == None:
+					spots_add_list = []
+					if args['cluster'] != None:
+						for c in args['cluster']:
+							for r in cursor.execute('SELECT address FROM luminaire WHERE cluster_id=?', (c,)):
+								spots_add_list.append(r)
+					else:
+						cursor.execute("SELECT address FROM luminaire")
+						spots_add_list = cursor.fetchall()
+					# Pour l'option logdb (!!!! suite après activation des spots !)
+					if args["logdb"] == True:
+						cursor.execute("SELECT l0_.address AS address FROM luminaire l0_ \
+							LEFT JOIN luminaire_luminaire_status l2_ ON l0_.id = l2_.luminaire_id \
+							LEFT JOIN luminaire_status l1_ ON l1_.id = l2_.luminaire_status_id \
+							WHERE l1_.code < 99;")
+						spots_add_list = cursor.fetchall()
+					# Formatage de la liste
+					if len(spots_add_list) > 0:
+						args["spots"] = list(map(lambda x: int(x[0]),spots_add_list)) # fetchall renvoit une liste de tuple
+					else:
+						args["spots"] = None
+				
 			except yaml.YAMLError as exc:
 				config_yaml = None
 				verbose("YAML exeption: "+exc)
@@ -130,11 +140,13 @@ if args["conf_file"] != None:
 # -----------------------------------------------------------------------------
 # Run
 if args['set_run']	!= None:
+	if args["conf_file"] is None:
+		sys.exit("ERROR: --set-run need --config")
 	verbose("Setting new run")
 	# Structure de la table 'run' :
 	# id (int, autoincrement), cluster_id (int), program_id (int), start (datetime), label (varchar), description (clob), date_end (datetime), status (varchar)
-	run_column_names = ['id', 'cluster_id', 'program_id', 'start', 'label', 'description', 'date_end', 'status']
-	cursor.execute('SELECT id, cluster_id, program_id, start, label, description, date_end, status FROM run WHERE id=?', (str(args['set_run'][0]),))
+	run_column_names = ['id', 'cluster_id', 'program_id', 'label', 'description', 'date_end', 'status', 'start']
+	cursor.execute('SELECT * FROM run WHERE id=?', (str(args['set_run'][0]),))
 	run_row = cursor.fetchone()
 	run_dict = {}
 	for i in range(0, len(run_row)):
@@ -152,7 +164,7 @@ if args['set_run']	!= None:
 	# Structure de la table 'step'
 	# id (int, autoincrement), program_id (int), recipe_id (int), type (varchar), rank (int), value (varchar)
 	step_column_names = ['id', 'program_id', 'recipe_id', 'type', 'rank', 'value']
-	cursor.execute('SELECT * FROM step WHERE program_id=? ORDER BY rank ASC', (prog_dict['id'],))
+	cursor.execute('SELECT * FROM step WHERE program_id=?', (prog_dict['id'],))
 	step_listdict = []
 	for r in cursor.fetchall():
 		tmp_dict = {}
@@ -161,7 +173,6 @@ if args['set_run']	!= None:
 		step_listdict.append(tmp_dict)
 
 	# Remplissage de la table run_step
-	print(run_dict['start'])
 	time = datetime.strptime(run_dict['start'], "%Y-%m-%d %H:%M:%S")
 	goto = -1
 	i = 0
@@ -172,7 +183,7 @@ if args['set_run']	!= None:
 				cmd = cmd+" --off"
 			if step_listdict[i]['type'] == "time":
 				cmd = cmd+" -e --play "+str(step_listdict[i]['recipe_id'])
-			cursor.execute('INSERT INTO run_step(run_id, start, command, status) VALUES (?,?,?,?)', (str(args['set_run'][0]),time, str(cmd), 0,))
+			cursor.execute('INSERT INTO run_step(run_id, start, command, status) VALUES (?,?,?,?)', (str(args['set_run'][0]), time, str(cmd), 0,))
 			time = time + timedelta(hours = int(step_listdict[i]['value'].split(":")[0]), minutes = int(step_listdict[i]['value'].split(":")[1]))
 		else:
 			if goto < 0:
@@ -286,6 +297,41 @@ if args["info"] != None:
 				print(json.dumps(infos))
 			else:
 				pprint.pprint(infos)
+# -----------------------------------------------------------------------------
+# Log in data-base			
+if args["logdb"] == True:
+	verbose("Log informations into data base")
+	if args["conf_file"] is None:
+		sys.exit("ERROR: --set-run need --config")
+	# Timestamp
+	timenow = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+	# Lecture des infos des spots
+	if loading_from_hardware != 1:
+		g.activate()
+	infos = g.get_info()
+	# Formatage des données
+	for k,v in infos['spots'].items():
+		data = {}
+		# Lecture de la BD des spots
+		cursor.execute('SELECT * FROM luminaire WHERE address = ?', (v['address'],))
+		spotsdb = cursor.fetchone()
+		# Remplissage du dictionnaire
+		data['address'] = v['address']
+		data['serial'] = v['serial']
+		data['led_pcb_0'] = v['temperature']['led_pcb_0']
+		data['led_pcb_1'] = v['temperature']['led_pcb_1']
+		data['channels_on'] = {}
+		for kk,vv in v['channels'].items():
+			if vv['intensity'] > 0:
+				data['channels_on'][str(kk)] = {'color' : vv['color'], 'intensity': vv['intensity']}
+		#pprint.pprint(data)
+		data = json.dumps(data)
+		cursor.execute('INSERT INTO Log(time, type, luminaire_id, cluster_id, value, comment) \
+			VALUES  (?,?,?,?,?,?)', (timenow, "luminaire_info", spotsdb['id'], spotsdb['cluster_id'], data, "",))
+	# Sauvegarde
+	conn.commit()
+	verbose("Done !")
+	sys.exit()
 # -----------------------------------------------------------------------------
 # Off / On / Shutdown
 if args["on"] == True:

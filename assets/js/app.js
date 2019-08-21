@@ -18,6 +18,9 @@ require('./jquery.collection.js');
 
 require('chart.js');
 
+require('@fortawesome/fontawesome-free/css/regular.min.css');
+require('@fortawesome/fontawesome-free/js/regular.js');
+
 
 const routes = require('../../public/js/fos_js_routes.json');
 import Routing from '../../vendor/friendsofsymfony/jsrouting-bundle/Resources/public/js/router.min.js';
@@ -28,6 +31,9 @@ console.log(Routing.generate('set-position'));
 console.log(Routing.generate('set-cluster'));
 
 $(document).ready(function () {
+
+	$('.alert').fadeOut(5000);
+	
   $('.form-collection').collection({
 		position_field_selector: '.rank',
 		allow_duplicate: true,
@@ -55,6 +61,17 @@ $(document).ready(function () {
 		$(".value", this).html(next);
 	});
 
+	$('#unlock').on('click', function() {
+		console.log("unlock");
+		if ($(this).hasClass("fa-lock-open")) {
+            $(this).removeClass("fa-lock-open");
+            $('.cluster').attr("disabled","true");
+        } else {
+        	$(this).addClass("fa-lock-open");            
+            $('.cluster').removeAttr("disabled");
+        }
+	})
+
 	// var d = document.getElementById('dataset');
 	// console.log(typeof(d.dataset.values));
 	// console.log(JSON.parse(d.dataset.values));
@@ -67,60 +84,60 @@ $(document).ready(function () {
 		}
 	})
 
-	$('.cluster-plus').on('click', function(){
-		var label = $(this).next();
-		var input = $('input[name=cluster]', this);
-		var cluster = parseInt($('input[name=cluster]', this).val())+1;
-		var luminaire = $('input[name=luminaire]', this).val();
-		var d = {l: luminaire, c: cluster}
-		$.ajax({
-			type: 'post',
-			url: Routing.generate('set-cluster'),
-			data: {'data': d },
-			beforeSend: function() {
-				console.log('chargement !')
-				console.log(d);
-			},
-			success: function(response) {
-				console.log(response);
- 				label.text(response.c);
- 				input.val(response.c);
- 				if (response.cluster_added == 1) {
- 					location.reload();
- 				}
-			}
+		$('.cluster-plus').on('click', function(){
+			var label = $(this).next();
+			var input = $('input[name=cluster]', this);
+			var cluster = parseInt($('input[name=cluster]', this).val())+1;
+			var luminaire = $('input[name=luminaire]', this).val();
+			var d = {l: luminaire, c: cluster}
+			$.ajax({
+				type: 'post',
+				url: Routing.generate('set-cluster'),
+				data: {'data': d },
+				beforeSend: function() {
+					console.log('chargement !')
+					console.log(d);
+				},
+				success: function(response) {
+					console.log(response);
+	 				label.text(response.c);
+	 				input.val(response.c);
+	 				if (response.cluster_added == 1) {
+	 					location.reload();
+	 				}
+				}
+			})
+
+			console.log(cluster,luminaire);
 		})
 
-		console.log(cluster,luminaire);
-	})
+		$('.cluster-minus').on('click', function(){
+			var label = $(this).prev();
+			var input = $('input[name=cluster]', this);
+			var cluster = parseInt($('input[name=cluster]', this).val())-1;
+			var luminaire = $('input[name=luminaire]', this).val();
+			var d = {l: luminaire, c: cluster}
+			$.ajax({
+				type: 'post',
+				url: Routing.generate('set-cluster'),
+				data: {'data': d },
+				beforeSend: function() {
+					console.log('chargement !')
+					console.log(d);
+				},
+				success: function(response) {
+					console.log(response);
+	 				label.text(response.c);
+	 				input.val(response.c);
+	 				if (response.cluster_added == 1) {
+	 					location.reload();
+	 				}
+	 				
+				}
+			})
 
-	$('.cluster-minus').on('click', function(){
-		var label = $(this).prev();
-		var input = $('input[name=cluster]', this);
-		var cluster = parseInt($('input[name=cluster]', this).val())-1;
-		var luminaire = $('input[name=luminaire]', this).val();
-		var d = {l: luminaire, c: cluster}
-		$.ajax({
-			type: 'post',
-			url: Routing.generate('set-cluster'),
-			data: {'data': d },
-			beforeSend: function() {
-				console.log('chargement !')
-				console.log(d);
-			},
-			success: function(response) {
-				console.log(response);
- 				label.text(response.c);
- 				input.val(response.c);
- 				if (response.cluster_added == 1) {
- 					location.reload();
- 				}
- 				
-			}
+			console.log(cluster,luminaire);
 		})
-
-		console.log(cluster,luminaire);
-	})
 
 	$('.set-position').on('click', function(){
 		var id = $("input", this).val();

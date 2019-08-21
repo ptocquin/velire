@@ -9,10 +9,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
+use Symfony\Component\Yaml\Yaml;
+use Symfony\Component\Filesystem\Filesystem;
 
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-
-
 
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
@@ -27,7 +27,6 @@ use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-
 
 use App\Entity\Pcb;
 use App\Entity\Luminaire;
@@ -55,6 +54,7 @@ class MainController extends Controller
     {
         $today = new \DateTime();
         $cluster_repo = $this->getDoctrine()->getRepository(Cluster::class);
+        $run_repo = $this->getDoctrine()->getRepository(Run::class);
         $log_repo = $this->getDoctrine()->getRepository(Log::class);
         $luminaire_repo =$this->getDoctrine()->getRepository(Luminaire::class);
         $clusters = $cluster_repo->findBy(
@@ -69,6 +69,7 @@ class MainController extends Controller
             'controller_name' => 'MainController',
             'clusters' => $clusters,
             'cluster_repo' => $cluster_repo,
+            'run_repo' => $run_repo,
             'log_repo' => $log_repo,
             'navtitle' => 'Dashboard',
             'luminaires' => $luminaires,
@@ -76,6 +77,52 @@ class MainController extends Controller
             'x_max' => $x_max['x_max'],
             'y_max' => $y_max['y_max']
         ]);
+    }
+
+    /**
+     * @Route("/parameters", name="parameters")
+     */
+    public function parameters(Request $request)
+    {
+        $filesystem = new Filesystem();
+        if ($filesystem->exists("../var/params.yaml")) {
+            $values = Yaml::parseFile('../var/params.yaml');
+        } else {
+            $values = array(
+                'controller_name' => 'test controller name'
+            );
+
+            $yaml = Yaml::dump($values);
+            file_put_contents("../var/params.yaml", $yaml);
+        }
+
+        $form = $this->createFormBuilder()
+            ->add('controller_name', null, array(
+                'data' => $values['controller_name']
+            ))
+            ->getForm();
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted() ) {
+            $controller_name = $form->get('controller_name')->getData();
+
+            $values = array(
+                'controller_name' => $controller_name
+            );
+
+            $yaml = Yaml::dump($values);
+            file_put_contents("../var/params.yaml", $yaml);
+
+            return $this->redirectToRoute('home');
+
+        }
+
+
+        return $this->render('main/parameters.html.twig', [
+            'form' => $form->createView(),
+            'navtitle' => 'Parameters'
+        ]);
+        
     }
 
     /**
@@ -599,7 +646,7 @@ class MainController extends Controller
 
         if ($form->isSubmitted() && $form->isValid()) {
             $em = $this->getDoctrine()->getManager();
-            $em->persist($recipe);
+            // $em->persist($recipe);
             $em->flush();
 
             return $this->redirectToRoute('recipes');
@@ -642,6 +689,22 @@ class MainController extends Controller
         $em->flush();
         
         return $this->redirectToRoute('my-lightings');        
+    }
+
+    /**
+     * @Route("/setup/luminaire/unmap/{id}", name="unmap-luminaire")
+     */
+    public function unmapLuminaire(Request $request, Luminaire $luminaire)
+    {
+        $em = $this->getDoctrine()->getManager();
+
+        $luminaire->setLigne(NULL);
+        $luminaire->setColonne(NULL);
+
+        $em->persist($luminaire);
+        $em->flush();
+        
+        return $this->redirectToRoute('home');        
     }
 
     /**
@@ -857,7 +920,7 @@ class MainController extends Controller
         $session = new Session();
 
         // Interroger le réseau de luminaires
-        $process = new Process('python3 ./bin/velire-cmd.py --config ./bin/config.yaml --input ../var/config.json --off --cluster '.$cluster->getId());
+        $process = new Process('python3 ./bin/velire-cmd.py --config ./bin/config.yaml --input ../var/config.json --shutdown --cluster '.$cluster->getId());
         $process->setTimeout(3600);
         $process->run();
 
@@ -876,9 +939,19 @@ class MainController extends Controller
      */
     public function updateLog()
     {
+        $em = $this->getDoctrine()->getManager();
         
         // Interroger le réseau de luminaires
-        $process = new Process('./bin/velire.sh --log');
+        // $process = new Process('./bin/velire.sh --log');
+        $luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findAll();
+        $opt = "-s ";
+        foreach ($luminaires as $l) {
+            $opt = $opt.$l->getAddress().' ';
+        }
+
+        $cmd = 'python3 ./bin/velire-cmd.py --config ./bin/config.yaml '.$opt.' --logdb';
+
+        $process = new Process($cmd);
         $process->setTimeout(3600);
         $process->run();
 
@@ -886,6 +959,42 @@ class MainController extends Controller
         if (!$process->isSuccessful()) {
             throw new ProcessFailedException($process);
         }
+
+        // $output = json_decode($process->getOutput(), true);
+
+        // $cluster_info = array();
+
+        // foreach ($output['spots'] as $spot) {
+        //     $luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->findOneByAddress($spot["address"]);
+        //     $channels = $spot['channels'];
+        //     $channels_on = array();
+        //     foreach ($channels as $channel) {
+        //         if($channel['intensity'] > 0) {
+        //             $channels_on[] = array('color' => $channel['color'], 'intensity' => $channel['intensity']);
+        //         }
+        //     }
+        //     $luminaire_info = array(
+        //         'address' => $spot['address'], 
+        //         'serial' => $spot['serial'], 
+        //         'led_pcb_0' => $spot['temperature']['led_pcb_0'], 
+        //         'led_pcb_1' => $spot['temperature']['led_pcb_1'],
+        //         'channels_on' => $channels_on
+        //     );
+        //     $cluster_info[$luminaire->getCluster()->getId()]['temp'] = array($spot['temperature']['led_pcb_0'],$spot['temperature']['led_pcb_1']);
+
+        //     // die(print_r(count($channels_on)));
+
+        //     $log = new Log();
+        //     $log->setTime(new \DateTime);
+        //     $log->setType("luminaire_info");
+        //     $log->setLuminaire($luminaire);
+        //     $log->setCluster($luminaire->getCluster());
+        //     $log->setValue($luminaire_info);
+
+        //     $em->persist($log);
+        // }
+
+        // $em->flush();
 
         return $this->redirectToRoute('home');
     }
@@ -941,5 +1050,128 @@ class MainController extends Controller
             'cluster_added' => $cluster_added,
         ));
         return $response;
+    }
+
+    /**
+     * @Route("/update/luminaire", name="update-luminaire")
+     */
+    public function updateLuminaire(Request $request)
+    {
+        $data = json_decode($request->getContent(), true);
+
+        $em = $this->getDoctrine()->getManager();
+
+        foreach ($data as $d) {
+            $luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->findOneByAddress($d['address']);
+
+            $cluster = $this->getDoctrine()->getRepository(Cluster::class)->findOneByLabel($d['cluster']['label']);
+            if(is_null($cluster)){
+                $cluster = new Cluster;
+                $cluster->setLabel($d['cluster']['label']);
+                $em->persist($cluster);
+                $em->flush();
+            }
+
+            if(is_null($luminaire)) {
+                $luminaire = new Luminaire;
+                $luminaire->setAddress($d['address']);
+                $luminaire->setSerial($d['serial']);
+                $luminaire->setLigne($d['ligne']);
+                $luminaire->setColonne($d['colonne']);
+                $luminaire->setCluster($cluster);
+                $em->persist($luminaire);
+            } else {
+                $luminaire->setAddress($d['address']);
+                $luminaire->setSerial($d['serial']);
+                $luminaire->setLigne($d['ligne']);
+                $luminaire->setColonne($d['colonne']);
+                $luminaire->setCluster($cluster);
+            }
+        }
+
+        $em->flush();
+
+        // réinitialiser + master/slave
+        $process = new Process('python3 ./bin/velire-cmd.py --config ./bin/config.yaml --init --quiet');
+        $process->setTimeout(3600);
+        $process->run();
+
+        // executes after the command finishes
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        }
+
+        // Interroger le réseau de luminaires
+        $process = new Process('python3 ./bin/velire-cmd.py --config ./bin/config.yaml --info all --quiet --json --output ../var/config.json');
+        $process->setTimeout(3600);
+        $process->run();
+
+        // executes after the command finishes
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        }
+
+        $data = json_decode(file_get_contents($this->get('kernel')->getProjectDir()."/var/config.json"), TRUE);
+
+        $luminaires = $data['spots'];
+
+        foreach ($luminaires as $l) { 
+            $luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->findOneByAddress($l['address']);
+
+            if(count($luminaire->getPcbs()) == 0) {
+                $luminaire->setSerial($l['serial']);
+                // $em->persist($luminaire);
+
+                foreach ($l['pcb'] as $pcb) {
+                    $p = new Pcb;
+                    $p->setCrc($pcb["crc"]);
+                    $p->setSerial($pcb["serial"]);
+                    $p->setN($pcb["n"]);
+                    $p->setType($pcb["type"]);
+
+                    $em->persist($p);
+
+                    $luminaire->addPcb($p);
+                }
+
+                $em->persist($luminaire);
+
+                foreach ($l['channels'] as $channel) {
+                    $c = new Channel;
+                    $c->setChannel($channel["id"]);
+                    $c->setIPeek($channel["max"]);
+                    // $c->setPcb($channel["pcb"]);
+                    $c->setLuminaire($luminaire);
+                    // $em->persist($c);
+
+                    # Vérifie que la Led existe dans la base de données, sinon l'ajoute.
+                    $led = $this->getDoctrine()->getRepository(Led::class)->findOneBy(array(
+                        'wavelength' => $channel["wl"],
+                        'type' => $channel["type"],
+                        'manufacturer' => $channel["manuf"]));
+
+                    if ($led == null) {
+                        $le = new Led;
+                        $le->setWavelength($channel["wl"]);
+                        $le->setType($channel["type"]);
+                        $le->setManufacturer($channel["manuf"]);
+                        $em->persist($le);
+                        $em->flush();
+                        $c->setLed($le);
+                    } else {
+                        $c->setLed($led);
+                    }
+                    $em->persist($c);
+                }
+            }
+        }
+
+        $em->flush();
+
+        return new Response(
+            ' lightings were detected and successfully installed.',
+            Response::HTTP_OK,
+            ['content-type' => 'text/html']
+        );
     }
 }

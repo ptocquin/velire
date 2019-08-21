@@ -15,14 +15,53 @@
  			'program/program-form.html.twig'
  			 %}
     {{ form_start(form) }}
-    {{ form_row(form.label, {'value' : "program_" ~ "now"|date("Y-m-d_H:i:s")}) }}
+    {{ form_row(form.label, {'value' : "program_" ~ "now"|date("Y-m-d_H:i:s"), 'label_attr': { class: 'text-light'}}) }}
     {{ form_widget(form.description, {'attr': { "class": "d-none d-lg-block"}}) }}
-    {{ form_row(form.steps) }}
+    {{ form_row(form.steps, {'label_attr': { class: 'text-light'}}) }}
     {{ form_widget(form) }}
     <button class="btn">{{ button_label|default('Save') }}</button>
     <a class="btn" href="{{ path('program') }}">Cancel</a>
+    <a class="btn btn-primary" data-toggle="modal" data-target="#modal-help"><span data-feather="help-circle"></a>
 {{ form_end(form) }}
 </div>
+
+<div class="modal fade" id="modal-help">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title">How to encode program...</h4>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span class="sr-only">Close</span>
+					<span aria-hidden="true">&times;</span>
+				</button>
+				
+			</div>
+			<div class="modal-body">
+				<ol>
+					<li>Enter a label</li>
+					<li>Enter a description (optional)</li>
+					<li>Click on [+] to create the first step</li>
+					<li>Each step is composed of 4 field:</li>
+					<ul>
+						<li>The rank (automatically incremented)</li>
+						<li>The type of step: "time", "goto" or "off"</li>
+						<li>The value in the format X:Y where X and Y are integer</li>
+						<ul>
+							<li>In case of time, X = hours and Y=minutes, ex: 8:00</li>
+							<li>In case of goto, X = step to go to and Y=number of cycles, ex: 0:100</li>
+							<li>In case of off, X = hours and Y=minutes, ex: 16:00</li>
+						</ul>
+						<li>The recipe (only when "time" is selected!)</li>
+					</ul>
+				</ol>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+				<button type="button" class="btn btn-primary">Save changes</button>
+			</div>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
 
 
 {% endblock %}

@@ -1,5 +1,7 @@
 {% extends 'base.html.twig' %}
 
+{% set colors = ["primary","secondary","success","danger","warning","info"] %}
+
 
 {% block meta %}
 <meta http-equiv="refresh" content="120">
@@ -7,211 +9,55 @@
 
 {% block panelContent %}
 
-{% for message in app.flashes('info') %}
-  <div class="alert alert-success" role="alert">
-        {{ message }}
-    </div>
-{% endfor %}
+<div class="container">
 
-{# <div class="row">
-	<div class="col col-md-12">
-		<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
-	  		<h1 class="h5"></h1>
-	    </div>
-	</div>
-</div> #}
+  {% for message in app.flashes('info') %}
+    <div class="alert alert-success" role="alert">
+          {{ message }}
+      </div>
+  {% endfor %}
 
-{# <div class="card-deck">
-{% for cluster in clusters %}
-  {% if log_repo.getClusterLastLog(cluster.id) is not empty %}
-    {% set log = log_repo.getClusterLastLog(cluster.id)[0] %}
-    {% set logs = log_repo.getClusterInfo(cluster.id, 30) %}
-    {% set array_temp = [] %}
-    {% set array_time = [] %}
-    {% for l in logs %}
-        {% set array_temp = array_temp|merge([l.value.mean_temp]) %}
-        {% set array_time = array_time|merge([l.time|date("H:i:s")]) %}
-    {% endfor %}
-    {% set array = { "labels": array_time } %}
-    {% set array = array|merge ({ "datasets": [{ data: array_temp }] }) %}
-    <div id="dataset" data-values="{{ array|json_encode }} "></div>
+  {% if luminaire_repo.getXMax()['x_max'] is not null %}
+  <h5 class="text-light">Mapped Lightings</h5>
   {% endif %}
 
-    <div class="col">
-      <div class="card text-white bg-secondary">
-      <div class="card-header">
-        <h5 class="card-title d-flex justify-content-between">
-          Cluster {{ cluster.label }}
-
-          <a href="{{ path('set-cluster-off', {'id': cluster.id }) }}" class="btn btn-xs btn-dark p-0 pb-1" >
-            <span data-feather="power" style="stroke-width: 4px; with: 12; height: 12; color: {% if log is not defined %}grey{% else %}{% if log.value.channels_on == 0 %}red{% else %}green{% endif %}{% endif %}"></span>
-          </a>
-        </h5>
-      </div>
-      <div class="card-body">
-        {% if log is defined %}
-        <div class="modal fade" id="modal-temp-cluster_{{ cluster.id }}">
-          <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title">Lighting temperatures, Cluster {{ cluster.label }} </h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                  <span class="sr-only">Close</span>
-                </button>
-              </div>
-              <div class="modal-body">
-                {% set temp = 0 %}
-                {% set i = 0 %}
-                <div class="row">
-                    <div class="col">
-                      <ul class="list-group list-group-flush">
-                      {% for luminaire in log_repo.getLuminairesInfo(cluster.id, log.time) %}
-                        {% if loop.index is divisible by(6) %}
-                        </ul>
-                        </div>
-                        <div class="col">
-                          <ul class="list-group list-group-flush">
-                        {% endif %}
-                        <li class="list-group-item d-flex justify-content-between">
-                          Lighting #{{ luminaire.value.address }} [ Serial: {{ luminaire.value.serial }} ] 
-                            <span class="badge badge-success pull-right">{{ luminaire.value.led_pcb_0 }}°C</span>
-                            <span class="badge badge-success pull-right">{{ luminaire.value.led_pcb_0 }}°C</span>
-                        </li>
-                      {% endfor %}
-                      </ul>
-                    </div>
-                </div>
-              </div>
-            </div><!-- /.modal-content -->
-          </div><!-- /.modal-dialog -->
-        </div><!-- /.modal -->
-        <div class="modal fade" id="modal-channels-cluster_{{ cluster.id }}">
-          <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title">Channels state, Cluster {{ cluster.label }} </h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                  <span class="sr-only">Close</span>
-                </button>
-              </div>
-              <div class="modal-body">
-              {% set n_channels = 0 %}
-                <div class="row">
-                    <div class="col">
-                      <ul class="list-group list-group-flush">
-                      {% for luminaire in log_repo.getLuminairesInfo(cluster.id, log.time) %}
-                        {% if loop.index is divisible by(6) %}
-                        </ul>
-                        </div>
-                        <div class="col">
-                          <ul class="list-group list-group-flush">
-                        {% endif %}
-                        <li class="list-group-item d-flex justify-content-between">
-                          <span>Lighting #{{ luminaire.value.address }}</span>
-                          <span class="badge badge-success pull-right">{{ log.value.channels_on }} channels On</span>
-                        </li>
-                      {% endfor %}
-                      </ul>
-                    </div>
-                </div>
-              </div>
-            </div><!-- /.modal-content -->
-          </div><!-- /.modal-dialog -->
-        </div><!-- /.modal -->
-        <div class="modal fade" id="modal-plot-cluster_{{ cluster.id }}">
-          <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title">Cluster {{ cluster.label }} temperatures</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                  <span class="sr-only">Close</span>
-                </button>
-              </div>
-              <div class="modal-body">
-               <canvas id="myChart"></canvas>
-              </div>
-            </div><!-- /.modal-content -->
-          </div><!-- /.modal-dialog -->
-        </div><!-- /.modal -->
-        {% endif %}
-        
-        <div class="btn-group-vertical btn-block">
-          <div class="btn-group">
-            <a class="btn btn-light {% if log is not defined %}disabled{% endif %}" type="button"  href="{{ path('graph', {'id': cluster.id }) }}"><span data-feather="trending-up"></a>
-            <a href="{{ path('new-play', { 'id': cluster.id }) }}" type="button" class="btn btn-light">
-              <span data-feather="play-circle"></span> 
-            </a>
-            <a href="{{ path('new-run', {'id': cluster.id }) }}" type="button" class="btn btn-light">
-              {% if cluster_repo.getRunningClusters(cluster.id, "now"|date("Y-m-d H:i:s"))|length > 0 %}
-                <span data-feather="sliders" style="color: green;" data-toggle="tooltip" data-placement="top" title="{{ cluster_repo.getRunningClusters(cluster.id, "now"|date("Y-m-d H:i:s"))|length }} running program"></span> 
-              {% else %}
-                <span style="color: red;" data-feather="sliders" data-toggle="tooltip" data-placement="top" title="No running programs"></span> 
-              {% endif %}
-            </a>
-          </div>
-          {% if log is defined %}
-          <button class="btn btn-xs 
-            {% if log.value.mean_temp < 75 %}
-              btn-info
-            {% else %}
-              btn-danger
-            {% endif %}
-            btn-info" data-toggle="modal" data-target="#modal-temp-cluster_{{ cluster.id }}">
-            <span data-feather="thermometer"></span> {{ log.value.mean_temp|round }}°C 
-          </button>
-          <button class="btn btn-xs 
-          {% if log.value.channels_on > 0 %}
-            btn-success
-          {% else %}
-            btn-light
-          {% endif %} 
-           " data-toggle="modal" data-target="#modal-channels-cluster_{{ cluster.id }}">
-           <span data-feather="sliders"></span> {{ log.value.channels_on }} Ch.
-         </button>
-          {% endif %}
-        </div>
-      </div>
-      </div>
-    </div>
-
-  {% if loop.index is divisible by(4) %}
-  </div><div class="card-deck">
-  {% endif %}
-
-{% endfor %}
-</div>
-
-<hr> #}
-
-{# <div class="container"> #}
+  {% if y_max is not null %}
     {% for y in y_max..1 %}
-    {# <div class="row"> #}
       <div class="card-group">
       {% for x in 1..x_max %}
-{#         <div class="col-sm-3">
- #}          <div class="card w-{{ 100 / x_max }} text-white bg-secondary">
+          <div class="card {% if x_max > 3 %} w-{{ 100 / x_max }} {% else %} col-sm-6 col-md-4 {% endif %} text-white bg-dark border-light">
                   {% if luminaire_repo.getByXY(x,y) is not null %}
                   {% set luminaire = luminaire_repo.getByXY(x,y) %}
                   <div class="card-body">
                     <div class="btn-group-vertical btn-block">
                       <div class="btn-group">
-                        <button class="btn btn-sm btn-light" data-toggle="modal" data-target="#modal-grid-{{ luminaire_repo.getByXY(x,y).id }}">
-                          {{ luminaire.address }}
+                        {% if log_repo.getLuminaireLastLog(luminaire.id)|length > 0 %}
+                            {% if log_repo.getLuminaireLastLog(luminaire.id)[0].value['channels_on']|length > 0 %}
+                              <button class="btn btn-sm btn-warning" data-toggle="modal" data-target="#modal-grid-{{ luminaire_repo.getByXY(x,y).id }}">
+                              {{ luminaire.address }} ({{ luminaire.colonne }},{{ luminaire.ligne }})
+                              <i class="fa fa-sun"></i>
+                            {% else %}
+                              <button class="btn btn-sm btn-dark" data-toggle="modal" data-target="#modal-grid-{{ luminaire_repo.getByXY(x,y).id }}">
+                              {{ luminaire.address }} ({{ luminaire.colonne }},{{ luminaire.ligne }})
+                              <i class="fa fa-moon"></i>
+                            {% endif %}
+                          {% else %}
+                            <button class="btn btn-sm btn-light" data-toggle="modal" data-target="#modal-grid-{{ luminaire_repo.getByXY(x,y).id }}">
+                              {{ luminaire.address }} ({{ luminaire.colonne }},{{ luminaire.ligne }})
+                            <i class="fa fa-question"></i>
+                          {% endif %}
                         </button>
                       </div>
                     </div>
                     <div class="btn-group-vertical btn-block">
                       <div class="btn-group">
-                        <button type="button" class="btn btn-sm btn-primary cluster-plus">
+                        <button type="button" class="btn btn-sm btn-{{ colors[ luminaire.cluster.label-1 ] }} cluster cluster-plus" disabled>
                           <span>+</span>
                           <input type="hidden" name="cluster" value="{{ luminaire.cluster.label }}">
                           <input type="hidden" name="luminaire" value="{{ luminaire.address }}">
                         </button>
-                        <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#modal-cluster-{{ luminaire.cluster.id }}">{{ luminaire.cluster.label }}</button>
-                        <button type="button" class="btn btn-sm btn-primary cluster-minus">
+                        <button class="btn btn-sm btn-{{ colors[ luminaire.cluster.label-1 ] }}" data-toggle="modal" data-target="#modal-cluster-{{ luminaire.cluster.id }}">{{ luminaire.cluster.label }}</button>
+                        <button type="button" class="btn btn-sm btn-{{ colors[ luminaire.cluster.label-1 ] }} cluster cluster-minus" disabled>
                           <span>-</span>
                           <input type="hidden" name="cluster" value="{{ luminaire.cluster.label }}">
                           <input type="hidden" name="luminaire" value="{{ luminaire.address }}">
@@ -236,23 +82,58 @@
         <div class="modal fade" id="modal-grid-{{ luminaire.id }}">
           <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
-              <div class="modal-body d-flex justify-content-center">
-                <div class="btn-group btn-group-justified align-content-center">
-                  <button id="{{ luminaire.id }}_btn_colonne"type="button" class="btn btn-primary btn-lg clk_increment">x:
-                    <span class="value">{{ luminaire.colonne | default(1) }}</span>
-                    <input type="hidden" id="{{ luminaire.id }}_colonne" name="{{ luminaire.id }}_colonne" value="1"></input>
-                  </button>
-                  <button id="{{ luminaire.id }}_btn_ligne" type="button" class="btn btn-default btn-lg clk_increment">y:
-                    <span class="value">{{ luminaire.ligne | default(1) }}</span>
-                    <input type="hidden" id="{{ luminaire.id }}_ligne" name="{{ luminaire.id }}_ligne" value="1"></input>
-                  </button>
-                </div>
+              <div class="modal-body justify-content-center">
+
+                <div class="row">
+                      <div class="col">
+                        <h5>Informations</h5>
+                      {% if log_repo.getLuminaireLastLog(luminaire.id) is not empty %}
+                        <ul>
+                          <li>Last info: {{ log_repo.getLuminaireLastLog(luminaire.id)[0].time|date("Y-m-d H:i") }}</li>
+                          <li>Channels on:</li>
+                          <ol>
+                            {% for channel in log_repo.getLuminaireLastLog(luminaire.id)[0].value['channels_on'] %}
+                                <li>{{ channel['color'] }} => {{ channel['intensity'] }}%</li>
+                            {% endfor %}
+                          </ol>
+                        </ul>
+                      {% else %}
+                        <ul>
+                          <li>No info for this lighting. Last log: {% if log_repo.getLastLog() is not empty %}
+                            {{ log_repo.getLastLog()[0].time|date("Y-m-d H:i") }}{% endif %}.
+                            <a class="" href="{{ path('update-log') }}">Refresh</a>
+                          </li>
+                        </ul>                      
+                      {% endif %}
+                    </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                      <div class="col">
+                      <h5>Mapping</h5>
+                      <div class="btn-group btn-group-justified align-content-center m-auto">
+                        <button id="{{ luminaire.id }}_btn_colonne"type="button" class="btn btn-primary btn-lg clk_increment">x:
+                          <span class="value">{{ luminaire.colonne | default(1) }}</span>
+                          <input type="hidden" id="{{ luminaire.id }}_colonne" name="{{ luminaire.id }}_colonne" value="1"></input>
+                        </button>
+                        <button id="{{ luminaire.id }}_btn_ligne" type="button" class="btn btn-default btn-lg clk_increment">y:
+                          <span class="value">{{ luminaire.ligne | default(1) }}</span>
+                          <input type="hidden" id="{{ luminaire.id }}_ligne" name="{{ luminaire.id }}_ligne" value="1"></input>
+                        </button>
+                        
+                        
+                      </div>
+                      <button type="button" class="btn btn-success set-position">
+                          <span>Set</span>
+                          <input type="hidden" name="{{ luminaire.id }}_set_position" value="{{ luminaire.id }}"></input>
+                        </button>
+                      <a href="{{ path('unmap-luminaire', {'id': luminaire.id }) }}" class="btn btn-primary btn-danger">Unmap</a>
+                    </div>
+                  </div>
               </div>
+
               <div class="modal-footer">
-                <button type="button" class="btn btn-primary set-position" data-dismiss="modal" aria-label="Close">
-                  <span>Set</span>
-                  <input type="hidden" name="{{ luminaire.id }}_set_position" value="{{ luminaire.id }}"></input>
-                </button>
+
                 <button type="button" class="btn btn-light" data-dismiss="modal" aria-label="Close">Cancel</button>                     
               </div>
             </div><!-- /.modal-content -->
@@ -261,100 +142,184 @@
         {% endif %}
       {% endfor %}
       </div>
-    {# </div> #}
     {% endfor %}
-{# </div> #}
+  {% endif %}
 
-<hr>
+  <hr>
 
-<div class="container">
+  {% if luminaire_repo.getNotMapped()|length > 0 %}
+  <h5 class="text-light">Unmapped Lightings</h5>
+  {% endif %}
+
   <div class="row">
     {% for luminaire in luminaire_repo.getNotMapped() %}
-        <div class="col">
-          <button class="btn btn-light" data-toggle="modal" data-target="#modal-notmapped-{{ luminaire.id }}">
-            {{ luminaire.address }}
-          </button>
-          <div class="modal fade" id="modal-notmapped-{{ luminaire.id }}">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-              <div class="modal-body d-flex justify-content-center">
-                <div class="btn-group btn-group-justified align-content-center">
-                  <button id="{{ luminaire.id }}_btn_colonne"type="button" class="btn btn-primary btn-lg clk_increment">x:
-                    <span class="value">{{ luminaire.colonne | default(1) }}</span>
-                    <input type="hidden" id="{{ luminaire.id }}_colonne" name="{{ luminaire.id }}_colonne" value="1"></input>
+        <div class="col-sm-6 col-md-4">
+          <div class="card">
+            <div class="card-body">
+              <div class="btn-group-vertical btn-block">
+                <div class="btn-group">
+                        {% if log_repo.getLuminaireLastLog(luminaire.id)|length > 0 %}
+                            {% if log_repo.getLuminaireLastLog(luminaire.id)[0].value['channels_on']|length > 0 %}
+                              <button class="btn btn-sm btn-warning" data-toggle="modal" data-target="#modal-notmapped-{{ luminaire.id }}">
+                              {{ luminaire.address }}
+                              <i class="fa fa-sun"></i>
+                            {% else %}
+                              <button class="btn btn-sm btn-dark" data-toggle="modal" data-target="#modal-notmapped-{{ luminaire.id }}">
+                              {{ luminaire.address }}
+                              <i class="fa fa-moon"></i>
+                            {% endif %}
+                          {% else %}
+                            <button class="btn btn-sm btn-light" data-toggle="modal" data-target="#modal-notmapped-{{ luminaire.id }}">
+                              {{ luminaire.address }}
+                            <i class="fa fa-question"></i>
+                          {% endif %}
+                        </button>
+                      </div>
+              </div>
+              {% if luminaire.cluster is not null %}
+              <div class="btn-group-vertical btn-block">
+                <div class="btn-group">
+                  <button type="button" class="btn btn-sm btn-{{ colors[ luminaire.cluster.label-1 ] }} cluster cluster-plus" disabled>
+                    <span>+</span>
+                    <input type="hidden" name="cluster" value="{{ luminaire.cluster.label }}">
+                    <input type="hidden" name="luminaire" value="{{ luminaire.address }}">
                   </button>
-                  <button id="{{ luminaire.id }}_btn_ligne" type="button" class="btn btn-default btn-lg clk_increment">y:
-                    <span class="value">{{ luminaire.ligne | default(1) }}</span>
-                    <input type="hidden" id="{{ luminaire.id }}_ligne" name="{{ luminaire.id }}_ligne" value="1"></input>
+                  <button class="btn btn-sm btn-{{ colors[ luminaire.cluster.label-1 ] }}" data-toggle="modal" data-target="#modal-cluster-{{ luminaire.cluster.id }}">{{ luminaire.cluster.label }}</button>
+                  <button type="button" class="btn btn-sm btn-{{ colors[ luminaire.cluster.label-1 ] }} cluster cluster-minus" disabled>
+                    <span>-</span>
+                    <input type="hidden" name="cluster" value="{{ luminaire.cluster.label }}">
+                    <input type="hidden" name="luminaire" value="{{ luminaire.address }}">
                   </button>
                 </div>
               </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-primary set-position" data-dismiss="modal" aria-label="Close">
-                  <span>Set</span>
-                  <input type="hidden" name="{{ luminaire.id }}_set_position" value="{{ luminaire.id }}"></input>
-                </button>
-                <button type="button" class="btn btn-light" data-dismiss="modal" aria-label="Close">Cancel</button>                     
-              </div>
-            </div><!-- /.modal-content -->
-            </div><!-- /.modal-dialog -->
-          </div><!-- /.modal -->
+              {% endif %}
+            </div>
+
+            <div class="modal fade" id="modal-notmapped-{{ luminaire.id }}">
+              <div class="modal-dialog modal-dialog-centered" role="document">
+              <div class="modal-content">
+                <div class="modal-body justify-content-center">
+                    <div class="row">
+                      <div class="col">
+                        <h5>Informations</h5>
+                      {% if log_repo.getLuminaireLastLog(luminaire.id) is not empty %}
+                        <ul>
+                          <li>Last info: {{ log_repo.getLuminaireLastLog(luminaire.id)[0].time|date("Y-m-d H:i") }}</li>
+                          <li>Channels on:</li>
+                          <ol>
+                            {% for channel in log_repo.getLuminaireLastLog(luminaire.id)[0].value['channels_on'] %}
+                                <li>{{ channel['color'] }} => {{ channel['intensity'] }}%</li>
+                            {% endfor %}
+                          </ol>
+                        </ul>
+                      {% else %}
+                        <ul>
+                          <li>No info for this lighting. Last log: {% if log_repo.getLastLog() is not empty %}
+                            {{ log_repo.getLastLog()[0].time|date("Y-m-d H:i") }}{% endif %}.
+                            <a class="" href="{{ path('update-log') }}">Refresh</a>
+                          </li>
+                        </ul>                      
+                      {% endif %}
+                    </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                      <div class="col">
+                      <h5>Mapping</h5>
+                      <div class="btn-group btn-group-justified align-content-center m-auto">
+                        <button id="{{ luminaire.id }}_btn_colonne"type="button" class="btn btn-primary btn-lg clk_increment">x:
+                          <span class="value">{{ luminaire.colonne | default(1) }}</span>
+                          <input type="hidden" id="{{ luminaire.id }}_colonne" name="{{ luminaire.id }}_colonne" value="1"></input>
+                        </button>
+                        <button id="{{ luminaire.id }}_btn_ligne" type="button" class="btn btn-default btn-lg clk_increment">y:
+                          <span class="value">{{ luminaire.ligne | default(1) }}</span>
+                          <input type="hidden" id="{{ luminaire.id }}_ligne" name="{{ luminaire.id }}_ligne" value="1"></input>
+                        </button>
+                        
+                      </div>
+                      <button type="button" class="btn btn-success set-position">
+                          <span>Set</span>
+                          <input type="hidden" name="{{ luminaire.id }}_set_position" value="{{ luminaire.id }}"></input>
+                        </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="modal-footer">
+                  
+                  <button type="button" class="btn btn-light" data-dismiss="modal" aria-label="Close">Close</button>                     
+                </div>
+              </div><!-- /.modal-content -->
+              </div><!-- /.modal-dialog -->
+            </div><!-- /.modal -->
+        </div>
       </div>
     {% endfor %}
   </div>
-</div>
+
+</div><!-- Container -->
 
 {% for cluster in clusters %}
-        <div class="modal fade" id="modal-cluster-{{ cluster.id }}">
-          <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h4 class="modal-title">Cluster {{ cluster.label }}</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                  <span class="sr-only">Close</span>
-                </button>
-              </div>
-              <div class="modal-body">
-                <div class="btn-group-vertical btn-block">
-                  <div class="btn-group">
-                    <a class="btn btn-light {% if log is not defined %}disabled{% endif %}" type="button"  href="{{ path('graph', {'id': cluster.id }) }}"><span data-feather="trending-up"></span></a>
-                    <a href="{{ path('new-play', { 'id': cluster.id }) }}" type="button" class="btn btn-light">
-                      <span data-feather="play-circle"></span> 
-                    </a>
-                    <a href="{{ path('new-run', {'id': cluster.id }) }}" type="button" class="btn btn-light">
-                      {% if cluster_repo.getRunningClusters(cluster.id, "now"|date("Y-m-d H:i:s"))|length > 0 %}
-                        <span data-feather="clock" style="color: green;" data-toggle="tooltip" data-placement="top" title="{{ cluster_repo.getRunningClusters(cluster.id, "now"|date("Y-m-d H:i:s"))|length }} running program"></span> 
-                      {% else %}
-                        <span style="color: red;" data-feather="clock" data-toggle="tooltip" data-placement="top" title="No running programs"></span> 
-                      {% endif %}
-                    </a>
-                  </div>
-                </div>
-                <div class="btn-group-vertical btn-block">
-                  {% for run in cluster.runs %}
-                    <div class="btn-group" role="group" aria-label="Basic example">
-                      <button type="button" class="btn btn-success">Run: {{ run.label }} // {{ run.start|date("Y-m-d H:i:s") }}</button>
-                      <a class="btn btn-light" type="button"  href="{{ path('edit-run', {'id': run.id }) }}"><span data-feather="edit"></span></a>
-                    </div>
-                  {% endfor %}
-                </div>
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-              </div>
-            </div><!-- /.modal-content -->
-          </div><!-- /.modal-dialog -->
-        </div><!-- /.modal -->
+<div class="modal fade" id="modal-cluster-{{ cluster.id }}">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Cluster {{ cluster.label }}</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+          <span class="sr-only">Close</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="btn-group-vertical btn-block">
+          <div class="btn-group">
+            <a class="btn btn-light {% if log is not defined %}disabled{% endif %}" type="button"  href="{{ path('graph', {'id': cluster.id }) }}"><span data-feather="trending-up"></span></a>
+            <a href="{{ path('new-play', { 'id': cluster.id }) }}" type="button" class="btn btn-light">
+              <span data-feather="play-circle"></span> 
+            </a>
+            <a href="{{ path('set-cluster-off', { 'id': cluster.id }) }}" type="button" class="btn btn-light">
+              <span data-feather="stop-circle"></span> 
+            </a>
+            <a href="{{ path('new-run', {'id': cluster.id }) }}" type="button" class="btn btn-light">
+              {% set runs = run_repo.getRunningRunsForCluster(cluster.id) %}
+              {% if runs|length > 0 %}
+                <span data-feather="clock" style="color: green;" data-toggle="tooltip" data-placement="top" title="{{ cluster_repo.getRunningClusters(cluster.id, "now"|date("Y-m-d H:i:s"))|length }} running program"></span> 
+              {% else %}
+                <span style="color: red;" data-feather="clock" data-toggle="tooltip" data-placement="top" title="No running programs"></span> 
+              {% endif %}
+            </a>
+          </div>
+        </div>
+        {% if runs|length > 0 %}
+        <div class="btn-group-vertical btn-block">
+          {% for run in runs %}
+            <div class="btn-group" role="group" aria-label="Basic example">
+              <button type="button" class="btn btn-success">Run: {{ run.label }} // {{ run.start|date("Y-m-d H:i:s") }}</button>
+              <a class="btn btn-light" type="button"  href="{{ path('edit-run', {'id': run.id }) }}"><span data-feather="edit"></span></a>
+            </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
 {% endfor %}
 
 
 {% endblock %}
 
 {% block update %}
-  <span class="text-muted text-sm-left">Last update: 
+  <span class="text-muted text-sm-left d-none d-md-block">Last update: 
     {% if log_repo.getLastLog() is not empty %}
       {{ log_repo.getLastLog()[0].time|date("Y-m-d H:i") }}
     {% endif %}
   </span>
+{% endblock %}
+
+{% block bottomButton %}
+    <button id="unlock" class="btn btn-outline-secondary fa fa-lock"></button>
 {% endblock %}
