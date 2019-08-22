@@ -87,6 +87,7 @@
                 <div class="row">
                       <div class="col">
                         <h5>Informations</h5>
+                        <img class="img-fluid" src="{{ snapshot }}"/>
                       {% if log_repo.getLuminaireLastLog(luminaire.id) is not empty %}
                         <ul>
                           <li>Last info: {{ log_repo.getLuminaireLastLog(luminaire.id)[0].time|date("Y-m-d H:i") }}</li>
@@ -202,6 +203,7 @@
                     <div class="row">
                       <div class="col">
                         <h5>Informations</h5>
+                        <img class="img-fluid" src="{{ snapshot }}"/>
                       {% if log_repo.getLuminaireLastLog(luminaire.id) is not empty %}
                         <ul>
                           <li>Last info: {{ log_repo.getLuminaireLastLog(luminaire.id)[0].time|date("Y-m-d H:i") }}</li>

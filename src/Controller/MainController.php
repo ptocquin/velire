@@ -355,7 +355,7 @@ class MainController extends Controller
 
         // Supprimer les luminaires existants
         $luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findAll();
-        $clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
+        // $clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
 
         foreach ($luminaires as $luminaire) {
             $_status = $this->getDoctrine()->getRepository(LuminaireStatus::class)->findByLuminaire($luminaire);
@@ -366,19 +366,23 @@ class MainController extends Controller
             }
             $status = $this->getDoctrine()->getRepository(LuminaireStatus::class)->findOneByCode(99);
             $luminaire->addStatus($status);
-            $luminaire->setCluster(null);
-            $luminaire->setLigne(null);
-            $luminaire->setColonne(null);
-            $em->persist($luminaire);
+            // $luminaire->setCluster(null);
+            // $luminaire->setLigne(null);
+            // $luminaire->setColonne(null);
+            // $em->persist($luminaire);
         }
 
-        foreach ($clusters as $cluster) {
-            $em->remove($cluster);
-        }
+        // foreach ($clusters as $cluster) {
+        //     $em->remove($cluster);
+        // }
 
-        $cluster = new Cluster;
-        $cluster->setLabel(1);
-        $em->persist($cluster);
+        $cluster = $this->getDoctrine()->getRepository(Cluster::class)->findOneByLabel(1);
+        if(is_null($cluster)){
+            $cluster = new Cluster;
+            $cluster->setLabel(1);
+            $em->persist($cluster);
+        }
+        
 
         if($_SERVER['APP_ENV'] == 'dev') {
             $data = json_decode(file_get_contents($this->get('kernel')->getProjectDir()."/var/test.json"), TRUE);
@@ -426,10 +430,13 @@ class MainController extends Controller
                 $status_off = $this->getDoctrine()->getRepository(LuminaireStatus::class)->findOneByCode(99);
                 $luminaire->removeStatus($status_off);
                 $luminaire->addStatus($status_on);
-                $luminaire->setCluster($cluster);
+                if(is_null($luminaire->getCluster())){
+                    $luminaire->setCluster($cluster);
+                }
+                // $luminaire->setCluster($cluster);
                 // $luminaire->setColonne($x);
                 // $luminaire->setLigne($y);
-                $em->persist($luminaire);
+                // $em->persist($luminaire);
                 $i++;
                 if($x < 5){
                     $x++;
@@ -463,50 +470,53 @@ class MainController extends Controller
 
         foreach ($luminaires as $l) { 
             $luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->findOneByAddress($l['address']);
-            $luminaire->setSerial($l['serial']);
-            // $em->persist($luminaire);
 
-            foreach ($l['pcb'] as $pcb) {
-                $p = new Pcb;
-                $p->setCrc($pcb["crc"]);
-                $p->setSerial($pcb["serial"]);
-                $p->setN($pcb["n"]);
-                $p->setType($pcb["type"]);
+            if(is_null($luminaire)) {
+                $luminaire->setSerial($l['serial']);
+                // $em->persist($luminaire);
+                foreach ($l['pcb'] as $pcb) {
+                    $p = new Pcb;
+                    $p->setCrc($pcb["crc"]);
+                    $p->setSerial($pcb["serial"]);
+                    $p->setN($pcb["n"]);
+                    $p->setType($pcb["type"]);
 
-                $em->persist($p);
+                    $em->persist($p);
 
-                $luminaire->addPcb($p);
-            }
-
-            $em->persist($luminaire);
-
-            foreach ($l['channels'] as $channel) {
-                $c = new Channel;
-                $c->setChannel($channel["id"]);
-                $c->setIPeek($channel["max"]);
-                // $c->setPcb($channel["pcb"]);
-                $c->setLuminaire($luminaire);
-                // $em->persist($c);
-
-                # Vérifie que la Led existe dans la base de données, sinon l'ajoute.
-                $led = $this->getDoctrine()->getRepository(Led::class)->findOneBy(array(
-                    'wavelength' => $channel["wl"],
-                    'type' => $channel["type"],
-                    'manufacturer' => $channel["manuf"]));
-
-                if ($led == null) {
-                    $le = new Led;
-                    $le->setWavelength($channel["wl"]);
-                    $le->setType($channel["type"]);
-                    $le->setManufacturer($channel["manuf"]);
-                    $em->persist($le);
-                    $em->flush();
-                    $c->setLed($le);
-                } else {
-                    $c->setLed($led);
+                    $luminaire->addPcb($p);
                 }
-                $em->persist($c);
+
+                $em->persist($luminaire);
+
+                foreach ($l['channels'] as $channel) {
+                    $c = new Channel;
+                    $c->setChannel($channel["id"]);
+                    $c->setIPeek($channel["max"]);
+                    // $c->setPcb($channel["pcb"]);
+                    $c->setLuminaire($luminaire);
+                    // $em->persist($c);
+
+                    # Vérifie que la Led existe dans la base de données, sinon l'ajoute.
+                    $led = $this->getDoctrine()->getRepository(Led::class)->findOneBy(array(
+                        'wavelength' => $channel["wl"],
+                        'type' => $channel["type"],
+                        'manufacturer' => $channel["manuf"]));
+
+                    if ($led == null) {
+                        $le = new Led;
+                        $le->setWavelength($channel["wl"]);
+                        $le->setType($channel["type"]);
+                        $le->setManufacturer($channel["manuf"]);
+                        $em->persist($le);
+                        $em->flush();
+                        $c->setLed($le);
+                    } else {
+                        $c->setLed($led);
+                    }
+                    $em->persist($c);
+                }
             }
+            
         }
 
         $em->flush();
@@ -949,7 +959,7 @@ class MainController extends Controller
             $opt = $opt.$l->getAddress().' ';
         }
 
-        $cmd = 'python3 ./bin/velire-cmd.py --config ./bin/config.yaml '.$opt.' --logdb';
+        $cmd = 'python3 ./bin/velire-cmd.py --config ./bin/config.yaml '.$opt.' --logdb; python3 ./bin/velire-cmd.py --snapshot '.$this->get('kernel')->getProjectDir().'/public/snapshot.png';
 
         $process = new Process($cmd);
         $process->setTimeout(3600);
