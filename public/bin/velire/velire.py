@@ -531,9 +531,11 @@ class Spot():
 		for i in range(0, len(spot_info[0]["channels"])):
 			for key, value in spot_info[0]["channels"][i].items():
 				self.symmetry = True
+				"""
 				for j in range(0, len(spot_info)): # Vérifie la symétrie
 					if value != spot_info[j]["channels"][i][key]:
 						self.symmetry = False
+				"""
 			if self.symmetry == True:
 				value = spot_info[0]["channels"][i]
 				c = Channel()

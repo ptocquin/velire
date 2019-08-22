@@ -4,4 +4,5 @@ twig:
     strict_variables: '%kernel.debug%'
     globals:
       parameters: '@App\Services\Parameters'
+      snapshot: '%snapshot%'
 
