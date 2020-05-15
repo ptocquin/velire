@@ -54,7 +54,7 @@ class Luminaire
 
     /**
      * @ORM\Column(type="integer", nullable=true)
-     * @Groups({"luminaire"})
+     * @Groups({"luminaire","log"})
      */
     private $address;
 

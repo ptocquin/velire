@@ -2,16 +2,7 @@
 
 {% set colors = ["primary","secondary","success","danger","warning","info"] %}
 
-{% block title %}Setup{% endblock %}
-
-{% block panelTitle %}
-<h1 class="h2">Setup</h1>
-<div class="btn-toolbar mb-2 mb-md-0">
-    <div class="btn-group mr-2">
-        
-    </div>
-</div>
-{% endblock %}
+{% block title %}{{ 'sidemenu.setup'|trans }} :: {{ 'groups.title'|trans }}{% endblock %}
 
 {% block panelContent %}
 
@@ -58,7 +49,7 @@
 
 {% block bottomButton %}
     <button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#get-lighting-info">
-    	<span data-feather="refresh-cw"></span>  (Re-)Initialize
+    	<span data-feather="refresh-cw"></span>{{ 'groups.button.init'|trans }}
     </button>
-	<a href="{{ path('clear-clusters') }}" class="btn btn-sm btn-outline-secondary">Clear groups</a>
+	<a href="{{ path('clear-clusters') }}" class="btn btn-sm btn-outline-secondary">{{ 'groups.button.clear'|trans }}</a>
 {% endblock %}

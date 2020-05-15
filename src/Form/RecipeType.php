@@ -15,12 +15,19 @@ class RecipeType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('label')
-            ->add('description')
-            ->add('color', ColorType::class)
+            ->add('label', null, array(
+                'label' => 'recipes.form.new.label'
+            ))
+            ->add('description', null, array(
+                'label' => 'recipes.form.new.description'
+            ))
+            ->add('color', ColorType::class, array(
+                'label' => 'recipes.form.new.color'
+            ))
             ->add('ingredients', CollectionType::class, array(
                 'entry_type' => IngredientType::class,
                 'entry_options' => array('label' => false),
+                'label' => 'recipes.form.new.ingredients'
             ))
         ;
     }

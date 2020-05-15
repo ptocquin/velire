@@ -4,9 +4,13 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
-    locale: 'en'
-    tmp_directory: '%kernel.project_dir%/public/tmp'
+    locale: 'fr'
+    tmp_directory: '%env(resolve:TMP_DIR)%'
     snapshot: 'snapshot.png'
+    # app.tmp_dir: '%kernel.project_dir%/var/tmp'
+    app.shared_dir: '%env(resolve:SHARED_DIR)%'
+    app.bin_dir: '%env(resolve:BIN_DIR)%'
+    app.velire_cmd: '%env(resolve:PYTHON_CMD)%'
 
 services:
     # default configuration for services in *this* file

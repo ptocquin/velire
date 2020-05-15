@@ -71,6 +71,22 @@ class RunRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
+
+   /**
+    * @return Run[] Returns an array of Run objects
+    */
+    
+    public function getPastRuns()
+    {
+        $today = new \DateTime();
+        return $this->createQueryBuilder('r')
+            ->where('r.date_end < :today')
+            ->setParameter('today', $today)
+            ->orderBy('r.start', 'DESC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
     
 
     /*

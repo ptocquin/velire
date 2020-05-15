@@ -1,15 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Setup{% endblock %}
-
-{% block panelTitle %}
-<h1 class="h2">Setup</h1>
-<div class="btn-toolbar mb-2 mb-md-0">
-    <div class="btn-group mr-2">
-        
-    </div>
-</div>
-{% endblock %}
+{% block title %}{{ 'sidemenu.setup'|trans }} :: {{ 'lightings.title'|trans }}{% endblock %}
 
 {% block panelContent %}
 
@@ -24,7 +15,7 @@
 	<div class="col-sm-8 col-md-6 col-lg-4">
 		<div class="card">
 			<div class="card-body d-flex justify-content-between">
-				<div class="card-text">Lighting #{{ luminaire.address }}</div>
+				<div class="card-text">{% trans %}Lighting{% endtrans %} #{{ luminaire.address }}</div>
 				{% set flag = false %}
 				{% for status in luminaire.status %}
 					{% if status.code == 99 %}
@@ -74,8 +65,8 @@
         				<div class="modal-content">
         					<div class="modal-body">
         						<div class="btn-group btn-group-justified align-content-center">
-        						<a class="btn btn-danger" role="button" href="{{ path('delete-luminaire', { 'id': luminaire.id }) }}">Confirm delete</a>
-        						<button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">Cancel</button>
+        						<a class="btn btn-danger" role="button" href="{{ path('delete-luminaire', { 'id': luminaire.id }) }}">{% trans %}Confirm delete{% endtrans %}</a>
+        						<button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">{% trans %}Cancel{% endtrans %}</button>
         						</div>
         					</div>
         				</div><!-- /.modal-content -->
@@ -94,7 +85,7 @@
 					<h4 class="modal-title">Add a new lighting</h4>
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 						<span aria-hidden="true">&times;</span>
-						<span class="sr-only">Close</span>
+						<span class="sr-only">{% trans %}Close{% endtrans %}</span>
 					</button>
 				</div>
 				<div class="modal-body">
@@ -105,7 +96,7 @@
 					
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">{% trans %}Close{% endtrans %}</button>
 					<button class="btn">{{ button_label|default('Add') }}</button>
 					{{ form_end(form) }}
 				</div>
@@ -120,7 +111,7 @@
 			<h4 class="modal-title">Load lighting data from file</h4>
 			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 				<span aria-hidden="true">&times;</span>
-				<span class="sr-only">Close</span>
+				<span class="sr-only">{% trans %}Close{% endtrans %}</span>
 			</button>
 		</div>
 		<div class="modal-body">
@@ -131,7 +122,7 @@
 				
 			</div>
 			<div class="modal-footer">
-				<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">{% trans %}Close{% endtrans %}</button>
 				{{ form_widget(form_upload.save, {'attr': {'class': "btn btn-success"}}) }}
 				{{ form_end(form_upload) }}
 			</div>
@@ -143,7 +134,7 @@
 {% endblock %}
 
 {% block bottomButton %}
-    <button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-add-luminaire"><span data-feather="plus-circle"></span> Add a new lighting</button>
-    <button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-load-config"><span data-feather="upload"></span> Load from file</button>
-    <a href="{{ path('download-my-lightings') }}" class="btn btn-sm btn-outline-secondary" ><span data-feather="download"></span> Download current configuration</a>
+    <button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-add-luminaire"><span data-feather="plus-circle"></span>{{ 'lightings.button.add'|trans }}</button>
+    <button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-load-config"><span data-feather="upload"></span>{{ 'lightings.button.load'|trans }}</button>
+    <a href="{{ path('download-my-lightings') }}" class="btn btn-sm btn-outline-secondary" ><span data-feather="download"></span>{{ 'lightings.button.download'|trans }}</a>
 {% endblock %}

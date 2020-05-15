@@ -1,17 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello {{ controller_name }}!{% endblock %}
-
-{% block panelTitle %}
-<h1 class="h2">Programs</h1>
-<div class="btn-toolbar mb-2 mb-md-0">
-    <div class="btn-group mr-2">
-		<a class="btn btn-sm btn-outline-secondary" href="{{ path('new-program') }}">
-			<span class="far fa-plus-square"> Add a new program</span>
-	    </a>
-    </div>
-</div>
-{% endblock %}
+{% block title %}{{ 'sidemenu.setup'|trans }} :: {{ 'programs.title'|trans }}{% endblock %}
 
 {% block panelContent %}
 
@@ -51,7 +40,7 @@
 								Cancel
 							</button>
 							<a class="btn btn-sm btn-outline-danger" href="{{ path('delete-program', { 'id': program.id }) }}">
-								<span data-feather="trash-2"> Confirm delete</span>
+								<span data-feather="trash-2">{% trans %}Confirm delete{% endtrans %}</span>
 					        </a>
 						</div>
 					</div><!-- /.modal-content -->
@@ -82,7 +71,7 @@
 						</div>
 						<div class="modal-footer">
 							<a class="btn btn-sm btn-outline-secondary" href="{{ path('edit-program', { 'id': program.id }) }}">
-								<span data-feather="edit"> Edit</span>
+								<span data-feather="edit">{% trans %}Edit{% endtrans %}</span>
 			        		</a>
 						</div>
 					</div><!-- /.modal-content -->
@@ -98,6 +87,6 @@
 
 {% block bottomButton %}
     	<a class="btn btn-sm btn-secondary" href="{{ path('new-program') }}">
-			<span data-feather="plus-square"></span> Add a new program
+			<span data-feather="plus-square"></span>{{ 'programs.button.add'|trans }}
 	    </a>
 {% endblock %}

@@ -1,0 +1,41 @@
+<div class="col-md-12">
+	{% form_theme form 
+		'bootstrap_4_horizontal_layout.html.twig' %}
+	{{ form_start(form) }}
+	<div class="row">
+		<div class="col">
+			{% if edit is defined %}
+				{{ form_row(form.label, {'label_attr': { class: 'text-light'}}) }}
+			{% else %}
+				{{ form_row(form.label, {'value' : "recipe_" ~ "now"|date("Y-m-d_H:i:s"), 'label_attr': { class: 'text-light'}}) }}
+			{% endif %}
+		</div>
+		<div class="col">
+			{{ form_row(form.color, {'label_attr': { class: 'text-light'}}) }}
+		</div>
+	</div>
+	<div class="row">
+		<div class="col">
+			{{ form_widget(form.description, {'attr': { "class": "d-none d-lg-block"}}) }}
+		</div>
+	</div>
+
+	<h5 class="pt-5 text-light">{% trans %}Ingredient{% endtrans %}s</h5>
+	
+	<div class="row">
+		<div class="col">
+		{% for ingredient in form.ingredients %}
+			{% if loop.index is divisible by(2) %}</div><div class="col">{% endif %}
+				{% if edit is defined %}
+		    		<p>{{ form_row(ingredient.level, { 'label': ingredient.vars.data.led.type, 'label_attr': { class: 'text-light'} }) }} </p>
+		    	{% else %}
+		    		<p>{{ form_row(ingredient.level, { 'label': ingredient.vars.data.led.type, 'value': 0, 'label_attr': { class: 'text-light'} }) }} </p>
+		    	{% endif %}
+		{% endfor %}
+		</div>
+	</div>
+	{{ form_widget(form) }}
+	<button class="btn btn-light">{{ button_label|default('Save')|trans }}</button>
+	<a class="btn btn-light" href="{{ path('recipes') }}">{% trans %}Cancel{% endtrans %}</a>
+	{{ form_end(form) }}
+</div>

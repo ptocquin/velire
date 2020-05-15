@@ -40,7 +40,7 @@
                 return true;
             },
             allow_add: true,
-            add: '<a href="#">[ + ]</a>',
+            add: '<a href="#" class="collection-add btn btn-light"><i class="fa fa-plus"></i></a>',
             before_add: function (collection, element) {
                 return true;
             },

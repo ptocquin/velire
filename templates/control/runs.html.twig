@@ -8,123 +8,242 @@
     </div>
 {% endfor %}
 
-<div class="row">
-	<div class="col">
-		<h5 class="text-light">Running runs</h5>
-		<ul class="list-group list-group-flush">
-		{% for run in running_runs %}
-			<li class="list-group-item d-flex justify-content-between">
-				<span>{{ run.label }} // Cluster #{{ run.cluster.label }}</span>
-				<span>{{ run.start|date("Y-m-d H:i:s") }}</span>
-				<div class="d-inline">
-					<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#run-detail-{{ run.id }}">
-			        	<span data-feather="help-circle"></span>
-			        </button>
-			        <button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-delete-run-{{ run.id }}">
-			        	<span data-feather="trash-2"></span>
-			        </button>
-			     
-				</div>
-			</li>
-			<div class="modal fade" id="modal-delete-run-{{ run.id }}">
-				<div class="modal-dialog modal-dialog-centered" role="document">
-					<div class="modal-content">
-						<div class="modal-footer">
-							<button type="button" class="btn btn-sm btn-outline-secondary" data-dismiss="modal" aria-label="Close">
-								Cancel
-							</button>
-							<a class="btn btn-sm btn-outline-danger" href="{{ path('delete-run', { 'id': run.id }) }}">
-								<span data-feather="trash-2"> Confirm delete</span>
-					        </a>
-						</div>
-					</div><!-- /.modal-content -->
-				</div><!-- /.modal-dialog -->
-			</div><!-- /.modal -->
-			<div class="modal fade" id="run-detail-{{ run.id }}">
-				<div class="modal-dialog modal-dialog-centered" role="document">
-					<div class="modal-content">
-						<div class="modal-header">
-							<h4 class="modal-title">Run #{{ run.id }}</h4>
-							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-								<span aria-hidden="true">&times;</span>
-							</button>
-						</div>
-						<div class="modal-body">
-							<p class="text-muted my-1 border-bottom">{{ run.label }}</p>
-							<p>Start: {{ run.start|date("Y-m-d H:i:s") }}</p>
-							<p>End: {{ run.dateEnd|date("Y-m-d H:i:s") }}</p>
-							<p>Cluster: {{ run.cluster.label }}</p>
-						</div>
-						<div class="modal-footer">
-							<a class="btn btn-sm btn-outline-secondary" href="{{ path('edit-run', { 'id': run.id }) }}">
-								<span data-feather="edit"> Edit</span>
-			        		</a>
-						</div>
-					</div><!-- /.modal-content -->
-				</div><!-- /.modal-dialog -->
-			</div><!-- /.modal -->
-		{% endfor %}
-		</ul>
-	</div>
-</div>
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+	<li class="nav-item">
+		<a class="nav-link active" id="running-tab" data-toggle="tab" href="#running" role="tab" aria-controls="running" aria-selected="true">{% trans %}Running{% endtrans %}</a>
+	</li>
+	<li class="nav-item">
+		<a class="nav-link" id="scheduled-tab" data-toggle="tab" href="#scheduled" role="tab" aria-controls="scheduled" aria-selected="false">{% trans %}Scheduled{% endtrans %}</a>
+	</li>
+	<li class="nav-item">
+		<a class="nav-link" id="past-tab" data-toggle="tab" href="#past" role="tab" aria-controls="past" aria-selected="false">{% trans %}Past{% endtrans %}</a>
+	</li>
+	<li class="nav-item">
+		<a class="nav-link" id="new-tab" data-toggle="tab" href="#new" role="tab" aria-controls="new" aria-selected="false">{% trans %}New{% endtrans %}</a>
+	</li>
+</ul>
 
-<div class="row">
-	<div class="col">
-		<h5 class="text-light">Scheduled runs</h5>
-		<ul class="list-group list-group-flush">
-		{% for run in coming_runs %}
-			<li class="list-group-item d-flex justify-content-between">
-				<span>{{ run.label }} // Cluster #{{ run.cluster.label }}</span>
-				<span>{{ run.start|date("Y-m-d H:i:s") }}</span>
-				<div class="d-inline">
-					<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#run-detail-{{ run.id }}">
-			        	<span data-feather="help-circle"></span>
-			        </button>
-			        <button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-delete-run-{{ run.id }}">
-			        	<span data-feather="trash-2"></span>
-			        </button>
-			     
+<div class="tab-content" id="myTabContent">
+	<div class="tab-pane fade show active" id="running" role="tabpanel" aria-labelledby="running-tab">
+		<div class="row pt-3">
+			<div class="col">
+				<ul class="list-group list-group-flush">
+				{% for run in running_runs %}
+					<li class="list-group-item d-flex justify-content-between">
+						<span>{{ run.label }} // Cluster #{{ run.cluster.label }}</span>
+						<span>{{ run.start|date("Y-m-d H:i:s") }}</span>
+						<div class="d-inline">
+							<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#run-detail-{{ run.id }}">
+					        	<span data-feather="help-circle"></span>
+					        </button>
+					        <button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-delete-run-{{ run.id }}">
+					        	<span data-feather="trash-2"></span>
+					        </button>
+					     
+						</div>
+					</li>
+					<div class="modal fade" id="modal-delete-run-{{ run.id }}">
+						<div class="modal-dialog modal-dialog-centered" role="document">
+							<div class="modal-content">
+								<div class="modal-footer">
+									<button type="button" class="btn btn-sm btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+										Cancel
+									</button>
+									<a class="btn btn-sm btn-outline-danger" href="{{ path('delete-run', { 'id': run.id }) }}">
+										<span data-feather="trash-2"> Confirm delete</span>
+							        </a>
+								</div>
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal -->
+					<div class="modal fade" id="run-detail-{{ run.id }}">
+						<div class="modal-dialog modal-dialog-centered" role="document">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h4 class="modal-title">Run #{{ run.id }}</h4>
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+										<span aria-hidden="true">&times;</span>
+									</button>
+								</div>
+								<div class="modal-body">
+									<p class="text-muted my-1 border-bottom">{{ run.label }}</p>
+									<p>Start: {{ run.start|date("Y-m-d H:i:s") }}</p>
+									<p>End: {{ run.dateEnd|date("Y-m-d H:i:s") }}</p>
+									<p>Cluster: {{ run.cluster.label }}</p>
+								</div>
+								<div class="modal-footer">
+									<a class="btn btn-sm btn-outline-secondary" href="{{ path('edit-run', { 'id': run.id }) }}">
+										<span data-feather="edit"> Edit</span>
+					        		</a>
+								</div>
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal -->
+				{% endfor %}
+				</ul>
+			</div>
+		</div>
+	</div>
+	<div class="tab-pane fade" id="scheduled" role="tabpanel" aria-labelledby="scheduled-tab">
+		<div class="row pt-3">
+			<div class="col">
+				<ul class="list-group list-group-flush">
+				{% for run in coming_runs %}
+					<li class="list-group-item d-flex justify-content-between">
+						<span>{{ run.label }} // Cluster #{{ run.cluster.label }}</span>
+						<span>{{ run.start|date("Y-m-d H:i:s") }}</span>
+						<div class="d-inline">
+							<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#run-detail-{{ run.id }}">
+					        	<span data-feather="help-circle"></span>
+					        </button>
+					        <button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-delete-run-{{ run.id }}">
+					        	<span data-feather="trash-2"></span>
+					        </button>
+					     
+						</div>
+					</li>
+					<div class="modal fade" id="modal-delete-run-{{ run.id }}">
+						<div class="modal-dialog modal-dialog-centered" role="document">
+							<div class="modal-content">
+								<div class="modal-footer">
+									<button type="button" class="btn btn-sm btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+										Cancel
+									</button>
+									<a class="btn btn-sm btn-outline-danger" href="{{ path('delete-run', { 'id': run.id }) }}">
+										<span data-feather="trash-2"> Confirm delete</span>
+							        </a>
+								</div>
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal -->
+					<div class="modal fade" id="run-detail-{{ run.id }}">
+						<div class="modal-dialog modal-dialog-centered" role="document">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h4 class="modal-title">Run #{{ run.id }}</h4>
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+										<span aria-hidden="true">&times;</span>
+									</button>
+								</div>
+								<div class="modal-body">
+									<p class="text-muted my-1 border-bottom">{{ run.label }}</p>
+									<p>Start: {{ run.start|date("Y-m-d H:i:s") }}</p>
+									<p>End: {{ run.dateEnd|date("Y-m-d H:i:s") }}</p>
+									<p>Cluster: {{ run.cluster.label }}</p>
+								</div>
+								<div class="modal-footer">
+									<a class="btn btn-sm btn-outline-secondary" href="{{ path('edit-run', { 'id': run.id }) }}">
+										<span data-feather="edit"> Edit</span>
+					        		</a>
+								</div>
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal -->
+				{% endfor %}
+				</ul>
+			</div>
+		</div>
+	</div>
+	<div class="tab-pane fade" id="past" role="tabpanel" aria-labelledby="past-tab">
+		<div class="row pt-3">
+			<div class="col">
+				<ul class="list-group list-group-flush">
+				{% for run in past_runs %}
+					<li class="list-group-item d-flex justify-content-between">
+						<span>{{ run.label }} // Cluster #{{ run.cluster.label }}</span>
+						<span>{{ run.start|date("Y-m-d H:i:s") }}</span>
+						<div class="d-inline">
+							<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#run-detail-{{ run.id }}">
+					        	<span data-feather="help-circle"></span>
+					        </button>
+					        <button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-delete-run-{{ run.id }}">
+					        	<span data-feather="trash-2"></span>
+					        </button>
+					     
+						</div>
+					</li>
+					<div class="modal fade" id="modal-delete-run-{{ run.id }}">
+						<div class="modal-dialog modal-dialog-centered" role="document">
+							<div class="modal-content">
+								<div class="modal-footer">
+									<button type="button" class="btn btn-sm btn-outline-secondary" data-dismiss="modal" aria-label="Close">
+										Cancel
+									</button>
+									<a class="btn btn-sm btn-outline-danger" href="{{ path('delete-run', { 'id': run.id }) }}">
+										<span data-feather="trash-2"> Confirm delete</span>
+							        </a>
+								</div>
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal -->
+					<div class="modal fade" id="run-detail-{{ run.id }}">
+						<div class="modal-dialog modal-dialog-centered" role="document">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h4 class="modal-title">Run #{{ run.id }}</h4>
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+										<span aria-hidden="true">&times;</span>
+									</button>
+								</div>
+								<div class="modal-body">
+									<p class="text-muted my-1 border-bottom">{{ run.label }}</p>
+									<p>Start: {{ run.start|date("Y-m-d H:i:s") }}</p>
+									<p>End: {{ run.dateEnd|date("Y-m-d H:i:s") }}</p>
+									<p>Cluster: {{ run.cluster.label }}</p>
+								</div>
+								<div class="modal-footer">
+									<a class="btn btn-sm btn-outline-secondary" href="{{ path('edit-run', { 'id': run.id }) }}">
+										<span data-feather="edit"> Edit</span>
+					        		</a>
+								</div>
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal -->
+				{% endfor %}
+				</ul>
+			</div>
+		</div>
+	</div>
+	<div class="tab-pane fade" id="new" role="tabpanel" aria-labelledby="new-tab">
+		<div class="row pt-3">
+			{% for cluster in clusters %}
+				<div class="col-sm-8 col-md-6">
+					<div class="card">
+						<div class="card-body d-flex justify-content-between">
+							<div class="card-text">{% trans %}Cluster{% endtrans %} #{{ cluster.label }}</div>
+							<div class="d-inline">
+								<div class="btn-group">
+									<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#cluster-detail-{{ cluster.id }}">
+							        	<span data-feather="help-circle"></span>
+							        </button>
+							        <a href="{{ path('new-run', {'id': cluster.id }) }}" class="btn btn-sm btn-outline-secondary"><span data-feather="plus-square"> </span> <span class="d-none d-lg-inline">{{ 'runs.button.new'|trans }}</span></a>
+						        </div>
+							</div>
+						</div>
+					</div>
 				</div>
-			</li>
-			<div class="modal fade" id="modal-delete-run-{{ run.id }}">
-				<div class="modal-dialog modal-dialog-centered" role="document">
-					<div class="modal-content">
-						<div class="modal-footer">
-							<button type="button" class="btn btn-sm btn-outline-secondary" data-dismiss="modal" aria-label="Close">
-								Cancel
-							</button>
-							<a class="btn btn-sm btn-outline-danger" href="{{ path('delete-run', { 'id': run.id }) }}">
-								<span data-feather="trash-2"> Confirm delete</span>
-					        </a>
-						</div>
-					</div><!-- /.modal-content -->
-				</div><!-- /.modal-dialog -->
-			</div><!-- /.modal -->
-			<div class="modal fade" id="run-detail-{{ run.id }}">
-				<div class="modal-dialog modal-dialog-centered" role="document">
-					<div class="modal-content">
-						<div class="modal-header">
-							<h4 class="modal-title">Run #{{ run.id }}</h4>
-							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-								<span aria-hidden="true">&times;</span>
-							</button>
-						</div>
-						<div class="modal-body">
-							<p class="text-muted my-1 border-bottom">{{ run.label }}</p>
-							<p>Start: {{ run.start|date("Y-m-d H:i:s") }}</p>
-							<p>End: {{ run.dateEnd|date("Y-m-d H:i:s") }}</p>
-							<p>Cluster: {{ run.cluster.label }}</p>
-						</div>
-						<div class="modal-footer">
-							<a class="btn btn-sm btn-outline-secondary" href="{{ path('edit-run', { 'id': run.id }) }}">
-								<span data-feather="edit"> Edit</span>
-			        		</a>
-						</div>
-					</div><!-- /.modal-content -->
-				</div><!-- /.modal-dialog -->
-			</div><!-- /.modal -->
-		{% endfor %}
-		</ul>
+				<div class="modal fade" id="cluster-detail-{{ cluster.id }}">
+					<div class="modal-dialog" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h4 class="modal-title">{% trans %}Cluster{% endtrans %} #{{ cluster.label }}</h4>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body">
+								<p class="text-muted my-1 border-bottom">{{ cluster.description }}</p>
+								<ul class="list-group list-group-flush">
+								{% for luminaire in cluster.luminaires %}
+								    <li class="list-group-item d-flex justify-content-between align-items-center">Address: {{ luminaire.address }}; Row/Col: {{ luminaire.ligne }}/{{ luminaire.colonne }}</li>
+								{% endfor %}
+								</ul>
+							</div>
+						</div><!-- /.modal-content -->
+					</div><!-- /.modal-dialog -->
+				</div><!-- /.modal -->
+			{% endfor %}
+		</div>
 	</div>
 </div>
 

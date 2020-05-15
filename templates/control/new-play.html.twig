@@ -13,8 +13,8 @@
     {{ form_start(form) }}
     {{ form_widget(form.recipe) }}
     <div class="m-3">
-    <button class="btn">{{ button_label|default('Play') }}</button>
-    <a class="btn" href="{{ path('home') }}">Cancel</a>
+    <button class="btn btn-light">{{ button_label|default('Play') }}</button>
+    <a class="btn btn-light" href="{{ path('home') }}">Cancel</a>
     </div>
     {{ form_end(form) }}
     </div>

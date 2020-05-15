@@ -5,9 +5,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         {% block meta %}
         {% endblock %}
-        <title>{% block title %} {{ parameters.getControllerName }} {{ ":: " ~ navtitle|default("") }} {% endblock %}</title>
+        <title>{% block title %} {{ parameters.getControllerName }} {{ ":: " ~ navtitle|default("")|trans }} {% endblock %}</title>
         {% block stylesheets %}
-			<link rel="stylesheet" href="{{ asset('build/app.css') }}">
+			   {{ encore_entry_link_tags('app') }}
         {% endblock %}
     </head>
     <body class="bg-dark" style="margin-top: 75px;">
@@ -15,7 +15,7 @@
             <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark shadow">
               <a class="navbar-brand" href="{{ path('home') }}">{{ parameters.getControllerName }}</a>
               <ul class="navbar-nav m-auto d-block">
-                <li class="navbar-item text-light text-center">{{ navtitle|default("") }}</li>
+                <li class="navbar-item text-light text-center">{{ navtitle|default("")|trans }}</li>
               </ul>
               {% block navbarButton %}
                   
@@ -29,22 +29,22 @@
                 </ul>
                 <ul class="navbar-nav d-block d-md-none">
                   <div class="nav-item" href="#">
-                      <a class="nav-link" href="{{ path('parameters') }}">Parameters</a>
+                      <a class="nav-link" href="{{ path('parameters') }}">{{'sidemenu.parameters'|trans}}</a>
                   </div>
                   <div class="nav-item" href="#">
-                      <a class="nav-link" href="{{ path('my-lightings') }}">Lightings</a>
+                      <a class="nav-link" href="{{ path('my-lightings') }}">{{'sidemenu.lightings'|trans}}</a>
                   </div>
                   <div class="nav-item" href="#">
-                      <a class="nav-link" href="{{ path('connected-lightings') }}">Clusters</a>
+                      <a class="nav-link" href="{{ path('connected-lightings') }}">{{'sidemenu.clusters'|trans}}</a>
                   </div>
                   <div class="nav-item" href="#">
-                      <a class="nav-link" href="{{ path('recipes') }}">Recipes</a>
+                      <a class="nav-link" href="{{ path('recipes') }}">{{'sidemenu.recipes'|trans}}</a>
                   </div>
                   <div class="nav-item" href="#">
-                      <a class="nav-link" href="{{ path('program') }}">Programs</a>
+                      <a class="nav-link" href="{{ path('program') }}">{{'sidemenu.programs'|trans}}</a>
                   </div>
                   <div class="nav-item" href="#">
-                      <a class="nav-link" href="{{ path('run') }}">Runs</a>
+                      <a class="nav-link" href="{{ path('run') }}">{{'sidemenu.runs'|trans}}</a>
                   </div>
                 </ul>
               </div>
@@ -60,48 +60,52 @@
                         <li class="nav-item p-1">
                           <a class="nav-link  btn btn-outline-light" href="{{ path('home') }}">
                             <span data-feather="home"></span>
-                            <span class="d-none d-lg-inline">Dashboard</span> <span class="sr-only">(current)</span>
+                            <span class="d-none d-lg-inline">{{'sidemenu.dashboard'|trans}}</span> <span class="sr-only">(current)</span>
                           </a>
                         </li>
                         <li class="nav-item p-1">
                           <a class="nav-link  btn btn-outline-light" href="#submenu1" data-toggle="collapse">
                             <span data-feather="settings"></span>
-                            <span class="d-none d-lg-inline">Setup</span>
+                            <span class="d-none d-lg-inline">{{'sidemenu.setup'|trans}}</span>
                           </a>
                           <div id="submenu1" class="collapse">
                               <div class="nav-item p-1" href="#">
                                   <a class="nav-link btn btn-outline-light" href="{{ path('my-lightings') }}">
                                     <span data-feather="database"></span>
-                                    <span class="d-none d-lg-inline">Lightings</span>
+                                    <span class="d-none d-lg-inline">{{'sidemenu.lightings'|trans}}</span>
                                   </a>
                               </div>
                               <div class="nav-item p-1" href="#">
                                   <a class="nav-link btn btn-outline-light" href="{{ path('connected-lightings') }}">
                                     <span data-feather="activity"></span>
-                                    <span class="d-none d-lg-inline">Clusters</span>
+                                    <span class="d-none d-lg-inline">{{'sidemenu.clusters'|trans}}</span>
                                   </a>
                               </div>
                               <div class="nav-item p-1" href="#">
                                   <a class="nav-link btn btn-outline-light" href="{{ path('recipes') }}">
                                     <span data-feather="sliders"></span>
-                                    <span class="d-none d-lg-inline">Recipes</span>
+                                    <span class="d-none d-lg-inline">{{'sidemenu.recipes'|trans}}</span>
                                   </a>
                               </div>
                               <div class="nav-item p-1" href="#">
                                   <a class="nav-link btn btn-outline-light" href="{{ path('program') }}">
                                     <span data-feather="cpu"></span>
-                                    <span class="d-none d-lg-inline">Programs</span>
+                                    <span class="d-none d-lg-inline">{{'sidemenu.programs'|trans}}</span>
                                   </a>
                               </div>
                               <div class="nav-item p-1" href="#">
                                   <a class="nav-link btn btn-outline-light" href="{{ path('run') }}">
                                     <span data-feather="fast-forward"></span>
-                                    <span class="d-none d-lg-inline">Runs</span>
+                                    <span class="d-none d-lg-inline">{{'sidemenu.runs'|trans}}</span>
                                   </a>
                               </div>
                           </div>
                         </li>
-                        <li class="nav-item p-1"><img class="img-fluid img-thumbnail" src="{{ snapshot }}"/></li>
+                        {% if snapshot is file_exists %}
+                          <li class="nav-item p-1">
+                            <img class="img-fluid img-thumbnail" src="{{ snapshot }}"/>
+                          </li>
+                        {% endif %}
                       </ul>
 
                     </div>
@@ -130,6 +134,16 @@
                     </div>
                   </nav>
                   <div data-spy="scroll" data-target="#navbar-scroll" data-offset="0">
+                  {% for message in app.flashes('error') %}
+                    <div class="alert alert-danger alert-fade" role="alert">
+                          {{ message|trans }}
+                    </div>
+                  {% endfor %}
+                  {% for message in app.flashes('info') %}
+                    <div class="alert alert-info alert-fade" role="alert">
+                          {{ message|trans }}
+                    </div>
+                  {% endfor %}
                   {% block panelContent %}
                       
                   {% endblock %}
@@ -141,7 +155,8 @@
             </div>
         {% endblock %}
         {% block javascripts %}
-        	<script src="{{ asset('build/app.js') }}"></script>
+          {{ encore_entry_script_tags('app') }}
+        	
           <script src="{{ asset('bundles/fosjsrouting/js/router.min.js') }}"></script>
           <script src="{{ path('fos_js_routing_js', { callback: 'fos.Router.setData' }) }}"></script>
         {% endblock %}

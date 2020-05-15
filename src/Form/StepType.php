@@ -10,7 +10,6 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 
 
-
 class StepType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
@@ -34,7 +33,10 @@ class StepType extends AbstractType
                     'autocomplete' => 'off',
                 ],
             ])
-            ->add('value', null, array('label' => false,))
+            ->add('value', null, array(
+                'label' => false,
+                'data' => '0:00',
+            ))
             ->add('recipe', null, array('label' => false,))
         ;
     }
