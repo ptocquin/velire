@@ -2,10 +2,10 @@
 
 {% set colors = ["primary","secondary","success","danger","warning","info"] %}
 
-{% block title %}Parameters{% endblock %}
+{% block title %}{{ 'parameters.title'|trans }}{% endblock %}
 
 {% block panelTitle %}
-<h1 class="h2">Parameters</h1>
+<h1 class="h2">{{ 'parameters.title'|trans }}</h1>
 <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group mr-2">
         
@@ -26,8 +26,9 @@
 	<div class="col">
 		{% form_theme form 'bootstrap_4_layout.html.twig' %}
 			{{ form_start(form) }}
-			{{ form_row(form.controller_name, {'label' : "Controller name", 'label_attr': { class: 'text-light'} }) }}
-			<button class="btn">{{ button_label|default('Save') }}</button>
+			{{ form_row(form.controller_name, {'label' : 'parameters.labels.controller-name', 'label_attr': { class: 'text-light'} }) }}
+			<button type="submit" class="btn btn-secondary">{{ button_label|default('button.save')|trans }}</button>
+			<a href="{{ path('home') }}" class="btn btn-secondary">{{ 'button.cancel'|trans }}</a>
 			{{ form_end(form) }}
 	</div>
 </div>

@@ -2,25 +2,7 @@
 
 {% set colors = ["primary","secondary","success","danger","warning","info"] %}
 
-{% block title %}Setup{% endblock %}
-
-{% block panelTitle %}
-<h1 class="h2" id="top">Recipes</h1>
-<div class="btn-toolbar mb-2 mb-md-0">
-    <div class="btn-group mr-2">
-
-    </div>
-	<div class="modal fade" id="modal-new-recipes">
-		<div class="modal-dialog modal-dialog-centered" role="document">
-			<div class="modal-content">
-				<div class="modal-body text-center">
-					<button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">Cancel</button>
-				</div>
-			</div><!-- /.modal-content -->
-		</div><!-- /.modal-dialog -->
-	</div><!-- /.modal -->
-</div>
-{% endblock %}
+{% block title %}{{ 'sidemenu.setup'|trans }} :: {{ 'recipes.title'|trans }}{% endblock %}
 
 {% block panelContent %}
 
@@ -30,129 +12,128 @@
     </div>
 {% endfor %}
 
-<div class="row">
-{# 	<div class="col col-md-12 col-lg-4">
-		<ul class="list-group list-group-flush"> #}
-		{% for recipe in recipes %}
-			<div class="col-sm-8 col-md-6">
-				<div class="card">
-					<div class="card-body d-flex justify-content-between">
-						<div class="card-text">{{ recipe.label }}</div> 
-						<div class="d-inline">
-							<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#recipe-detail-{{ recipe.id }}" style="background-color: {{ recipe.color }}">
-					        	<span data-feather="help-circle"></span>
-					        </button>
-					        <a class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-delete-{{ recipe.id }}" href="{{ path('delete-recipe', { 'id': recipe.id }) }}">
-								<span data-feather="trash-2"></span>
-					        </a>
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+	<li class="nav-item">
+		<a class="nav-link active" id="list-tab" data-toggle="tab" href="#list" role="tab" aria-controls="list" aria-selected="true">{% trans %}List{% endtrans %}</a>
+	</li>
+	<li class="nav-item">
+		<a class="nav-link" id="new-tab" data-toggle="tab" href="#new" role="tab" aria-controls="new" aria-selected="false">{% trans %}New{% endtrans %}</a>
+	</li>
+</ul>
+
+<div class="tab-content" id="myTabContent">
+	<div class="tab-pane fade show active" id="list" role="tabpanel" aria-labelledby="list-tab">
+		<div class="row pt-3">
+			{% for recipe in recipes %}
+				<div class="col-sm-8 col-md-6">
+					<div class="card">
+						<div class="card-body d-flex justify-content-between">
+							<div class="card-text">{{ recipe.label }}</div> 
+							<div class="d-inline">
+								<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#recipe-detail-{{ recipe.id }}" style="background-color: {{ recipe.color }}">
+						        	<span data-feather="help-circle"></span>
+						        </button>
+						        <a class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-delete-{{ recipe.id }}" href="{{ path('delete-recipe', { 'id': recipe.id }) }}">
+									<span data-feather="trash-2"></span>
+						        </a>
+							</div>
 						</div>
 					</div>
 				</div>
-			</div>
-			<div class="modal fade" id="modal-delete-{{ recipe.id }}">
-    			<div class="modal-dialog modal-dialog-centered" role="document">
-    				<div class="modal-content">
-    					<div class="modal-body">
-    						<div class="btn-group btn-group-justified align-content-center">
-    						<a class="btn btn-danger" role="button" href="{{ path('delete-recipe', { 'id': recipe.id }) }}">Confirm delete</a>
-    						<button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">Cancel</button>
-    						</div>
-    					</div>
-    				</div><!-- /.modal-content -->
-    			</div><!-- /.modal-dialog -->
-    		</div><!-- /.modal -->
-			<div class="modal fade" id="recipe-detail-{{ recipe.id }}">
-				<div class="modal-dialog modal-dialog-centered" role="document">
-					<div class="modal-content">
-						<div class="modal-header">
-							<h4 class="modal-title">{{ recipe.label }}</h4>
-							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-								<span aria-hidden="true">&times;</span>
-							</button>
+				<div class="modal fade" id="modal-delete-{{ recipe.id }}">
+	    			<div class="modal-dialog modal-dialog-centered" role="document">
+	    				<div class="modal-content">
+	    					<div class="modal-body">
+	    						<div class="btn-group btn-group-justified align-content-center">
+	    						<a class="btn btn-danger" role="button" href="{{ path('delete-recipe', { 'id': recipe.id }) }}">{% trans %}Confirm delete{% endtrans %}</a>
+	    						<button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">{% trans %}Cancel{% endtrans %}</button>
+	    						</div>
+	    					</div>
+	    				</div><!-- /.modal-content -->
+	    			</div><!-- /.modal-dialog -->
+	    		</div><!-- /.modal -->
+				<div class="modal fade" id="recipe-detail-{{ recipe.id }}">
+					<div class="modal-dialog modal-dialog-centered" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h4 class="modal-title">{{ recipe.label }}</h4>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body">
+								<p class="text-muted my-1 border-bottom">{{ recipe.description }}</p>
+								<ul class="list-group list-group-flush">
+								  	{% for ingredient in recipe.ingredients %}
+								  	    <li class="list-group-item d-flex justify-content-between align-items-center">{{ ingredient.led.type }} {{ ingredient.led.wavelength }} <span class="badge badge-light">{{ ingredient.level }}%</span></li>
+								  	{% endfor %}
+								 </ul>
+							</div>
+							<div class="modal-footer">
+								<a class="btn btn-sm btn-outline-secondary" href="{{ path('edit-recipe', { 'id': recipe.id }) }}">
+								<span data-feather="edit"></span>
+				        		</a>
+							</div>
+						</div><!-- /.modal-content -->
+					</div><!-- /.modal-dialog -->
+				</div><!-- /.modal -->
+			{% endfor %}
+		</div>
+	</div>
+	<div class="tab-pane fade" id="new" role="tabpanel" aria-labelledby="new-tab">
+		<div class="row pt-3">
+			{% for cluster in clusters %}
+				<div class="col-sm-8 col-md-6">
+					<div class="card">
+						<div class="card-body d-flex justify-content-between">
+							<div class="card-text">{% trans %}Cluster{% endtrans %} #{{ cluster.label }}</div>
+							<div class="d-inline">
+								<div class="btn-group">
+									<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#cluster-detail-{{ cluster.id }}">
+							        	<span data-feather="help-circle"></span>
+							        </button>
+							        <a href="{{ path('new-recipe', {'id': cluster.id }) }}" class="btn btn-sm btn-outline-secondary"><span data-feather="plus-square"> </span> <span class="d-none d-lg-inline">{{ 'recipes.button.new'|trans }}</span></a>
+						        </div>
+							</div>
 						</div>
-						<div class="modal-body">
-							<p class="text-muted my-1 border-bottom">{{ recipe.description }}</p>
-							<ul class="list-group list-group-flush">
-							  	{% for ingredient in recipe.ingredients %}
-							  	    <li class="list-group-item d-flex justify-content-between align-items-center">{{ ingredient.led.type }} {{ ingredient.led.wavelength }} <span class="badge badge-light">{{ ingredient.level }}%</span></li>
-							  	{% endfor %}
-							 </ul>
-						</div>
-						<div class="modal-footer">
-							<a class="btn btn-sm btn-outline-secondary" href="{{ path('edit-recipe', { 'id': recipe.id }) }}">
-							<span data-feather="edit"></span>
-			        		</a>
-						</div>
-					</div><!-- /.modal-content -->
-				</div><!-- /.modal-dialog -->
-			</div><!-- /.modal -->
-		{% endfor %}
-{# 		</ul>
-	</div> #}
-</div>
-
-<div class="row">
-	{# Connected Lightings #}
-	<div class="col col-md-12">
-		<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mt-5 mb-3">
-		  	<h1 class="h5 text-light">Create recipes for existing clusters</h1>
-		  	<div class="btn-group">
-		    </div>
-	    </div>
+					</div>
+				</div>
+				<div class="modal fade" id="cluster-detail-{{ cluster.id }}">
+					<div class="modal-dialog" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h4 class="modal-title">{% trans %}Cluster{% endtrans %} #{{ cluster.label }}</h4>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body">
+								<p class="text-muted my-1 border-bottom">{{ cluster.description }}</p>
+								{% set cluster_leds = led_repo.getLedTypesFromCluster(cluster.id) %}
+								<ul class="list-group list-group-flush">
+								{% for led in cluster_leds %}
+								    <li class="list-group-item d-flex justify-content-between align-items-center">{{ led.type }} {{ led.wavelength }}</li>
+								{% endfor %}
+								</ul>
+							</div>
+						</div><!-- /.modal-content -->
+					</div><!-- /.modal-dialog -->
+				</div><!-- /.modal -->
+			{% endfor %}
+		</div>
 	</div>
 </div>
 
-<div class="row" id="new">
 
-		{% for cluster in clusters %}
-			<div class="col-sm-8 col-md-6">
-				<div class="card">
-					<div class="card-body d-flex justify-content-between">
-						<div class="card-text">Cluster #{{ cluster.label }}</div>
-						<div class="d-inline">
-							<div class="btn-group">
-								<button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#cluster-detail-{{ cluster.id }}">
-						        	<span data-feather="help-circle"></span>
-						        </button>
-						        <a href="{{ path('new-recipe', {'id': cluster.id }) }}" class="btn btn-sm btn-outline-secondary"><span data-feather="plus-square"> </span> <span class="d-none d-lg-inline">New recipe</span></a>
-					        </div>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="modal fade" id="cluster-detail-{{ cluster.id }}">
-				<div class="modal-dialog" role="document">
-					<div class="modal-content">
-						<div class="modal-header">
-							<h4 class="modal-title">Cluster #{{ cluster.label }}</h4>
-							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-								<span aria-hidden="true">&times;</span>
-							</button>
-						</div>
-						<div class="modal-body">
-							<p class="text-muted my-1 border-bottom">{{ cluster.description }}</p>
-							{% set cluster_leds = led_repo.getLedTypesFromCluster(cluster.id) %}
-							<ul class="list-group list-group-flush">
-							{% for led in cluster_leds %}
-							    <li class="list-group-item d-flex justify-content-between align-items-center">{{ led.type }} {{ led.wavelength }}</li>
-							{% endfor %}
-							</ul>
-						</div>
-					</div><!-- /.modal-content -->
-				</div><!-- /.modal-dialog -->
-			</div><!-- /.modal -->
-		{% endfor %}
-
-</div>
 
 <div class="modal fade" id="modal-load-config">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
-				<h4 class="modal-title">Load recipes from file</h4>
+				<h4 class="modal-title">{{ 'recipes.modal.load.title'|trans }}</h4>
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 					<span aria-hidden="true">&times;</span>
-					<span class="sr-only">Close</span>
+					<span class="sr-only">{% trans %}Close{% endtrans %}</span>
 				</button>
 			</div>
 			<div class="modal-body">
@@ -163,7 +144,7 @@
 					
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">{% trans %}Close{% endtrans %}</button>
 					{{ form_widget(form_upload.save, {'attr': {'class': "btn btn-success"}}) }}
 					{{ form_end(form_upload) }}
 				</div>
@@ -175,11 +156,11 @@
 
 {% block scrollspy %}
     {{ parent() }}
-	<li class="nav-item">
+{# 	<li class="nav-item">
 		<a class="btn btn-secondary nav-link" href="#new">New recipes</span></a>
-	</li>
+	</li> #}
 {% endblock %}
 
 {% block bottomButton %}
-    <button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-load-config"><span data-feather="download"></span> Load from file</button>
+    <button class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal-load-config"><span data-feather="download"></span>{{ 'recipes.button.load'|trans }}</button>
 {% endblock %}

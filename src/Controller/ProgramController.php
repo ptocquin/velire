@@ -50,7 +50,7 @@ class ProgramController extends AbstractController
         return $this->render('program/index.html.twig', [
             'controller_name' => 'ProgramController',
             'programs' => $programs,
-            'navtitle' => 'Programs', 
+            'navtitle' => 'programs.title', 
         ]);
     }
 
@@ -77,7 +77,7 @@ class ProgramController extends AbstractController
         return $this->render('program/new-program.html.twig', [
             'controller_name' => 'ProgramController',
             'form' => $form->createView(),
-            'navtitle' => 'New Program',
+            'navtitle' => 'programs.new.title',
         ]);
     }
 
@@ -124,8 +124,7 @@ class ProgramController extends AbstractController
                     $em->remove($run_step);
                 }
                 $em->flush();
-
-                $process = new Process('python3 ./bin/velire-cmd.py -e --config ./bin/config.yaml --input ../var/config.json --set-run '.$run->getId());
+                $process = new Process($this->getParameter('app.velire_cmd').'-e --input '.$this->getParameter('app.shared_dir').'/config.json --set-run '.$run->getId());
                 $process->run();
             }
 
@@ -135,10 +134,11 @@ class ProgramController extends AbstractController
 
             return $this->redirectToRoute('program');
         }
-        return $this->render('program/edit-program.html.twig', [
+        return $this->render('program/new-program.html.twig', [
             'controller_name' => 'ProgramController',
             'form' => $form->createView(),
-            'navtitle' => 'Edit Program',
+            'navtitle' => 'programs.edit.title',
+            'edit' => true,
         ]);
     }
 
@@ -166,12 +166,16 @@ class ProgramController extends AbstractController
     {
         $running_runs = $this->getDoctrine()->getRepository(Run::class)->getRunningRuns();
         $coming_runs = $this->getDoctrine()->getRepository(Run::class)->getComingRuns();
+        $past_runs = $this->getDoctrine()->getRepository(Run::class)->getPastRuns();
+        $clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
 
         return $this->render('control/runs.html.twig', [
             'controller_name' => 'ProgramController',
             'running_runs' => $running_runs,
             'coming_runs' => $coming_runs,
-            'navtitle' => 'Runs', 
+            'past_runs' => $past_runs,
+            'clusters' => $clusters,
+            'navtitle' => 'runs.title', 
         ]);
     }
 
@@ -191,15 +195,25 @@ class ProgramController extends AbstractController
             $em->persist($run);
             $em->flush();
 
-            $process = new Process('python3 ./bin/velire-cmd.py -e --config ./bin/config.yaml --input ../var/config.json --set-run '.$data->getId());
+            $process = new Process($this->getParameter('app.velire_cmd').' -e --input '.$this->getParameter('app.shared_dir').'/config.json --set-run '.$data->getId());
             $process->run();
 
-            return $this->redirectToRoute('home');
+            // executes after the command finishes
+            if (!$process->isSuccessful()) {
+                // throw new ProcessFailedException($process);
+                    // add flash messages
+                    $this->addFlash(
+                        'error',
+                        'For a unknown reason, the run was not started'
+                    );
+            }
+
+            return $this->redirectToRoute('run');
         }
         return $this->render('control/new-run.html.twig', [
             'controller_name' => 'ProgramController',
             'form' => $form->createView(),
-            'navtitle' => 'New Run',
+            'navtitle' => 'runs.new.title',
         ]);
     }
 
@@ -207,9 +221,7 @@ class ProgramController extends AbstractController
      * @Route("/play/new/{id}", name="new-play")
      */
     public function newPlay(Request $request, Cluster $cluster)
-    {
-        $session = new Session;
-        
+    {        
         # Form to play
         $form = $this->createFormBuilder()
             ->add('recipe', EntityType::class, [
@@ -229,15 +241,19 @@ class ProgramController extends AbstractController
             $data = $form->getData();
             $recipe = $data['recipe'];
 
-            $process = new Process('python3 ./bin/velire-cmd.py -e --config ./bin/config.yaml --input ../var/config.json --cluster '.$cluster->getId().' --play '.$recipe->getId());
+            $process = new Process($this->getParameter('app.velire_cmd').' -e --input '.$this->getParameter('app.shared_dir').'/config.json --cluster '.$cluster->getId().' --play '.$recipe->getId());
             $process->run();
 
             // executes after the command finishes
             if (!$process->isSuccessful()) {
-                throw new ProcessFailedException($process);
+                //throw new ProcessFailedException($process);
+                $this->addFlash(
+                        'error',
+                        'For a unknown reason, the recipe was not started'
+                    );
             } else {
                             // add flash messages
-                $session->getFlashBag()->add(
+                $this->addFlash(
                     'info',
                     // $process->getOutput()
                     'Recipe '.$recipe->getLabel().' successfully started on cluster '.$cluster->getLabel()
@@ -249,7 +265,7 @@ class ProgramController extends AbstractController
         return $this->render('control/new-play.html.twig', [
             'controller_name' => 'ProgramController',
             'form' => $form->createView(),
-            'navtitle' => 'New Play',
+            'navtitle' => 'runs.play.new',
         ]);
     }
 
@@ -296,15 +312,16 @@ class ProgramController extends AbstractController
             $em->persist($run);
             $em->flush();
 
-            $process = new Process('python3 ./bin/velire-cmd.py -e --config ./bin/config.yaml --input ../var/config.json --set-run '.$run->getId());
+            $process = new Process($this->getParameter('app.velire_cmd').' -e --input '.$this->getParameter('app.shared_dir').'/config.json --set-run '.$run->getId());
             $process->run();
 
             return $this->redirectToRoute('run');
         }
-        return $this->render('control/edit-run.html.twig', [
+        return $this->render('control/new-run.html.twig', [
             'controller_name' => 'ProgramController',
             'form' => $form->createView(),
-            'navtitle' => 'Edit Run',
+            'navtitle' => 'runs.edit.title',
+            'edit' => true
         ]);
     }
 

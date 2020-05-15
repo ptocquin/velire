@@ -7,6 +7,7 @@
         "ext-iconv": "*",
         "api-platform/api-pack": "^1.2",
         "easycorp/easyadmin-bundle": "^1.17",
+        "fig/link-util": "^1.1",
         "friendsofsymfony/jsrouting-bundle": "^2.3",
         "sensio/framework-extra-bundle": "^5.2",
         "symfony/asset": "*",
@@ -26,12 +27,13 @@
         "symfony/twig-bundle": "*",
         "symfony/validator": "*",
         "symfony/web-link": "*",
-        "symfony/webpack-encore-pack": "^1.0",
+        "symfony/webpack-encore-bundle": "^1.7",
         "symfony/yaml": "*",
         "webonyx/graphql-php": "^0.13.4"
     },
     "require-dev": {
         "doctrine/doctrine-fixtures-bundle": "^3.1",
+        "easycorp/easy-deploy-bundle": "^1.0",
         "symfony/browser-kit": "*",
         "symfony/css-selector": "*",
         "symfony/debug-pack": "*",
@@ -83,7 +85,7 @@
     "extra": {
         "symfony": {
             "allow-contrib": false,
-            "require": "4.3.*"
+            "require": "4.4.*"
         }
     }
 }

@@ -16,21 +16,25 @@
     {{ form_start(form) }}
     <div class="row">
         <div class="col">
-        {{ form_row(form.label, {'value' : "run_" ~ "now"|date("Y-m-d_H:i:s")}) }}
+            {% if edit is defined %}
+                {{ form_row(form.label, {'label_attr': { class: 'text-light'}}) }}
+            {% else %}
+                {{ form_row(form.label, {'value' : "run_" ~ "now"|date("Y-m-d_H:i:s"), 'label_attr': { class: 'text-light'}}) }}
+            {% endif %}
         </div>
         <div class="col">
-            {{ form_row(form.program) }}
+            {{ form_row(form.program, {'label_attr': { class: 'text-light'}}) }}
         </div>
     </div>
     {{ form_widget(form.description, {'attr': { "class": "d-none d-lg-block"}}) }}
     <div class="row">
     	<div class="col">
-    		{{ form_row(form.start) }}
+    		{{ form_row(form.start, {'label_attr': { class: 'text-light'}}) }}
     	</div>
     </div>
     {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
-    <a class="btn" href="{{ path('home') }}">Cancel</a>
+    <button class="btn btn-light">{{ button_label|default('Save')|trans }}</button>
+    <a class="btn btn-light" href="{{ path('run') }}">{% trans %}Cancel{% endtrans %}</a>
     {{ form_end(form) }}
 
 

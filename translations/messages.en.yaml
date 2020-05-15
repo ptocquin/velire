@@ -1,0 +1,11 @@
+# Generic elements
+button:
+  cancel: Cancel
+  save: Save
+
+
+# Parameters window
+parameters:
+  title: Parameters
+  labels:
+    controller-name: Controller name

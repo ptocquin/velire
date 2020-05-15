@@ -52,6 +52,7 @@ class MainController extends Controller
      */
     public function index(Request $request)
     {
+
         $today = new \DateTime();
         $cluster_repo = $this->getDoctrine()->getRepository(Cluster::class);
         $run_repo = $this->getDoctrine()->getRepository(Run::class);
@@ -61,7 +62,8 @@ class MainController extends Controller
             array(),
             array('label' => 'ASC')
         );
-        $luminaires = $luminaire_repo->findConnectedLuminaire();
+        // $luminaires = $luminaire_repo->findConnectedLuminaire();
+        $luminaires = $luminaire_repo->findAll();
         $x_max = $luminaire_repo->getXMax();
         $y_max = $luminaire_repo->getYMax();
 
@@ -71,7 +73,7 @@ class MainController extends Controller
             'cluster_repo' => $cluster_repo,
             'run_repo' => $run_repo,
             'log_repo' => $log_repo,
-            'navtitle' => 'Dashboard',
+            'navtitle' => 'dashboard.title',
             'luminaires' => $luminaires,
             'luminaire_repo' => $luminaire_repo,
             'x_max' => $x_max['x_max'],
@@ -84,16 +86,18 @@ class MainController extends Controller
      */
     public function parameters(Request $request)
     {
+        $file_path = $this->getParameter('app.shared_dir').'/params.yaml';
+
         $filesystem = new Filesystem();
-        if ($filesystem->exists("../var/params.yaml")) {
-            $values = Yaml::parseFile('../var/params.yaml');
+        if ($filesystem->exists($file_path)) {
+            $values = Yaml::parseFile($file_path);
         } else {
             $values = array(
                 'controller_name' => 'test controller name'
             );
 
             $yaml = Yaml::dump($values);
-            file_put_contents("../var/params.yaml", $yaml);
+            file_put_contents($file_path, $yaml);
         }
 
         $form = $this->createFormBuilder()
@@ -103,7 +107,7 @@ class MainController extends Controller
             ->getForm();
 
         $form->handleRequest($request);
-        if ($form->isSubmitted() ) {
+        if ($form->isSubmitted()) {
             $controller_name = $form->get('controller_name')->getData();
 
             $values = array(
@@ -111,7 +115,7 @@ class MainController extends Controller
             );
 
             $yaml = Yaml::dump($values);
-            file_put_contents("../var/params.yaml", $yaml);
+            file_put_contents($file_path, $yaml);
 
             return $this->redirectToRoute('home');
 
@@ -120,7 +124,7 @@ class MainController extends Controller
 
         return $this->render('main/parameters.html.twig', [
             'form' => $form->createView(),
-            'navtitle' => 'Parameters'
+            'navtitle' => 'parameters.title'
         ]);
         
     }
@@ -189,7 +193,8 @@ class MainController extends Controller
                 if($_SERVER['APP_ENV'] == 'dev') {
                     $json_file = $this->get('kernel')->getProjectDir()."/public/tmp/lightings_dev.json";
                 } else {
-                    $json_file = $this->get('kernel')->getProjectDir()."/public/tmp/lightings.json";
+                    // $json_file = $this->get('kernel')->getProjectDir()."/public/tmp/lightings.json";
+                    $json_file = $this->getParameter('app.shared_dir')."/lightings.json";
                 }
 
                 $data = json_decode(file_get_contents($json_file), TRUE);
@@ -262,7 +267,7 @@ class MainController extends Controller
         	'clusters' => $clusters,
         	'next_cluster' => $cluster_number+1,
             'form' => $form->createView(),
-            'navtitle' => 'My Lightings',
+            'navtitle' => 'navtitle.mylightings',
             'form_upload' =>$form_upload->createView(),
         ]);
     }
@@ -341,7 +346,7 @@ class MainController extends Controller
         	'installed_luminaires' => $installed_luminaires,
         	'clusters' => $clusters,
         	'next_cluster' => $cluster_number+1,
-            'navtitle' => 'Connected Lightings',
+            'navtitle' => 'navtitle.groups',
         ]);
     }
 
@@ -388,7 +393,7 @@ class MainController extends Controller
             $data = json_decode(file_get_contents($this->get('kernel')->getProjectDir()."/var/test.json"), TRUE);
         } else {
             // réinitialiser + master/slave
-            $process = new Process('python3 ./bin/velire-cmd.py --config ./bin/config.yaml --init --quiet');
+            $process = new Process($this->getParameter('app.velire_cmd').' --init --quiet');
             $process->setTimeout(3600);
             $process->run();
 
@@ -398,7 +403,7 @@ class MainController extends Controller
             }
 
             // Interroger le réseau de luminaires
-            $process = new Process('python3 ./bin/velire-cmd.py --config ./bin/config.yaml --test --json --quiet');
+            $process = new Process($this->getParameter('app.velire_cmd').' --test --json --quiet');
             $process->setTimeout(3600);
             $process->run();
 
@@ -454,7 +459,7 @@ class MainController extends Controller
             // $spots = implode(" ", $data['found']);
 
             // Interroger le réseau de luminaires
-            $process = new Process('python3 ./bin/velire-cmd.py --config ./bin/config.yaml --info all --quiet --json --output ../var/config.json');
+            $process = new Process($this->getParameter('app.velire_cmd').' --info all --quiet --json --output '.$this->getParameter('app.shared_dir').'/config.json');
             $process->setTimeout(3600);
             $process->run();
 
@@ -464,7 +469,7 @@ class MainController extends Controller
             }
         } 
 
-        $data = json_decode(file_get_contents($this->get('kernel')->getProjectDir()."/var/config.json"), TRUE);
+        $data = json_decode(file_get_contents($this->getParameter('app.shared_dir').'/config.json'), TRUE);
 
         $luminaires = $data['spots'];
 
@@ -560,7 +565,7 @@ class MainController extends Controller
                     $fileName
                 );
 
-                $data = json_decode(file_get_contents($this->get('kernel')->getProjectDir()."/public/tmp/recipes.json"), TRUE);
+                $data = json_decode(file_get_contents($this->getParameter('tmp_directory')."/recipes.json"), TRUE);
 
                 $em = $this->getDoctrine()->getManager();
 
@@ -605,7 +610,7 @@ class MainController extends Controller
             'led_repo' => $led_repo,
             'recipe_repo' => $recipe_repo,
             'recipes' => $recipes,
-            'navtitle' => 'Recipes',
+            'navtitle' => 'navtitle.recipes',
             'form_upload' => $form_upload->createView(),
         ]);
     }
@@ -640,7 +645,7 @@ class MainController extends Controller
         
         return $this->render('setup/new-recipes.html.twig', [
             'form' => $form->createView(),
-            'navtitle' => 'New Recipe',
+            'navtitle' => 'recipes.new.title',
         ]);
     }
 
@@ -662,10 +667,43 @@ class MainController extends Controller
             return $this->redirectToRoute('recipes');
         }
         
-        return $this->render('setup/edit-recipes.html.twig', [
+        return $this->render('setup/new-recipes.html.twig', [
             'form' => $form->createView(),
+            'edit' => true,
             'navtitle' => 'Edit Recipe',
         ]);
+    }
+
+    /**
+     * @Route("/setup/recipes/test", name="test-recipe", options={"expose"=true})
+     */
+    public function testRecipe(Request $request)
+    {
+        $data = $request->get('data');
+        $labels = $data['labels'];
+        $intensities = $data['intensities'];
+
+        $command = $this->getParameter('app.velire_cmd').' -e -c '.implode(" ", $labels)." -i ".implode(" ", $intensities);
+
+        # Envoyer la commande aux luminaires
+        $process = new Process($command);
+        $process->setTimeout(3600);
+        $process->run();
+
+        // executes after the command finishes
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        }
+
+        $output = $process->getOutput();
+
+        
+        $response = new JsonResponse(array(
+            'l' => $labels,
+            'i' => $intensities,
+            'command' => $command,
+        ));
+        return $response;
     }
 
     /**

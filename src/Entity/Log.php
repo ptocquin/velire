@@ -3,9 +3,12 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\LogRepository")
+ * @ApiResource(normalizationContext={"groups"={"log"}})
  */
 class Log
 {
@@ -13,36 +16,43 @@ class Log
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * @Groups({"log"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"log"})
      */
     private $type;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Cluster", inversedBy="logs")
+     * @Groups({"log"})
      */
     private $cluster;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Luminaire", inversedBy="logs")
+     * @Groups({"log"})
      */
     private $luminaire;
 
     /**
      * @ORM\Column(type="json", nullable=true)
+     * @Groups({"log"})
      */
     private $value = [];
 
     /**
      * @ORM\Column(type="text", nullable=true)
+     * @Groups({"log"})
      */
     private $comment;
 
     /**
      * @ORM\Column(type="datetime")
+     * @Groups({"log"})
      */
     private $time;
 

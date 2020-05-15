@@ -1,0 +1,104 @@
+# general vocabulary
+Cancel: Annuler
+Cluster: Groupe
+Close: Fermer
+Confirm delete: Confirmer la suppression
+Ingredient: Composante
+Lighting: Luminaire
+List: Liste
+New: Ajout
+Past: Terminés
+Running: En cours
+Save: Sauvegarder
+Scheduled: A venir
+
+# navtitles
+navtitle:
+  mylightings: Mes Luminaires
+  groups: Luminaires connectés
+  recipes: Recettes lumineuses
+
+# Generic elements
+button:
+  cancel: Annuler
+  save: Sauvegarder
+
+# Dashboard window
+dashboard:
+  title: Centre de contrôle
+
+sidemenu:
+  dashboard: Dashboard
+  setup: Setup
+  lightings: Luminaires
+  clusters: Groupes
+  recipes: Recettes
+  programs: Programmes
+  runs: Séquences
+
+# Parameters window
+parameters:
+  title: Paramètres
+  labels:
+    controller-name: Nom du controlleur
+
+# Lightings window
+lightings:
+  title: Mes Luminaires
+  button:
+    add: Ajouter un luminaire
+    load: Charger une configuration
+    download: Télécharger la configuration actuelle
+
+# Groups window
+groups:
+  title: Groupes
+  button:
+    init: (Ré)-Initialise
+    clear: Efface les groupes
+
+
+# Recipes window
+recipes:
+  title: Recettes lumineuses
+  create-subtitle: Créer des nouvelles recettes
+  new:
+    title: Nouvelle recette
+  button:
+    load: Charger
+    new: Créer recette
+  modal:
+    load:
+      title: Charger à partir d'un fichier
+  form:
+    new:
+      label: Intitulé
+      color: Couleur
+
+#Programs window
+programs:
+  title: Mes Programmes
+  new:
+    title: Nouveau Programme
+  edit:
+    title: Modifier un programme
+  button:
+    add: Créer un programme
+
+# Runs window
+runs:
+  title: Séquences
+  new:
+    title: Nouvelle séquence
+  edit:
+    title: Modifier une séquence
+  button:
+    new: Créer une nouvelle séquence
+  form:
+    start: Date de démarrage
+    label: Intitulé
+    program: Programme
+    description: Description
+
+# Error messages
+For a unknown reason, the run was not started: Pour une raison inconnue, la séquence n'a pas pu être créée. Vérifiez que la communication avec les luminaires est fonctionnelle.

@@ -145,7 +145,7 @@ if args['set_run']	!= None:
 	verbose("Setting new run")
 	# Structure de la table 'run' :
 	# id (int, autoincrement), cluster_id (int), program_id (int), start (datetime), label (varchar), description (clob), date_end (datetime), status (varchar)
-	run_column_names = ['id', 'cluster_id', 'program_id', 'label', 'description', 'date_end', 'status', 'start']
+	run_column_names = ['id', 'cluster_id', 'program_id', 'start', 'label', 'description', 'date_end', 'status']
 	cursor.execute('SELECT * FROM run WHERE id=?', (str(args['set_run'][0]),))
 	run_row = cursor.fetchone()
 	run_dict = {}

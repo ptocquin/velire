@@ -25,7 +25,7 @@ class Cluster
 
     /**
      * @ORM\Column(type="integer")
-     * @Groups({"luminaire"})
+     * @Groups({"luminaire","log"})
      */
     private $label;
 
