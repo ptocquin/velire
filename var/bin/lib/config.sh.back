@@ -1,0 +1,8 @@
+DEVELOPMENT=TRUE
+PORT="/dev/ttyUSB0"
+PYTHON_CMD="python3 ./bin/velire-cmd.py"
+LOG="log.txt"
+DB="../var/data.db"
+CONFIG="../var/config.json"
+
+source ./bin/lib/functions.lib
