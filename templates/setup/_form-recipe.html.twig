@@ -1,6 +1,6 @@
 <div class="col-md-12">
 	{% form_theme form 
-		'bootstrap_4_horizontal_layout.html.twig' %}
+		'bootstrap_4_layout.html.twig' %}
 	{{ form_start(form) }}
 	<div class="row">
 		<div class="col">
@@ -19,17 +19,15 @@
 			{{ form_widget(form.description, {'attr': { "class": "d-none d-lg-block"}}) }}
 		</div>
 	</div>
-
-	<h5 class="pt-5 text-light">{% trans %}Ingredient{% endtrans %}s</h5>
 	
 	<div class="row">
 		<div class="col">
 		{% for ingredient in form.ingredients %}
 			{% if loop.index is divisible by(2) %}</div><div class="col">{% endif %}
 				{% if edit is defined %}
-		    		<p>{{ form_row(ingredient.level, { 'label': ingredient.vars.data.led.type, 'label_attr': { class: 'text-light'} }) }} </p>
+		    		<p>{{ form_row(ingredient.level, { 'label': ingredient.vars.data.led.type~"_"~ingredient.vars.data.led.wavelength, 'label_attr': { class: 'text-light'} }) }} </p>
 		    	{% else %}
-		    		<p>{{ form_row(ingredient.level, { 'label': ingredient.vars.data.led.type, 'value': 0, 'label_attr': { class: 'text-light'} }) }} </p>
+		    		<p>{{ form_row(ingredient.level, { 'label': ingredient.vars.data.led.type~"_"~ingredient.vars.data.led.wavelength, 'value': 0, 'label_attr': { class: 'text-light'} }) }} </p>
 		    	{% endif %}
 		{% endfor %}
 		</div>
