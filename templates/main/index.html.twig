@@ -140,7 +140,7 @@
 
                       <div class="modal-footer">
 
-                        <button type="button" class="btn btn-light" data-dismiss="modal" aria-label="Close">Cancel</button>                     
+                        <button type="button" class="btn btn-light" data-dismiss="modal" aria-label="Close">{% trans %}Cancel{% endtrans %}</button>                     
                       </div>
                     </div><!-- /.modal-content -->
                   </div><!-- /.modal-dialog -->
@@ -250,7 +250,7 @@
 
                         <div class="modal-footer">
                           
-                          <button type="button" class="btn btn-light" data-dismiss="modal" aria-label="Close">Close</button>                     
+                          <button type="button" class="btn btn-light" data-dismiss="modal" aria-label="Close">{% trans %}Close{% endtrans %}</button>                     
                         </div>
                       </div><!-- /.modal-content -->
                       </div><!-- /.modal-dialog -->
@@ -350,7 +350,7 @@
                                 
                               </div>
                               <button type="button" class="btn btn-success set-position">
-                                  <span>Set</span>
+                                  <span>{% trans %}Set{% endtrans %}</span>
                                   <input type="hidden" name="{{ luminaire.id }}_set_position" value="{{ luminaire.id }}"></input>
                                 </button>
                             </div>
@@ -359,7 +359,7 @@
 
                         <div class="modal-footer">
                           
-                          <button type="button" class="btn btn-light" data-dismiss="modal" aria-label="Close">Close</button>                     
+                          <button type="button" class="btn btn-light" data-dismiss="modal" aria-label="Close">{% trans %}Close{% endtrans %}</button>                     
                         </div>
                       </div><!-- /.modal-content -->
                       </div><!-- /.modal-dialog -->
@@ -377,10 +377,10 @@
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">Cluster {{ cluster.label }}</h4>
+        <h4 class="modal-title">{% trans %}Cluster{% endtrans %} {{ cluster.label }}</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
-          <span class="sr-only">Close</span>
+          <span class="sr-only">{% trans %}Close{% endtrans %}</span>
         </button>
       </div>
       <div class="modal-body">
@@ -415,7 +415,7 @@
         {% endif %}
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">{% trans %}Close{% endtrans %}</button>
       </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
