@@ -27,6 +27,9 @@ button:
 # Dashboard window
 dashboard:
   title: Centre de contrôle
+  play-recipe:
+    title: Lancer une recette lumineuse
+
 
 sidemenu:
   dashboard: Dashboard

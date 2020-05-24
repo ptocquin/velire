@@ -265,7 +265,7 @@ class ProgramController extends AbstractController
         return $this->render('control/new-play.html.twig', [
             'controller_name' => 'ProgramController',
             'form' => $form->createView(),
-            'navtitle' => 'runs.play.new',
+            'navtitle' => 'dashboard.play-recipe.title',
         ]);
     }
 
