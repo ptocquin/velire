@@ -90,6 +90,13 @@ class ClusterRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
+
+    public function getMaxCluster()
+    {
+        $qb = $this->createQueryBuilder('cl');
+        $qb->select('MAX(cl.label) as cl_max');  
+        return $qb->getQuery()->getSingleResult();
+    }
     
 
     /*
