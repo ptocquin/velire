@@ -37,5 +37,7 @@
 	{{ form_widget(form) }}
 	<button class="btn btn-light">{{ button_label|default('Save')|trans }}</button>
 	<a class="btn btn-light" href="{{ path('recipes') }}">{% trans %}Cancel{% endtrans %}</a>
+	<a href="#" id="test_recipe" class="btn btn-info">Test</a>
 	{{ form_end(form) }}
+
 </div>
