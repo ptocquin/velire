@@ -55,7 +55,8 @@
         							<span>Set</span>
         							<input type="hidden" name="{{ luminaire.id }}_set_position" value="{{ luminaire.id }}"></input>
         						</button>
-        						<button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">Cancel</button>	        						
+        						<button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">Cancel</button>
+        						<a href="{{ path('unmap-luminaire', {'id': luminaire.id }) }}" class="btn btn-primary btn-danger">Unmap</a>	        						
         					</div>
         				</div><!-- /.modal-content -->
         			</div><!-- /.modal-dialog -->
@@ -82,7 +83,7 @@
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h4 class="modal-title">Add a new lighting</h4>
+					<h4 class="modal-title">{{ 'lightings.form.new.title'|trans }}</h4>
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 						<span aria-hidden="true">&times;</span>
 						<span class="sr-only">{% trans %}Close{% endtrans %}</span>
@@ -97,7 +98,7 @@
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-secondary" data-dismiss="modal">{% trans %}Close{% endtrans %}</button>
-					<button class="btn">{{ button_label|default('Add') }}</button>
+					<button class="btn">{{ button_label|default('Add')|trans }}</button>
 					{{ form_end(form) }}
 				</div>
 			</div><!-- /.modal-content -->

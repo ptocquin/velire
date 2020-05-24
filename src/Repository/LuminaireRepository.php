@@ -72,11 +72,8 @@ class LuminaireRepository extends ServiceEntityRepository
     public function getNotMapped()
     {
         return $this->createQueryBuilder('l')
-            ->leftJoin('l.status', 's')
             ->andWhere('l.ligne is null')
             ->andWhere('l.colonne is null')
-            ->andWhere('s.code < :val')
-            ->setParameter('val', 99)
             ->getQuery()
             ->getResult()
         ;

@@ -1,4 +1,5 @@
 # general vocabulary
+Add: Ajouter
 Cancel: Annuler
 Cluster: Groupe
 Close: Fermer
@@ -49,6 +50,10 @@ lightings:
     add: Ajouter un luminaire
     load: Charger une configuration
     download: Télécharger la configuration actuelle
+  form:
+    new:
+      title: Ajouter un nouveau luminaire
+      address: Adresse
 
 # Groups window
 groups:

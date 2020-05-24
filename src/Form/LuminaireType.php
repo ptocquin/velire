@@ -13,7 +13,9 @@ class LuminaireType extends AbstractType
     {
         $builder
             // ->add('serial')
-            ->add('address')
+            ->add('address', null, array(
+                'label' => 'lightings.form.new.address'
+            ))
             // ->add('status')
             // ->add('cluster')
         ;
