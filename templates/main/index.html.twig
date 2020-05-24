@@ -34,58 +34,52 @@
             {% for y in y_max..1 %}
               <div class="card-group">
               {% for x in 1..x_max %}
-                  <div class="card {% if x_max > 3 %} w-{{ 100 / x_max }} {% else %} col-sm-6 col-md-4 {% endif %} text-white bg-dark border-light">
-                          {% if luminaire_repo.getByXY(x,y) is not null %}
-                          {% set luminaire = luminaire_repo.getByXY(x,y) %}
-                          <div class="card-body">
-                            <div class="btn-group-vertical btn-block">
-                              <div class="btn-group">
-                                {% if log_repo.getLuminaireLastLog(luminaire.id)|length > 0 %}
-                                    {% if log_repo.getLuminaireLastLog(luminaire.id)[0].value['channels_on']|length > 0 %}
-                                      <button class="btn btn-sm btn-warning" data-toggle="modal" data-target="#modal-grid-{{ luminaire_repo.getByXY(x,y).id }}">
-                                      {{ luminaire.address }} ({{ luminaire.colonne }},{{ luminaire.ligne }})
-                                      <i class="fa fa-sun"></i>
-                                    {% else %}
-                                      <button class="btn btn-sm btn-dark" data-toggle="modal" data-target="#modal-grid-{{ luminaire_repo.getByXY(x,y).id }}">
-                                      {{ luminaire.address }} ({{ luminaire.colonne }},{{ luminaire.ligne }})
-                                      <i class="fa fa-moon"></i>
-                                    {% endif %}
-                                  {% else %}
-                                    <button class="btn btn-sm btn-light" data-toggle="modal" data-target="#modal-grid-{{ luminaire_repo.getByXY(x,y).id }}">
-                                      {{ luminaire.address }} ({{ luminaire.colonne }},{{ luminaire.ligne }})
-                                    <i class="fa fa-question"></i>
-                                  {% endif %}
-                                </button>
-                              </div>
-                            </div>
-                            <div class="btn-group-vertical btn-block">
-                              <div class="btn-group">
-                                <button type="button" class="btn btn-sm btn-{{ colors[ luminaire.cluster.label-1 ] }} cluster cluster-plus" disabled>
-                                  <span>+</span>
-                                  <input type="hidden" name="cluster" value="{{ luminaire.cluster.label }}">
-                                  <input type="hidden" name="luminaire" value="{{ luminaire.address }}">
-                                </button>
-                                <button class="btn btn-sm btn-{{ colors[ luminaire.cluster.label-1 ] }}" data-toggle="modal" data-target="#modal-cluster-{{ luminaire.cluster.id }}">{{ luminaire.cluster.label }}</button>
-                                <button type="button" class="btn btn-sm btn-{{ colors[ luminaire.cluster.label-1 ] }} cluster cluster-minus" disabled>
-                                  <span>-</span>
-                                  <input type="hidden" name="cluster" value="{{ luminaire.cluster.label }}">
-                                  <input type="hidden" name="luminaire" value="{{ luminaire.address }}">
-                                </button>
-                              </div>
-                            </div>
+                
+                  <div class="card {% if x_max > 3 %} w-{{ 100 / x_max }} {% else %} col-sm-6 col-md-4 {% endif %} text-white bg-dark border-light m-2">
+                    {% if luminaire_repo.getByXY(x,y) is not null %}
+                    {% set luminaire = luminaire_repo.getByXY(x,y) %}
+                      <div class="card-body">
+                        <div class="btn-group-vertical btn-block">
+                          <div class="btn-group">
+                            {% if log_repo.getLuminaireLastLog(luminaire.id)|length > 0 %}
+                                {% if log_repo.getLuminaireLastLog(luminaire.id)[0].value['channels_on']|length > 0 %}
+                                  <button class="btn btn-sm btn-warning" data-toggle="modal" data-target="#modal-grid-{{ luminaire_repo.getByXY(x,y).id }}">
+                                  {{ luminaire.address }} ({{ luminaire.colonne }},{{ luminaire.ligne }})
+                                  <i class="fa fa-sun"></i>
+                                {% else %}
+                                  <button class="btn btn-sm btn-dark" data-toggle="modal" data-target="#modal-grid-{{ luminaire_repo.getByXY(x,y).id }}">
+                                  {{ luminaire.address }} ({{ luminaire.colonne }},{{ luminaire.ligne }})
+                                  <i class="fa fa-moon"></i>
+                                {% endif %}
+                              {% else %}
+                                <button class="btn btn-sm btn-light" data-toggle="modal" data-target="#modal-grid-{{ luminaire_repo.getByXY(x,y).id }}">
+                                  {{ luminaire.address }} ({{ luminaire.colonne }},{{ luminaire.ligne }})
+                                <i class="fa fa-question"></i>
+                              {% endif %}
+                            </button>
                           </div>
-                          {% else %}
-                            <div class="card-body">
-                              <div class="btn-group-vertical btn-block">
-                                <div class="btn-group">
-                                  {# <button type="button" class="btn btn-light set-address">+</button> #}
-                                  <button type="button" class="btn btn-light"></button>
-                                  {# <button type="button" class="btn btn-light">ok</button> #}
-                                </div>
-                              </div>
-                            </div>
-                          {% endif %}
+                        </div>
+                        {% if luminaire.cluster is not null %}
+                        <div class="btn-group-vertical btn-block">
+                          <div class="btn-group">
+                            <button type="button" class="btn btn-sm btn-{{ colors[ luminaire.cluster.label-1 ] }} cluster cluster-plus" disabled>
+                              <span>+</span>
+                              <input type="hidden" name="cluster" value="{{ luminaire.cluster.label }}">
+                              <input type="hidden" name="luminaire" value="{{ luminaire.address }}">
+                            </button>
+                            <button class="btn btn-sm btn-{{ colors[ luminaire.cluster.label-1 ] }}" data-toggle="modal" data-target="#modal-cluster-{{ luminaire.cluster.id }}">{{ luminaire.cluster.label }}</button>
+                            <button type="button" class="btn btn-sm btn-{{ colors[ luminaire.cluster.label-1 ] }} cluster cluster-minus" disabled>
+                              <span>-</span>
+                              <input type="hidden" name="cluster" value="{{ luminaire.cluster.label }}">
+                              <input type="hidden" name="luminaire" value="{{ luminaire.address }}">
+                            </button>
+                          </div>
+                        </div>
+                        {% endif %}
+                      </div>
+                      {% endif %}
                   </div>
+                
                 {# </div> #}
                 {% if luminaire is defined %}
                 <div class="modal fade" id="modal-grid-{{ luminaire.id }}">
@@ -126,11 +120,11 @@
                               <div class="btn-group btn-group-justified align-content-center m-auto">
                                 <button id="{{ luminaire.id }}_btn_colonne"type="button" class="btn btn-primary btn-lg clk_increment">x:
                                   <span class="value">{{ luminaire.colonne | default(1) }}</span>
-                                  <input type="hidden" id="{{ luminaire.id }}_colonne" name="{{ luminaire.id }}_colonne" value="1"></input>
+                                  <input type="hidden" id="{{ luminaire.id }}_colonne" name="{{ luminaire.id }}_colonne" value="{{ luminaire.colonne | default(1) }}"></input>
                                 </button>
                                 <button id="{{ luminaire.id }}_btn_ligne" type="button" class="btn btn-default btn-lg clk_increment">y:
                                   <span class="value">{{ luminaire.ligne | default(1) }}</span>
-                                  <input type="hidden" id="{{ luminaire.id }}_ligne" name="{{ luminaire.id }}_ligne" value="1"></input>
+                                  <input type="hidden" id="{{ luminaire.id }}_ligne" name="{{ luminaire.id }}_ligne" value="{{ luminaire.ligne | default(1) }}"></input>
                                 </button>
                                 
                                 
@@ -162,7 +156,7 @@
         <div class="row">
             {% for luminaire in luminaire_repo.getNotMapped() %}
                 <div class="col-sm-6 col-md-4">
-                  <div class="card">
+                  <div class="card text-white bg-dark border-light m-2">
                     <div class="card-body">
                       <div class="btn-group-vertical btn-block">
                         <div class="btn-group">
@@ -271,7 +265,7 @@
         <div class="row">
             {% for luminaire in luminaires %}
                 <div class="col-sm-6 col-md-4">
-                  <div class="card">
+                  <div class="card text-white bg-dark border-light mt-2">
                     <div class="card-body">
                       <div class="btn-group-vertical btn-block">
                         <div class="btn-group">
@@ -440,5 +434,7 @@
 {% endblock %}
 
 {% block bottomButton %}
-    <button id="unlock" class="btn btn-outline-secondary fa fa-lock"></button>
+  {% if app.user %}<a class="mr-3 btn btn-outline-secondary fa fa-sign-out-alt" href="{{ path('app_logout') }}"></a>{% endif %}
+    <button id="unlock" class="mr-5 btn btn-outline-secondary fa fa-lock"></button>
+
 {% endblock %}

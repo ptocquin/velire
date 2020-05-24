@@ -997,7 +997,10 @@ class MainController extends Controller
             $opt = $opt.$l->getAddress().' ';
         }
 
-        $cmd = 'python3 ./bin/velire-cmd.py --config ./bin/config.yaml '.$opt.' --logdb; python3 ./bin/velire-cmd.py --snapshot '.$this->get('kernel')->getProjectDir().'/public/snapshot.png';
+        $cmd = $this->getParameter('app.velire_cmd');
+        $cmd .= ' '.$opt.' --logdb;';
+        $cmd .= $this->getParameter('app.velire_cmd');
+        $cmd .= ' --snapshot '.$this->getParameter('app.shared_dir').'/snapshot.png';
 
         $process = new Process($cmd);
         $process->setTimeout(3600);
@@ -1140,7 +1143,7 @@ class MainController extends Controller
         $em->flush();
 
         // réinitialiser + master/slave
-        $process = new Process('python3 ./bin/velire-cmd.py --config ./bin/config.yaml --init --quiet');
+        $process = new Process($this->getParameter('app.velire_cmd').' --init --quiet');
         $process->setTimeout(3600);
         $process->run();
 
@@ -1150,7 +1153,7 @@ class MainController extends Controller
         }
 
         // Interroger le réseau de luminaires
-        $process = new Process('python3 ./bin/velire-cmd.py --config ./bin/config.yaml --info all --quiet --json --output ../var/config.json');
+        $process = new Process($this->getParameter('app.velire_cmd').' --info all --quiet --json --output '.$this->getParameter('app.shared_dir').'/config.json');
         $process->setTimeout(3600);
         $process->run();
 
@@ -1159,7 +1162,7 @@ class MainController extends Controller
             throw new ProcessFailedException($process);
         }
 
-        $data = json_decode(file_get_contents($this->get('kernel')->getProjectDir()."/var/config.json"), TRUE);
+        $data = json_decode(file_get_contents($this->getParameter('app.shared_dir')."/config.json"), TRUE);
 
         $luminaires = $data['spots'];
 

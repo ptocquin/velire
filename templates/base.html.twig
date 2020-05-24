@@ -112,7 +112,7 @@
                   </nav>
 
                 </div>
-                <div class="col-md-10 pb-5 {% if navtitle == "Dashboard" %}bg-dark{% endif %}">
+                <div class="col-md-10 pb-5 ">
                 <main role="main">
                   <nav id="navbar-scroll" class="navbar navbar-dark bg-dark fixed-bottom">
                     <ul class="nav">
@@ -127,10 +127,12 @@
                           
                       {% endblock %}
                     </ul>
-                    <div class="btn-group">
+                    {# <div class="btn-group"> #}
+                    <div>
                       {% block bottomButton %}
                           
                       {% endblock %}
+                      <span class="mr-5">&nbsp;</span>
                     </div>
                   </nav>
                   <div data-spy="scroll" data-target="#navbar-scroll" data-offset="0">
