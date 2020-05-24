@@ -334,10 +334,10 @@ class MainController extends Controller
         $empty_clusters = $this->getDoctrine()->getRepository(Cluster::class)->getEmptyClusters();
 
         $em = $this->getDoctrine()->getManager();
-        foreach ($empty_clusters as $cluster) {
-            $em->remove($cluster);
-        }
-        $em->flush();
+        // foreach ($empty_clusters as $cluster) {
+        //     $em->remove($cluster);
+        // }
+        // $em->flush();
 
 		// Compter les clusters existants
 		$cluster_number = count($this->getDoctrine()->getRepository(Cluster::class)->findAll());
@@ -915,11 +915,11 @@ class MainController extends Controller
     	// Compter les clusters existants
 		$cluster_number = count($this->getDoctrine()->getRepository(Cluster::class)->findAll());
     	if (count($cluster) == 0) {
-    		$new_cluster = new Cluster;
-    		$new_cluster->setLabel($cluster_number+1);
-    		$em->persist($new_cluster);
-    		$luminaire->setCluster($new_cluster);
-    		$em->persist($luminaire);
+            $new_cluster = new Cluster;
+            $new_cluster->setLabel($c);
+            $new_cluster->addLuminaire($luminaire);
+            $em->persist($new_cluster);
+            $cluster_added = 1;
     	} else {
 			$luminaire->setCluster($cluster);
 			$em->persist($luminaire);
@@ -1068,6 +1068,7 @@ class MainController extends Controller
         $cluster_number = count($this->getDoctrine()->getRepository(Cluster::class)->findAll());
 
         $cluster_added = 0;
+
         if (count($cluster) == 0) {
             $new_cluster = new Cluster;
             $new_cluster->setLabel($c);
@@ -1080,20 +1081,18 @@ class MainController extends Controller
             $luminaire->setCluster($cluster);
             $em->persist($luminaire);
         }
-        
         $em->flush();
 
-        $clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
-        foreach($clusters as $item) {
-            if(count($item->getLuminaires()) == 0){
-                $em->remove($item);
-                // die(print_r($item->getId()));
-                $removed = count($item->getLuminaires());
-                $cluster_added = 1;
-            }
-        }
-
-        $em->flush();
+        // $clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
+        // foreach($clusters as $item) {
+        //     if(count($item->getLuminaires()) == 0){
+        //         $em->remove($item);
+        //         // die(print_r($item->getId()));
+        //         $removed = count($item->getLuminaires());
+        //         $cluster_added = 1;
+        //     }
+        //     $em->flush();
+        // }
 
         $response = new JsonResponse(array(
             'c' => $c,
