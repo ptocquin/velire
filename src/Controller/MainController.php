@@ -505,8 +505,8 @@ class MainController extends Controller
 
             if(!is_null($luminaire)) {
                 $i++;
-                if(is_null($luminaire->getSerial()))
-                $luminaire->setSerial($l['serial']);
+                if(is_null($luminaire->getSerial())) {
+                    $luminaire->setSerial($l['serial']);
                     // $em->persist($luminaire);
                     foreach ($l['pcb'] as $pcb) {
                         $p = new Pcb;
