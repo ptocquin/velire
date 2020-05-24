@@ -447,9 +447,9 @@ class MainController extends Controller
 
 
 
-        $i = 0;
-        $y = 1;
-        $x = 1;
+        // $i = 0;
+        // $y = 1;
+        // $x = 1;
 
         foreach ($spots as $spot) {
 
@@ -467,13 +467,13 @@ class MainController extends Controller
                 // $luminaire->setColonne($x);
                 // $luminaire->setLigne($y);
                 // $em->persist($luminaire);
-                $i++;
-                if($x < 5){
-                    $x++;
-                } else {
-                    $x = 1;
-                    $y++;
-                }
+                // $i++;
+                // if($x < 5){
+                //     $x++;
+                // } else {
+                //     $x = 1;
+                //     $y++;
+                // }
             }
         }
 
@@ -498,52 +498,55 @@ class MainController extends Controller
 
         $luminaires = $data['spots'];
 
+        $i = 0;
+
         foreach ($luminaires as $l) { 
             $luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->findOneByAddress($l['address']);
 
-            if(is_null($luminaire)) {
+            if(!is_null($luminaire)) {
+                $i++;
+                if(is_null($luminaire->getSerial()))
                 $luminaire->setSerial($l['serial']);
-                // $em->persist($luminaire);
-                foreach ($l['pcb'] as $pcb) {
-                    $p = new Pcb;
-                    $p->setCrc($pcb["crc"]);
-                    $p->setSerial($pcb["serial"]);
-                    $p->setN($pcb["n"]);
-                    $p->setType($pcb["type"]);
+                    // $em->persist($luminaire);
+                    foreach ($l['pcb'] as $pcb) {
+                        $p = new Pcb;
+                        $p->setCrc($pcb["crc"]);
+                        $p->setSerial($pcb["serial"]);
+                        $p->setN($pcb["n"]);
+                        $p->setType($pcb["type"]);
 
-                    $em->persist($p);
+                        $em->persist($p);
 
-                    $luminaire->addPcb($p);
-                }
-
-                $em->persist($luminaire);
-
-                foreach ($l['channels'] as $channel) {
-                    $c = new Channel;
-                    $c->setChannel($channel["id"]);
-                    $c->setIPeek($channel["max"]);
-                    // $c->setPcb($channel["pcb"]);
-                    $c->setLuminaire($luminaire);
-                    // $em->persist($c);
-
-                    # Vérifie que la Led existe dans la base de données, sinon l'ajoute.
-                    $led = $this->getDoctrine()->getRepository(Led::class)->findOneBy(array(
-                        'wavelength' => $channel["wl"],
-                        'type' => $channel["type"],
-                        'manufacturer' => $channel["manuf"]));
-
-                    if ($led == null) {
-                        $le = new Led;
-                        $le->setWavelength($channel["wl"]);
-                        $le->setType($channel["type"]);
-                        $le->setManufacturer($channel["manuf"]);
-                        $em->persist($le);
-                        $em->flush();
-                        $c->setLed($le);
-                    } else {
-                        $c->setLed($led);
+                        $luminaire->addPcb($p);
                     }
-                    $em->persist($c);
+                    $em->persist($luminaire);
+                    foreach ($l['channels'] as $channel) {
+                        $c = new Channel;
+                        $c->setChannel($channel["id"]);
+                        $c->setIPeek($channel["max"]);
+                        // $c->setPcb($channel["pcb"]);
+                        $c->setLuminaire($luminaire);
+                        // $em->persist($c);
+
+                        # Vérifie que la Led existe dans la base de données, sinon l'ajoute.
+                        $led = $this->getDoctrine()->getRepository(Led::class)->findOneBy(array(
+                            'wavelength' => $channel["wl"],
+                            'type' => $channel["type"],
+                            'manufacturer' => $channel["manuf"]));
+
+                        if ($led == null) {
+                            $le = new Led;
+                            $le->setWavelength($channel["wl"]);
+                            $le->setType($channel["type"]);
+                            $le->setManufacturer($channel["manuf"]);
+                            $em->persist($le);
+                            $em->flush();
+                            $c->setLed($le);
+                        } else {
+                            $c->setLed($led);
+                        }
+                        $em->persist($c);
+                    }
                 }
             }
             
@@ -965,13 +968,17 @@ class MainController extends Controller
     	$luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findConnectedLuminaire();
     	$clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
 
-    	foreach ($clusters as $cluster) {
-    		$em->remove($cluster);
-    	}
+    	// foreach ($clusters as $cluster) {
+    	// 	$em->remove($cluster);
+    	// }
 
-		$cluster = new Cluster;
-		$cluster->setLabel(1);
-		$em->persist($cluster);
+        $cluster = $this->getDoctrine()->getRepository(Cluster::class)->findOneByLabel(1);
+
+        if(is_null($cluster)){
+		  $cluster = new Cluster;
+		  $cluster->setLabel(1);
+		  $em->persist($cluster);
+        }
     	
     	foreach ($luminaires as $luminaire) {
     		$luminaire->setCluster($cluster);
@@ -1092,7 +1099,7 @@ class MainController extends Controller
         // Compter les clusters existants
         $cluster_number = count($this->getDoctrine()->getRepository(Cluster::class)->findAll());
 
-        $cluster_added = 0;
+        $cluster_added = 1; // TODO faire le changement de couleur en JQUERY pour éviter le recharcgement de la page
 
         if (count($cluster) == 0) {
             $new_cluster = new Cluster;
