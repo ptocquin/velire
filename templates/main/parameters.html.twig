@@ -33,4 +33,13 @@
 	</div>
 </div>
 
+{% if to_update == "true" %}
+<div class="row">
+	<div class="col">
+		<h5 class="mt-5 text-light">A new update is available !</h5>
+	  	<button type="button" class="btn btn-primary">Click to update...</button>
+	</div>
+</div>
+{% endif %}
+
 {% endblock %}
