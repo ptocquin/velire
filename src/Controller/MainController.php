@@ -86,6 +86,14 @@ class MainController extends Controller
      */
     public function parameters(Request $request)
     {
+        $to_update = "false";
+        $process = new Process('check-update');
+        $process->setTimeout(3600);
+        $process->run();
+        if (!$process->isSuccessful()) {
+            $to_update = "true";
+        }
+
         $file_path = $this->getParameter('app.shared_dir').'/params.yaml';
 
         $filesystem = new Filesystem();
@@ -124,9 +132,26 @@ class MainController extends Controller
 
         return $this->render('main/parameters.html.twig', [
             'form' => $form->createView(),
-            'navtitle' => 'parameters.title'
+            'navtitle' => 'parameters.title',
+            'to_update' => $to_update,
         ]);
         
+    }
+
+    /**
+     * @Route("/update", name="update")
+     */
+    public function update(Request $request)
+    {
+        $process = new Process('update');
+        $process->setTimeout(3600);
+        $process->run();
+        if (!$process->isSuccessful()) {
+            
+        }
+
+        return $this->redirectToRoute('home');
+
     }
 
     /**
