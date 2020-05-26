@@ -90,7 +90,7 @@ class MainController extends Controller
         $process = new Process('check-update');
         $process->setTimeout(3600);
         $process->run();
-        if (!$process->isSuccessful()) {
+        if ($process->getOutput() == "changed") {
             $to_update = "true";
         }
 

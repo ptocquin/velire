@@ -35,7 +35,7 @@ class StepType extends AbstractType
             ])
             ->add('value', null, array(
                 'label' => false,
-                'data' => '0:00',
+                // 'data' => '0:00',
             ))
             ->add('recipe', null, array('label' => false,))
         ;
