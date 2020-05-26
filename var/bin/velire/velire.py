@@ -228,7 +228,7 @@ def serial_dialog(ser, cmd, add, arg="", checksum=True, time_for_reply=15):
 		else:
 			reply_dict['log'] = "wrong checksum"
 	else:
-		if reply == "ACK" or reply == "NACK":
+		if reply == "ACK" or reply.startswith("NAK"):
 			reply_dict['reply'] = reply
 			reply_dict['error'] = False
 		else:
@@ -307,14 +307,18 @@ class Channel():
 		if self.ch_dict['max'] == None:
 			#verbose("Empty channel")
 			return None
+		intensity_save = intensity
 		if unit == "%":
 			if (float(intensity) < 0) or (float(intensity) > 100):
 				verbose("ERROR: intensity out of range (0-100%)", 3)
 				return None
-			intensity = int(intensity*2)
-			if intensity > self.ch_dict['max']:
-				verbose("ERROR: intensity greather than current max", 3)
-				return None
+			intensity = int(intensity)*5*self.ch_dict['max']/100
+			intensity = intensity*200/1140
+			if stop - start == 1:
+				intensity = 0.5*intensity # courant continu -> 50% du peek
+			intensity = int(intensity)
+			if intensity < 1 & intensity_save > 0:
+				intensity = 1
 		else:
 			verbose("ERROR: Undefined unit", 3)
 			return None
@@ -335,6 +339,11 @@ class Channel():
 		self.ch_dict['intensity'] = config['intensity']
 		self.ch_dict['pwm_start'] = config['pwm_start']
 		self.ch_dict['pwm_stop'] = config['pwm_stop']
+
+		if reply_raw == "NAK 6":
+			verbose("ERROR: current to high", 3)
+			return reply_raw
+
 		if reply_raw == "ACK":
 			return 0
 		else:
@@ -434,7 +443,7 @@ class Spot():
 		""" Renvoi la température du CPU du driver et des cartes LED en °C
 
 		"""
-		temp_dict = {"cpu": None, "led_pcb_0": None, "led_pcb_1": None, "unit": "C"}
+		temp_dict = {"cpu": None, "led_pcb_0": None, "led_pcb_1": None, "unit": "°C"}
 		reply = serial_dialog(self.ser, spot_cmd_dict["get_temperature"]["cmd"], self.address)
 		if reply['error'] == False:
 			temp = reply['reply'].split(" ")
@@ -531,11 +540,9 @@ class Spot():
 		for i in range(0, len(spot_info[0]["channels"])):
 			for key, value in spot_info[0]["channels"][i].items():
 				self.symmetry = True
-				"""
 				for j in range(0, len(spot_info)): # Vérifie la symétrie
 					if value != spot_info[j]["channels"][i][key]:
 						self.symmetry = False
-				"""
 			if self.symmetry == True:
 				value = spot_info[0]["channels"][i]
 				c = Channel()
@@ -708,36 +715,14 @@ class Spot():
 	def activate(self):
 		self.cpu = self.get_cpuinfo	()
 		self.frequency = self.get_freq() # Fréquence de l'horloge
-		ledinfo = self.get_pcbledinfo()
-		for k,v in ledinfo.items():
-			if v is not None:
-				tmp = v
-		for k in ledinfo.keys():
-			self.pcb[str(k)] = tmp['pcb']
-		self.load_channels() # Charge les canaux
-
-	# def activate(self):
- #    	self.cpu = self.get_cpuinfo	()
- #    	self.frequency = self.get_freq() # Fréquence de l'horloge
- #        ledinfo = self.get_pcbledinfo()
- #        for k,v in ledinfo.items():
- #            if v is not None:
- #                tmp = v
- #        for k in ledinfo.keys():
- #            self.pcb[str(k)] = tmp['pcb']
- #        self.load_channels() # Charge les canaux
+		for k,v in self.get_pcbledinfo().items():
+			self.pcb[str(k)] = v['pcb']
+		self.load_channels(pcb=0) # Charge les canaux
 
 	def activate2(self, config, avcol):
 		self.available_colors = avcol
 		self.channels = []
-		keys = []
-		for k in config.keys():
-			keys.append(int(k))
-		keys = sorted(keys)
-		#for k,v in config.items():
-		for k in keys :
-			k = str(k)
-			v = config[k]
+		for k,v in config.items():
 			c = Channel()
 			c.ser = self.ser
 			c.ch_dict = v
@@ -1082,3 +1067,5 @@ class Grid():
 		else:
 			verbose("Serial port '"+port+"' is wrong", 8)
 		self.ser.close()
+
+
