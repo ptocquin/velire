@@ -33,6 +33,14 @@ console.log(Routing.generate('set-cluster'));
 
 $(document).ready(function () {
 
+	setInterval(function() {
+		var d = new Date();
+		var n = d.toLocaleTimeString();
+
+		$('#time').text(n);
+	}, 500);
+	
+
   $('.alert-fade').fadeOut(10000);
 	
   $('.form-collection').collection({

@@ -317,7 +317,7 @@ class Channel():
 			if stop - start == 1:
 				intensity = 0.5*intensity # courant continu -> 50% du peek
 			intensity = int(intensity)
-			if intensity < 1 & intensity_save > 0:
+			if int(intensity) < 1 & int(intensity_save) > 0:
 				intensity = 1
 		else:
 			verbose("ERROR: Undefined unit", 3)

@@ -3,14 +3,16 @@ $(document).ready(function () {
 	$('#test_recipe').on('click', function(e){
 		labels = [];
 		intensities = [];
+		commands = [];
 		$('input').each(function(){
 		   if( $(this).attr('id').match(/ingredients/) ) {
 		   		labels.push($("label[for='" + $(this).attr('id') + "']").text());
 		        intensities.push($(this).val());
+		        commands.push($("label[for='" + $(this).attr('id') + "']").text()+" "+$(this).val());
 		   }
 		});
 
-		d = {labels: labels, intensities: intensities}
+		d = {labels: labels, intensities: intensities, commands: commands}
 		$.ajax({
 			type: 'post',
 			url: Routing.generate('test-recipe'),

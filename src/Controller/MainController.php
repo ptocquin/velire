@@ -387,7 +387,10 @@ class MainController extends Controller
         $luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findAll();
         // $clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
 
+        $list = " --address ";
+
         foreach ($luminaires as $luminaire) {
+            $list .= $luminaire->getAddress()." ";
             $_status = $this->getDoctrine()->getRepository(LuminaireStatus::class)->findByLuminaire($luminaire);
             if (! is_null($_status)) {
                 foreach ($_status as $s) {
@@ -417,8 +420,10 @@ class MainController extends Controller
         if($_SERVER['APP_ENV'] == 'dev') {
             $data = json_decode(file_get_contents($this->get('kernel')->getProjectDir()."/var/test.json"), TRUE);
         } else {
-            // réinitialiser + master/slave
-            $process = new Process($this->getParameter('app.velire_cmd').' --init --quiet');
+            // master/slave + set frequence à 2.5kHz + exctinction des drivers + tous les canaux à 0 + sauver dans la mémoire
+            // à faire peu souvent car écriture mémoire limitée
+            // !!!TODO!!! --address + liste des luminaires
+            $process = new Process($this->getParameter('app.velire_cmd').$list.' --set-master --set-freq 2500 --set-power 0 --shutdown --write --quiet'); // --set-freq 2500 ??--set-power 0?? --shutdown --write
             $process->setTimeout(3600);
             $process->run();
 
@@ -428,7 +433,8 @@ class MainController extends Controller
             }
 
             // Interroger le réseau de luminaires
-            $process = new Process($this->getParameter('app.velire_cmd').' --test --json --quiet');
+            // !!!TODO!!! --address + liste des luminaires
+            $process = new Process($this->getParameter('app.velire_cmd').$list.' --search --json --quiet');
             $process->setTimeout(3600);
             $process->run();
 
@@ -444,8 +450,6 @@ class MainController extends Controller
         }
 
         $spots = $data['found'];
-
-
 
         // $i = 0;
         // $y = 1;
@@ -484,7 +488,8 @@ class MainController extends Controller
             // $spots = implode(" ", $data['found']);
 
             // Interroger le réseau de luminaires
-            $process = new Process($this->getParameter('app.velire_cmd').' --info all --quiet --json --output '.$this->getParameter('app.shared_dir').'/config.json');
+            // !!!TODO!!! --address + liste des luminaires
+            $process = new Process($this->getParameter('app.velire_cmd').$list.' --get-info specs --quiet --json --output-file '.$this->getParameter('app.shared_dir').'/config.json');
             $process->setTimeout(3600);
             $process->run();
 
@@ -496,7 +501,7 @@ class MainController extends Controller
 
         $data = json_decode(file_get_contents($this->getParameter('app.shared_dir').'/config.json'), TRUE);
 
-        $luminaires = $data['spots'];
+        $luminaires = $data['specs']; //specs
 
         $i = 0;
 
@@ -506,24 +511,26 @@ class MainController extends Controller
             if(!is_null($luminaire)) {
                 $i++;
                 if(is_null($luminaire->getSerial())) {
-                    $luminaire->setSerial($l['serial']);
+                    $luminaire->setSerial($l['SN']); // SN
+                    // récupérer firmware-version ? >> à ajouter dans la base de données
                     // $em->persist($luminaire);
-                    foreach ($l['pcb'] as $pcb) {
-                        $p = new Pcb;
-                        $p->setCrc($pcb["crc"]);
-                        $p->setSerial($pcb["serial"]);
-                        $p->setN($pcb["n"]);
-                        $p->setType($pcb["type"]);
-
-                        $em->persist($p);
-
-                        $luminaire->addPcb($p);
+                    foreach ($l['pcb-led'] as $key => $pcb) { // pcb-led
+                        $p = $this->getDoctrine()->getRepository(Pcb::class)->findOneBySerial($pcb["SN"]);
+                        if(is_null($p)){
+                            $p = new Pcb;
+                            $p->setCrc($pcb['desc']["crc"]); // desc > crc
+                            $p->setSerial($pcb["SN"]); // SN
+                            $p->setN($key); // c'est la clé.. comment on la récupère ?
+                            $p->setType($pcb["type"]);
+                            $em->persist($p);
+                            $luminaire->addPcb($p);
+                        }                        
                     }
                     $em->persist($luminaire);
-                    foreach ($l['channels'] as $channel) {
+                    foreach ($l['pcb-led'][0]['desc']['channels'] as $key => $channel) { // dans desc > channels
                         $c = new Channel;
-                        $c->setChannel($channel["id"]);
-                        $c->setIPeek($channel["max"]);
+                        $c->setChannel($key); // c'est la clé.. comment on la récupère ?
+                        $c->setIPeek($channel["i_peek"]); // i_peek
                         // $c->setPcb($channel["pcb"]);
                         $c->setLuminaire($luminaire);
                         // $em->persist($c);
@@ -531,13 +538,13 @@ class MainController extends Controller
                         # Vérifie que la Led existe dans la base de données, sinon l'ajoute.
                         $led = $this->getDoctrine()->getRepository(Led::class)->findOneBy(array(
                             'wavelength' => $channel["wl"],
-                            'type' => $channel["type"],
+                            'type' => $channel["col"], // col
                             'manufacturer' => $channel["manuf"]));
 
                         if ($led == null) {
                             $le = new Led;
                             $le->setWavelength($channel["wl"]);
-                            $le->setType($channel["type"]);
+                            $le->setType($channel["col"]); // col
                             $le->setManufacturer($channel["manuf"]);
                             $em->persist($le);
                             $em->flush();
@@ -710,8 +717,19 @@ class MainController extends Controller
         $data = $request->get('data');
         $labels = $data['labels'];
         $intensities = $data['intensities'];
+        $commands = $data['commands'];
 
-        $command = $this->getParameter('app.velire_cmd').' -e -c '.implode(" ", $labels)." -i ".implode(" ", $intensities);
+        $luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findAll();
+        $list = " --address ";
+        foreach ($luminaires as $luminaire) {
+            $list .= $luminaire->getAddress()." ";
+        }
+
+        // !!!TODO!!! --address + liste des luminaires
+        // --exclusive met les canaux non appelés à 0
+        // --set-colors $label1 $intensity1 $label$2 $intensity$2 --set-power 1
+        // peut-être modifier test.js pour produire directement les combinaisons 'labels intensities'
+        $command = $this->getParameter('app.velire_cmd').$list.' --exclusive --set-power 1 --set-colors '.implode(" ", $commands);
 
         # Envoyer la commande aux luminaires
         $process = new Process($command);
@@ -999,8 +1017,14 @@ class MainController extends Controller
         
         $session = new Session();
 
+        $luminaires = $cluster->getLuminaires();
+        $list = " --address ";
+        foreach ($luminaires as $luminaire) {
+            $list .= $luminaire->getAddress()." ";
+        }
+
         // Interroger le réseau de luminaires
-        $process = new Process($this->getParameter('app.velire_cmd').' --input '.$this->getParameter('app.shared_dir').'/config.json --shutdown --cluster '.$cluster->getId());
+        $process = new Process($this->getParameter('app.velire_cmd').$list.' --shutdown');
         $process->setTimeout(3600);
         $process->run();
 
@@ -1019,29 +1043,30 @@ class MainController extends Controller
      */
     public function updateLog()
     {
-        $em = $this->getDoctrine()->getManager();
+        // $em = $this->getDoctrine()->getManager();
         
-        // Interroger le réseau de luminaires
-        // $process = new Process('./bin/velire.sh --log');
-        $luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findAll();
-        $opt = "-s ";
-        foreach ($luminaires as $l) {
-            $opt = $opt.$l->getAddress().' ';
-        }
+        // // Interroger le réseau de luminaires
+        // // $process = new Process('./bin/velire.sh --log');
+        // $luminaires = $this->getDoctrine()->getRepository(Luminaire::class)->findAll();
+        // $opt = "-s ";
+        // foreach ($luminaires as $l) {
+        //     $opt = $opt.$l->getAddress().' ';
+        // }
 
-        $cmd = $this->getParameter('app.velire_cmd');
-        $cmd .= ' '.$opt.' --logdb;';
-        $cmd .= $this->getParameter('app.velire_cmd');
-        $cmd .= ' --snapshot '.$this->getParameter('app.shared_dir').'/snapshot.png';
+        // !!!TODO!!! deprecated !!!!
+        //$cmd = $this->getParameter('app.velire_cmd');
+        //$cmd .= ' '.$opt.' --logdb;';
+        // $cmd .= $this->getParameter('app.velire_cmd');
+        // $cmd .= ' --snapshot '.$this->getParameter('app.shared_dir').'/snapshot.png';
 
-        $process = new Process($cmd);
-        $process->setTimeout(3600);
-        $process->run();
+        // $process = new Process($cmd);
+        // $process->setTimeout(3600);
+        // $process->run();
 
-        // executes after the command finishes
-        if (!$process->isSuccessful()) {
-            throw new ProcessFailedException($process);
-        }
+        // // executes after the command finishes
+        // if (!$process->isSuccessful()) {
+        //     throw new ProcessFailedException($process);
+        // }
 
         // $output = json_decode($process->getOutput(), true);
 
@@ -1174,6 +1199,7 @@ class MainController extends Controller
         $em->flush();
 
         // réinitialiser + master/slave
+        // !!! TODO !! voir plus haut les modifs à ces commandes
         $process = new Process($this->getParameter('app.velire_cmd').' --init --quiet');
         $process->setTimeout(3600);
         $process->run();
@@ -1184,6 +1210,7 @@ class MainController extends Controller
         }
 
         // Interroger le réseau de luminaires
+        // !!! TODO !! voir plus haut les modifs à ces commandes
         $process = new Process($this->getParameter('app.velire_cmd').' --info all --quiet --json --output '.$this->getParameter('app.shared_dir').'/config.json');
         $process->setTimeout(3600);
         $process->run();
