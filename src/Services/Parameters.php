@@ -31,4 +31,9 @@ class Parameters
 
         return $controller_name;
     }
+
+    public function getPythonCmd()
+    {
+        return $this->params->get('app.velire_cmd');
+    } 
 }

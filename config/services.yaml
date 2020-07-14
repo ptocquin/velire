@@ -11,6 +11,7 @@ parameters:
     app.shared_dir: '%env(resolve:SHARED_DIR)%'
     app.bin_dir: '%env(resolve:BIN_DIR)%'
     app.velire_cmd: '%env(resolve:PYTHON_CMD)%'
+    app.bash_cmd: '%env(resolve:BASH_CMD)%'
 
 services:
     # default configuration for services in *this* file

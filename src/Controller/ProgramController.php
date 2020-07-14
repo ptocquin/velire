@@ -18,19 +18,15 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 
-
-
-
 use App\Entity\Program;
 use App\Entity\Step;
 use App\Entity\Run;
+use App\Entity\RunStep;
 use App\Entity\Cluster;
 use App\Entity\Recipe;
 use App\Entity\Luminaire;
 use App\Entity\Ingredient;
 use App\Entity\Led;
-
-
 
 use App\Form\ProgramType;
 use App\Form\StepType;
@@ -124,6 +120,8 @@ class ProgramController extends AbstractController
                     $em->remove($run_step);
                 }
                 $em->flush();
+
+                // !!! TODO !!! à reprendre dans la lib bash ?
                 $process = new Process($this->getParameter('app.velire_cmd').'-e --input '.$this->getParameter('app.shared_dir').'/config.json --set-run '.$run->getId());
                 $process->run();
             }
@@ -164,9 +162,10 @@ class ProgramController extends AbstractController
      */
     public function indexRun()
     {
-        $running_runs = $this->getDoctrine()->getRepository(Run::class)->getRunningRuns();
-        $coming_runs = $this->getDoctrine()->getRepository(Run::class)->getComingRuns();
-        $past_runs = $this->getDoctrine()->getRepository(Run::class)->getPastRuns();
+        $time = date('Y-m-d H:i:00');
+        $running_runs = $this->getDoctrine()->getRepository(Run::class)->getRunningRuns($time);
+        $coming_runs = $this->getDoctrine()->getRepository(Run::class)->getComingRuns($time);
+        $past_runs = $this->getDoctrine()->getRepository(Run::class)->getPastRuns($time);
         $clusters = $this->getDoctrine()->getRepository(Cluster::class)->findAll();
 
         return $this->render('control/runs.html.twig', [
@@ -195,18 +194,98 @@ class ProgramController extends AbstractController
             $em->persist($run);
             $em->flush();
 
-            $process = new Process($this->getParameter('app.velire_cmd').' -e --input '.$this->getParameter('app.shared_dir').'/config.json --set-run '.$data->getId());
-            $process->run();
-
-            // executes after the command finishes
-            if (!$process->isSuccessful()) {
-                // throw new ProcessFailedException($process);
-                    // add flash messages
-                    $this->addFlash(
-                        'error',
-                        'For a unknown reason, the run was not started'
-                    );
+            # Fetch lightings addresses
+            $luminaires = $cluster->getLuminaires();
+            $list = " --address ";
+            foreach ($luminaires as $luminaire) {
+                $list .= $luminaire->getAddress()." ";
             }
+
+            # Fetch Steps
+            $program = $run->getProgram();
+            $steps = $program->getSteps();
+            # Start
+            $start = $run->getStart();
+            $goto = -1;
+            $step_index = 0;
+
+            while ($step_index < count($steps)) {
+                // die(print_r($steps[$step_index]->getType()));
+                $step = $steps[$step_index];
+                $type = $step->getType();
+
+                switch ($type) {
+                    case "time":
+                        list($hours, $minutes) = explode(':', $step->getValue(), 2);
+                        $step_duration = $minutes * 60 + $hours * 3600;
+                        $commands = [];
+                        $ingredients = $step->getRecipe()->getIngredients();
+                        foreach ($ingredients as $ingredient) {
+                            $level = $ingredient->getLevel();
+                            $led = $ingredient->getLed();
+                            $color = $led->getType()."_".$led->getWavelength();
+                            $commands[] = $color." ".$level;
+                        }
+                        $cmd = $this->getParameter('app.velire_cmd').$list." --exclusive --set-power 1 --set-colors ".implode(" ", $commands);
+                        $start = $start->add(new \DateInterval('PT'.$step_duration.'S'));
+                        $new_step = new RunStep();
+                        $new_step->setRun($run);
+                        $new_step->setStart($start);
+                        $new_step->setCommand($cmd);
+                        $new_step->setStatus(0);
+                        $em->persist($new_step);
+                        $em->flush();
+                        $step_index = $step_index + 1;
+                        // die(print_r($start));
+                        break;
+                    case "off":
+                        list($hours, $minutes) = explode(':', $step->getValue(), 2);
+                        $step_duration = $minutes * 60 + $hours * 3600;
+                        $cmd = $this->getParameter('app.velire_cmd').$list." --shutdown";
+                        $start = $start->add(new \DateInterval('PT'.$step_duration.'S'));
+                        $new_step = new RunStep();
+                        $new_step->setRun($run);
+                        $new_step->setStart($start);
+                        $new_step->setCommand($cmd);
+                        $new_step->setStatus(0);
+                        $em->persist($new_step);
+                        $em->flush();
+                        $step_index = $step_index + 1;
+                        // die(print_r($cmd));
+                        break;
+                    case "goto":
+                        list($s, $n) = explode(':', $step->getValue(), 2);
+                        if($goto < 0){
+                            $goto = $n;
+                        } elseif ($goto == 0) {
+                            $goto = -1;
+                            $step_index = $step_index + 1;
+                        } elseif ($goto > 0) {
+                            $step_index = $s;
+                            $goto = $goto - 1;
+                        }
+                        break;
+                }
+            }
+
+            $run->setDateEnd($start);
+            $em->persist($run);
+            $em->flush();            
+            
+
+            // // !!! TODO !!! à reprendre dans la lib bash ?
+            // $process = new Process($this->getParameter('app.bash_cmd').' --run '.$data->getId());
+            // $process->run();
+
+            // // executes after the command finishes
+            // if (!$process->isSuccessful()) {
+            //     // throw new ProcessFailedException($process);
+            //         // add flash messages
+            //         $this->addFlash(
+            //             'error',
+            //             'For a unknown reason, the run was not started'
+            //         );
+            // }
 
             return $this->redirectToRoute('run');
         }
@@ -240,8 +319,27 @@ class ProgramController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
             $recipe = $data['recipe'];
+            // $recipe = $this->getDoctrine()->getRepository(Recipe::class)->find($r);
+            $commands = [];
+            $ingredients = $recipe->getIngredients();
+            foreach ($ingredients as $ingredient) {
+                $level = $ingredient->getLevel();
+                $led = $ingredient->getLed();
+                $color = $led->getType()."_".$led->getWavelength();
+                $commands[] = $color." ".$level;
+            }
 
-            $process = new Process($this->getParameter('app.velire_cmd').' -e --input '.$this->getParameter('app.shared_dir').'/config.json --cluster '.$cluster->getId().' --play '.$recipe->getId());
+            // die(print_r($commands));
+
+            $luminaires = $cluster->getLuminaires();
+            $list = " --address ";
+            foreach ($luminaires as $luminaire) {
+                $list .= $luminaire->getAddress()." ";
+            }
+
+            // Utiliser les info dans la base de données + set-colors
+            // !!! TODO !!!
+            $process = new Process($this->getParameter('app.velire_cmd').$list.' --exclusive --set-power 1 --set-colors '.implode(" ", $commands));
             $process->run();
 
             // executes after the command finishes
@@ -312,6 +410,7 @@ class ProgramController extends AbstractController
             $em->persist($run);
             $em->flush();
 
+            // !!! TODO !!! à reprendre dans la lib bash ?
             $process = new Process($this->getParameter('app.velire_cmd').' -e --input '.$this->getParameter('app.shared_dir').'/config.json --set-run '.$run->getId());
             $process->run();
 
@@ -467,16 +566,42 @@ class ProgramController extends AbstractController
             $msg = "not null";
         }
 
+        $commands = [];
+        $ingredients = $recipe->getIngredients();
+        foreach ($ingredients as $ingredient) {
+            $level = $ingredient->getLevel();
+            $led = $ingredient->getLed();
+            $color = $led->getType()."_".$led->getWavelength();
+            $commands[] = $color." ".$level;
+        }
+
         $cluster = $this->getDoctrine()->getRepository(Cluster::class)->findOneByLabel($data['cluster']);
 
-        $process = new Process('python3 ./bin/velire-cmd.py -e --config ./bin/config.yaml --input ../var/config.json --cluster '.$cluster->getId().' --play '.$recipe->getId());
+        $luminaires = $cluster->getLuminaires();
+        $list = " --address ";
+        foreach ($luminaires as $luminaire) {
+            $list .= $luminaire->getAddress()." ";
+        }
+
+        // Utiliser les info dans la base de données + set-colors
+        // !!! TODO !!!
+        $process = new Process($this->getParameter('app.velire_cmd').$list.' --exclusive --set-power 1 --set-colors '.implode(" ", $commands));
         $process->run();
 
         // executes after the command finishes
         if (!$process->isSuccessful()) {
-            throw new ProcessFailedException($process);
+            //throw new ProcessFailedException($process);
+            $this->addFlash(
+                    'error',
+                    'For a unknown reason, the recipe was not started'
+                );
         } else {
-            $msg = $msg.' / pas de problème !';
+                        // add flash messages
+            $this->addFlash(
+                'info',
+                // $process->getOutput()
+                'Recipe '.$recipe->getLabel().' successfully started on cluster '.$cluster->getLabel()
+            );
         }
 
         return new Response(
@@ -495,8 +620,14 @@ class ProgramController extends AbstractController
 
         $cluster = $this->getDoctrine()->getRepository(Cluster::class)->findOneByLabel($data['cluster']);
 
+        $luminaires = $cluster->getLuminaires();
+        $list = " --address ";
+        foreach ($luminaires as $luminaire) {
+            $list .= $luminaire->getAddress()." ";
+        }
+
         // Interroger le réseau de luminaires
-        $process = new Process('python3 ./bin/velire-cmd.py --config ./bin/config.yaml --input ../var/config.json --shutdown --cluster '.$cluster->getId());
+        $process = new Process($this->getParameter('app.velire_cmd').$list.' --shutdown');
         $process->setTimeout(3600);
         $process->run();
 
@@ -574,24 +705,90 @@ class ProgramController extends AbstractController
         }
 
         $run = new Run;
-        $run->setStart(new \DateTime($data['run']['start']['date']));
+        $now = new \DateTime($data['run']['start']['date']);
+        $run->setStart($now);
         $run->setLabel($data['run']['label']);
         $run->setDescription($data['run']['description']);
         $cluster = $this->getDoctrine()->getRepository(Cluster::class)->findOneByLabel($data['cluster']);
         $run->setCluster($cluster);
         $run->setProgram($program);
-        $em->persist($run);
-        $em->flush();
 
-        $process = new Process('python3 ./bin/velire-cmd.py -e --config ./bin/config.yaml --input ../var/config.json --set-run '.$run->getId());
-        $process->run();
-
-        // executes after the command finishes
-        if (!$process->isSuccessful()) {
-            throw new ProcessFailedException($process);
-        } else {
-            $msg = $msg.' / pas de problème !';
+        # Fetch lightings addresses
+        $luminaires = $cluster->getLuminaires();
+        $list = " --address ";
+        foreach ($luminaires as $luminaire) {
+            $list .= $luminaire->getAddress()." ";
         }
+
+        # Fetch Steps
+        $steps = $program->getSteps();
+        # Start
+        $start = $now;
+        $goto = -1;
+        $step_index = 0;
+
+        while ($step_index < count($steps)) {
+            // die(print_r($steps[$step_index]->getType()));
+            $step = $steps[$step_index];
+            $type = $step->getType();
+
+            switch ($type) {
+                case "time":
+                    list($hours, $minutes) = explode(':', $step->getValue(), 2);
+                    $step_duration = $minutes * 60 + $hours * 3600;
+                    $commands = [];
+                    $ingredients = $step->getRecipe()->getIngredients();
+                    foreach ($ingredients as $ingredient) {
+                        $level = $ingredient->getLevel();
+                        $led = $ingredient->getLed();
+                        $color = $led->getType()."_".$led->getWavelength();
+                        $commands[] = $color." ".$level;
+                    }
+                    $cmd = $this->getParameter('app.velire_cmd').$list." --exclusive --set-power 1 --set-colors ".implode(" ", $commands);
+                    $start = $start->add(new \DateInterval('PT'.$step_duration.'S'));
+                    $new_step = new RunStep();
+                    $new_step->setRun($run);
+                    $new_step->setStart($start);
+                    $new_step->setCommand($cmd);
+                    $new_step->setStatus(0);
+                    $em->persist($new_step);
+                    $em->flush();
+                    $step_index = $step_index + 1;
+                    // die(print_r($start));
+                    break;
+                case "off":
+                    list($hours, $minutes) = explode(':', $step->getValue(), 2);
+                    $step_duration = $minutes * 60 + $hours * 3600;
+                    $cmd = $this->getParameter('app.velire_cmd').$list." --shutdown";
+                    $start = $start->add(new \DateInterval('PT'.$step_duration.'S'));
+                    $new_step = new RunStep();
+                    $new_step->setRun($run);
+                    $new_step->setStart($start);
+                    $new_step->setCommand($cmd);
+                    $new_step->setStatus(0);
+                    $em->persist($new_step);
+                    $em->flush();
+                    $step_index = $step_index + 1;
+                    // die(print_r($cmd));
+                    break;
+                case "goto":
+                    list($s, $n) = explode(':', $step->getValue(), 2);
+                    if($goto < 0){
+                        $goto = $n;
+                    } elseif ($goto == 0) {
+                        $goto = -1;
+                        $step_index = $step_index + 1;
+                    } elseif ($goto > 0) {
+                        $step_index = $s;
+                        $goto = $goto - 1;
+                    }
+                    break;
+            }
+        }
+
+        $run->setDateEnd($start);
+        $em->persist($run);
+        $em->flush(); 
 
         return new Response(
             'Run '.$run->getLabel().' successfully started on cluster '.$cluster->getLabel(),

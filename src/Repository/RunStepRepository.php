@@ -19,22 +19,88 @@ class RunStepRepository extends ServiceEntityRepository
         parent::__construct($registry, RunStep::class);
     }
 
-//    /**
-//     * @return RunStep[] Returns an array of RunStep objects
-//     */
-    /*
-    public function findByExampleField($value)
+   /**
+    * @return RunStep[] Returns an array of RunStep objects
+    */
+    
+    public function findStepToRun($time)
     {
         return $this->createQueryBuilder('r')
-            ->andWhere('r.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('r.id', 'ASC')
-            ->setMaxResults(10)
+            ->andWhere('r.start = :val')
+            ->setParameter('val', $time)
             ->getQuery()
             ->getResult()
         ;
     }
+
+   /**
+    * @return RunStep[] Returns an array of RunStep objects
     */
+    
+    public function getLastSteps($run)
+    {
+        return $this->createQueryBuilder('r')
+            ->andWhere('r.run = :run')
+            ->andWhere('r.status = 1')
+            ->setParameter('run', $run)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+   /**
+    * @return RunStep[] Returns an array of RunStep objects
+    */
+    
+    public function getLastStep($run)
+    {
+        return $this->createQueryBuilder('r')
+            ->andWhere('r.run = :run')
+            ->andWhere('r.status = 1')
+            ->setParameter('run', $run)
+            ->orderBy('r.start', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+   /**
+    * @return RunStep[] Returns an array of RunStep objects
+    */
+    
+    public function getNonExecutedSteps($run, $time)
+    {
+        return $this->createQueryBuilder('r')
+            ->andWhere('r.run = :run')
+            ->andWhere('r.status = 0')
+            ->andWhere('r.start < :time')
+            ->setParameter('time', $time)
+            ->setParameter('run', $run)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+   /**
+    * @return RunStep[] Returns an array of RunStep objects
+    */
+    
+    public function getLastNonExecutedStep($run, $time)
+    {
+        return $this->createQueryBuilder('r')
+            ->andWhere('r.run = :run')
+            ->andWhere('r.status = 0')
+            ->andWhere('r.start < :time')
+            ->setParameter('time', $time)
+            ->setParameter('run', $run)
+            ->orderBy('r.start', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+    
 
     /*
     public function findOneBySomeField($value): ?RunStep

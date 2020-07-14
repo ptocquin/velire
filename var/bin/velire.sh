@@ -1,7 +1,12 @@
 #!/bin/bash
 
-source ./bin/lib/functions.sh
-eval $(parse_yaml ./bin/config.yaml)
+echo $DATABASE_FILE
+
+source ../.env
+source ../var/bin/lib/functions.sh
+#eval $(parse_yaml ./bin/config.yaml)
+DB=$DATABASE_FILE
+echo $DB
 
 exec 3>> messages.log
 exec 2>> error.log

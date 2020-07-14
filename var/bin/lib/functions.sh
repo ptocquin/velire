@@ -227,15 +227,15 @@ function run {
 	CLUSTER=$(echo "$RUN" | cut -d',' -f2)
 
 	#  Fichier des commandes
-	TMPFILE=$(mktemp)
-	OUTPUT="${CMD_FILE}${CLUSTER}"
+	# TMPFILE=$(mktemp)
+	# OUTPUT="${CMD_FILE}${CLUSTER}"
 
 	# Fetch lightings addresses
 	SQL="select l.address from run r \
 		left join luminaire l on r.cluster_id = l.cluster_id \
 		where r.cluster_id = '$CLUSTER'"
 	LIGHTINGS=$(sqlite3 -newline " " $DB "$SQL")
-	S_OPT="-s $LIGHTINGS"
+	S_OPT="--address $LIGHTINGS"
 
 	# Fetch Steps
 	SQL="select s.type, s.value, s.recipe_id from run r \

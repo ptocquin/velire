@@ -24,13 +24,13 @@ class RunRepository extends ServiceEntityRepository
     * @return Run[] Returns an array of Run objects
     */
     
-    public function getRunningRuns()
+    public function getRunningRuns($time)
     {
-        $today = new \DateTime();
+        // $today = new \DateTime();
         return $this->createQueryBuilder('r')
             ->where('r.start <= :today')
             ->andWhere('r.date_end >= :today')
-            ->setParameter('today', $today)
+            ->setParameter('today', $time)
             ->orderBy('r.start', 'ASC')
             ->getQuery()
             ->getResult()
@@ -60,12 +60,12 @@ class RunRepository extends ServiceEntityRepository
     * @return Run[] Returns an array of Run objects
     */
     
-    public function getComingRuns()
+    public function getComingRuns($time)
     {
-        $today = new \DateTime();
+        // $today = new \DateTime();
         return $this->createQueryBuilder('r')
             ->where('r.start > :today')
-            ->setParameter('today', $today)
+            ->setParameter('today', $time)
             ->orderBy('r.start', 'ASC')
             ->getQuery()
             ->getResult()
@@ -76,12 +76,13 @@ class RunRepository extends ServiceEntityRepository
     * @return Run[] Returns an array of Run objects
     */
     
-    public function getPastRuns()
+    public function getPastRuns($time)
     {
-        $today = new \DateTime();
+        // $today = new \DateTime();
+        // $today = date('Y-m-d H:i:00');
         return $this->createQueryBuilder('r')
             ->where('r.date_end < :today')
-            ->setParameter('today', $today)
+            ->setParameter('today', $time)
             ->orderBy('r.start', 'DESC')
             ->getQuery()
             ->getResult()
