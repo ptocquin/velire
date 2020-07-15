@@ -1,7 +1,0 @@
-development  <- TRUE
-
-command.file <- "./bin/commands@"
-db           <- "../var/data.db"
-port         <- "/dev/ttyUSB0"
-max.lighting <- 50
-python.cmd   <- "python3 ./bin/veliregui-demo.py"

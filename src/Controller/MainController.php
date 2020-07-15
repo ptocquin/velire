@@ -87,21 +87,23 @@ class MainController extends Controller
     public function parameters(Request $request)
     {
         $to_update = "false";
-        $process = new Process('check-update');
+        $process = new Process('git diff master origin/master | wc -l');
         $process->setTimeout(3600);
         $process->run();
-        if ($process->getOutput() == "changed") {
+        if ($process->getOutput() > 0) {
             $to_update = "true";
         }
 
         $file_path = $this->getParameter('app.shared_dir').'/params.yaml';
+        $netplan_file = $this->getParameter('app.shared_dir').'/netplan.yaml';
 
         $filesystem = new Filesystem();
         if ($filesystem->exists($file_path)) {
             $values = Yaml::parseFile($file_path);
         } else {
             $values = array(
-                'controller_name' => 'test controller name'
+                'controller_name' => 'test controller name',
+                'ip_address' => 'xxx.xxx.xxx.xxx'
             );
 
             $yaml = Yaml::dump($values);
@@ -112,18 +114,28 @@ class MainController extends Controller
             ->add('controller_name', null, array(
                 'data' => $values['controller_name']
             ))
+            ->add('ip_address', null, array(
+                'data' => $values['ip_address']
+            ))
             ->getForm();
 
         $form->handleRequest($request);
         if ($form->isSubmitted()) {
             $controller_name = $form->get('controller_name')->getData();
+            $ip_address = $form->get('ip_address')->getData();
 
             $values = array(
-                'controller_name' => $controller_name
+                'controller_name' => $controller_name,
+                'ip_address' => $ip_address
             );
 
             $yaml = Yaml::dump($values);
             file_put_contents($file_path, $yaml);
+
+            $contents = $this->renderView('var/netplan.yaml.twig', [
+                'ip_address' => $values['ip_address']
+            ]);
+            $filesystem->dumpFile($netplan_file, $contents);
 
             return $this->redirectToRoute('home');
 
@@ -143,7 +155,7 @@ class MainController extends Controller
      */
     public function update(Request $request)
     {
-        $process = new Process('update');
+        $process = new Process('git pull --rebase --autostash --stat origin master && rm -rf ../var/cache/*');
         $process->setTimeout(3600);
         $process->run();
         if (!$process->isSuccessful()) {

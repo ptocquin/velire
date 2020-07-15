@@ -27,6 +27,7 @@
 		{% form_theme form 'bootstrap_4_layout.html.twig' %}
 			{{ form_start(form) }}
 			{{ form_row(form.controller_name, {'label' : 'parameters.labels.controller-name', 'label_attr': { class: 'text-light'} }) }}
+			{{ form_row(form.ip_address, {'label' : 'parameters.labels.ip_address', 'label_attr': { class: 'text-light'} }) }}
 			<button type="submit" class="btn btn-secondary">{{ button_label|default('button.save')|trans }}</button>
 			<a href="{{ path('home') }}" class="btn btn-secondary">{{ 'button.cancel'|trans }}</a>
 			{{ form_end(form) }}

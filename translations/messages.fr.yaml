@@ -45,6 +45,7 @@ parameters:
   title: Paramètres
   labels:
     controller-name: Nom du controlleur
+    ip_address: Adresse IP fixe du controlleur
 
 # Lightings window
 lightings:

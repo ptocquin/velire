@@ -1,7 +1,0 @@
-DEVELOPMENT: TRUE
-PORT: /dev/tty.usbserial-14220
-PYTHON_CMD: python3 ./bin/velire-cmd.py --config ./bin/config.yaml --input ../var/config.json
-LOG: log.txt
-DB: ../var/data.db
-CONFIG: ../var/config.json
-CMD_FILE: ./bin/commands@
