@@ -1,0 +1,10 @@
+network:
+    ethernets:
+        eth0:
+            addresses: [{{ ip_address }}/24]
+            gateway4: 139.165.112.1
+            nameservers:
+                addresses: [139.165.214.214, 8.8.8.8, 8.8.4.4]
+            dhcp4: yes
+            dhcp6: false
+    version: 2
