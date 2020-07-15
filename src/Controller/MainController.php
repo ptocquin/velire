@@ -87,7 +87,7 @@ class MainController extends Controller
     public function parameters(Request $request)
     {
         $to_update = "false";
-        $process = new Process('git diff master origin/master | wc -l');
+        $process = new Process('git fetch origin master 2>/dev/null && git diff --shortstat origin/master -- changelog | wc -l');
         $process->setTimeout(3600);
         $process->run();
         if ($process->getOutput() > 0) {
