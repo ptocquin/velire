@@ -44,6 +44,12 @@ class Program
      */
     private $runs;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"program"})
+     */
+    private $uuid;
+
     public function __toString()
     {
         return $this->label;
@@ -142,6 +148,18 @@ class Program
                 $run->setProgram(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getUuid(): ?string
+    {
+        return $this->uuid;
+    }
+
+    public function setUuid(?string $uuid): self
+    {
+        $this->uuid = $uuid;
 
         return $this;
     }

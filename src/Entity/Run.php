@@ -60,6 +60,11 @@ class Run
      */
     private $steps;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $uuid;
+
     public function __construct()
     {
         $this->steps = new ArrayCollection();
@@ -181,6 +186,18 @@ class Run
                 $step->setRun(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getUuid(): ?string
+    {
+        return $this->uuid;
+    }
+
+    public function setUuid(?string $uuid): self
+    {
+        $this->uuid = $uuid;
 
         return $this;
     }

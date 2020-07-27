@@ -6,6 +6,7 @@ namespace App\Services;
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Process\Process;
 
 
 class Parameters
@@ -35,5 +36,21 @@ class Parameters
     public function getPythonCmd()
     {
         return $this->params->get('app.velire_cmd');
-    } 
+    }
+
+    public function getPublicIP()
+    {
+        $process = new Process("ip -4 -o addr show eth0 | awk '{print $4}' | cut -d/ -f1");
+        $process->run();
+        $output = $process->getOutput();
+        return $output;
+    }
+
+    public function getVpnIP()
+    {
+        $process = new Process("ip -4 -o addr show tun0 | awk '{print $4}' | cut -d/ -f1");
+        $process->run();
+        $output = $process->getOutput();
+        return $output;
+    }
 }

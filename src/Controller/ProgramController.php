@@ -56,6 +56,8 @@ class ProgramController extends AbstractController
     public function newProgram(Request $request)
     {
     	$program = new Program;
+        $uuid = uuid_create(UUID_TYPE_RANDOM);
+        $program->setUuid($uuid);
     	$form = $this->createForm(ProgramType::class, $program);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
@@ -186,6 +188,8 @@ class ProgramController extends AbstractController
         $em = $this->getDoctrine()->getManager();
 
         $run = new Run;
+        $uuid = uuid_create(UUID_TYPE_RANDOM);
+        $run->setUuid($uuid);
         $run->setCluster($cluster);
         $form = $this->createForm(RunType::class, $run);
         $form->handleRequest($request);
@@ -528,10 +532,11 @@ class ProgramController extends AbstractController
 
         $em = $this->getDoctrine()->getManager();
 
-        $recipe = $this->getDoctrine()->getRepository(Recipe::class)->findOneByLabel($data['recipe']['label']);
+        $recipe = $this->getDoctrine()->getRepository(Recipe::class)->findOneByUuid($data['recipe']['uuid']);
 
         if(is_null($recipe)){
             $recipe = new Recipe;
+            $recipe->setUuid($data['recipe']['uuid']);
             $recipe->setLabel($data['recipe']['label']);
             $recipe->setDescription($data['recipe']['description']);
             foreach ($data['recipe']['ingredients'] as $i) {
@@ -652,10 +657,11 @@ class ProgramController extends AbstractController
 
         $em = $this->getDoctrine()->getManager();
 
-        $program = $this->getDoctrine()->getRepository(Program::class)->findOneByLabel($data['program']['label']);
+        $program = $this->getDoctrine()->getRepository(Program::class)->findOneByLabel($data['program']['uuid']);
 
         if(is_null($program)){
             $program = new Program;
+            $program->setUuid($data['program']['uuid']);
             $program->setLabel($data['program']['label']);
             $program->setDescription($data['program']['description']);
             foreach ($data['program']['steps'] as $s) {
@@ -665,9 +671,10 @@ class ProgramController extends AbstractController
                 $step->setValue($s['value']);
                 $step->setProgram($program);
                 if (!is_null($s['recipe'])) {
-                    $recipe = $this->getDoctrine()->getRepository(Recipe::class)->findOneByLabel($s['recipe']['label']);
+                    $recipe = $this->getDoctrine()->getRepository(Recipe::class)->findOneByLabel($s['recipe']['uuid']);
                     if(is_null($recipe)){
                         $recipe = new Recipe;
+                        $recipe->setUuid($s['recipe']['uuid']);
                         $recipe->setLabel($s['recipe']['label']);
                         $recipe->setDescription($s['recipe']['description']);
                         foreach ($s['recipe']['ingredients'] as $i) {

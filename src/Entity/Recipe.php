@@ -52,6 +52,12 @@ class Recipe
      */
     private $color;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"recipe","program"})
+     */
+    private $uuid;
+
     public function __toString()
     {
         return $this->label;
@@ -162,6 +168,18 @@ class Recipe
     public function setColor(?string $color): self
     {
         $this->color = $color;
+
+        return $this;
+    }
+
+    public function getUuid(): ?string
+    {
+        return $this->uuid;
+    }
+
+    public function setUuid(?string $uuid): self
+    {
+        $this->uuid = $uuid;
 
         return $this;
     }

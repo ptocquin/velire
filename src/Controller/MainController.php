@@ -672,6 +672,8 @@ class MainController extends Controller
         $leds = $this->getDoctrine()->getRepository(Led::class)->getLedTypesFromCluster($cluster);
 
         $recipe = new Recipe;
+        $uuid = uuid_create(UUID_TYPE_RANDOM);
+        $recipe->setUuid($uuid);
         foreach ($leds as $led) {
             $ingredient = new Ingredient;
             $ingredient->setLed($led);
