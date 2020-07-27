@@ -151,4 +151,15 @@ sudo ln -s /var/www/lumiatec/var/netplan.yaml lumiatec-network.yaml
 
 sudo reboot
 
+sudo apt install openvpn
+sudo mkdir -p /etc/openvpn/client
+sudo chmod 700 /etc/openvpn/client
+sudo chown ubuntu:root /etc/openvpn/client
+sudo chmod 770 /etc/openvpn/client
+sudo openvpn /etc/openvpn/client/raspitest.ovpn
 
+# https://serverfault.com/a/918441
+# permettre l'accès ssh sur l'adresse IP publique quand VPN actif
+sudo ip rule add from $(ip route get 1 | grep -Po '(?<=src )(\S+)') table 128
+sudo ip route add table 128 to $(ip route get 1 | grep -Po '(?<=src )(\S+)')/32 dev $(ip -4 route ls | grep default | grep -Po '(?<=dev )(\S+)')
+sudo ip route add table 128 default via $(ip -4 route ls | grep default | grep -Po '(?<=via )(\S+)')
