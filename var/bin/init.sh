@@ -19,3 +19,5 @@ sqlite3 $DATABASE_URL "insert into luminaire_status (code,message) values (0, 'O
 sqlite3 $DATABASE_URL "insert into luminaire_status (code,message) values (1, 'Warning');"
 sqlite3 $DATABASE_URL "insert into luminaire_status (code,message) values (2, 'Error');"
 sqlite3 $DATABASE_URL "insert into luminaire_status (code,message) values (99, 'Not detected');"
+
+echo "* * * * * /usr/bin/php /var/www/lumiatec/bin/console app:check-run > /dev/null") | crontab -

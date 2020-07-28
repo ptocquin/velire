@@ -1,0 +1,20 @@
+	network:
+	    # ethernets:
+	    #     eth0:
+	    #         addresses: [139.165.112.145/24]
+	    #         gateway4: 139.165.112.1
+	    #         nameservers:
+	    #             addresses: [139.165.214.214, 8.8.8.8, 8.8.4.4]
+	    #         dhcp4: yes
+	    #         dhcp6: false
+	    wifis:
+    		wlan0:
+      		access-points:
+        		ULiege:
+          		auth:
+            		key-management: eap
+            		method: peap
+            		identity: "f054745"
+            		password: "avtK5772"
+      		dhcp4: yes
+	    version: 2

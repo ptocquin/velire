@@ -46,7 +46,7 @@ class Program
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"program"})
+     * @Groups({"program","run"})
      */
     private $uuid;
 

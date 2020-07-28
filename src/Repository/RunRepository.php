@@ -29,7 +29,7 @@ class RunRepository extends ServiceEntityRepository
         // $today = new \DateTime();
         return $this->createQueryBuilder('r')
             ->where('r.start <= :today')
-            ->andWhere('r.date_end >= :today')
+            ->andWhere('r.dateend >= :today')
             ->setParameter('today', $time)
             ->orderBy('r.start', 'ASC')
             ->getQuery()
@@ -46,7 +46,7 @@ class RunRepository extends ServiceEntityRepository
         $today = new \DateTime();
         return $this->createQueryBuilder('r')
             ->where('r.start <= :today')
-            ->andWhere('r.date_end >= :today')
+            ->andWhere('r.dateend >= :today')
             ->andWhere('r.cluster = :id')
             ->setParameter('today', $today)
             ->setParameter('id', $id)
@@ -81,7 +81,7 @@ class RunRepository extends ServiceEntityRepository
         // $today = new \DateTime();
         // $today = date('Y-m-d H:i:00');
         return $this->createQueryBuilder('r')
-            ->where('r.date_end < :today')
+            ->where('r.dateend < :today')
             ->setParameter('today', $time)
             ->orderBy('r.start', 'DESC')
             ->getQuery()
