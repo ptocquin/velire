@@ -81,7 +81,7 @@ class Luminaire
     private $ligne;
 
     /**
-     * @ORM\Column(type="string", length=1, nullable=true)
+     * @ORM\Column(type="integer", nullable=true)
      * @Groups({"luminaire"})
      */
     private $colonne;
@@ -267,12 +267,12 @@ class Luminaire
         return $this;
     }
 
-    public function getColonne(): ?string
+    public function getColonne(): ?int
     {
         return $this->colonne;
     }
 
-    public function setColonne(?string $colonne): self
+    public function setColonne(?int $colonne): self
     {
         $this->colonne = $colonne;
 
