@@ -1,3 +1,8 @@
+# Init sur SD-card
+Ajouter netplan.yaml au bon endroit
+autoriser ssh
+sudo sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+
 sudo apt update && sudo apt upgrade
 sudo apt install nginx sqlite3 cmdtest apache2-utils composer php7.4-cli php7.4-fpm php7.4-sqlite3 php7.4-xml php7.4-curl php7.4-mbstring
 
@@ -61,7 +66,9 @@ sudo nginx -s reload
 
 cd /var/www/
 sudo git clone https://github.com/ptocquin/velire.git lumiatec
-sudo nano .env
+cd lumiatec
+sudo cp .env.div .env
+#sudo nano .env
 
 	# This file is a "template" of which env vars need to be defined for your application
 	# Copy this file to .env file for development, create environment variables when deploying to production
@@ -100,8 +107,9 @@ sudo nano .env
 
 
 sudo composer install --no-dev --optimize-autoloader
+./var/bin/init.sh
 
-sudo nano /usr/local/bin/init-lumiatec.sh
+#sudo nano /usr/local/bin/init-lumiatec.sh
 
 	#!/bin/bash
 
@@ -125,28 +133,39 @@ sudo nano /usr/local/bin/init-lumiatec.sh
 	sqlite3 $DATABASE_URL "insert into luminaire_status (code,message) values (2, 'Error');"
 	sqlite3 $DATABASE_URL "insert into luminaire_status (code,message) values (99, 'Not detected');"
 
-	echo "* * * * * /usr/bin/php /var/www/lumiatec/bin/console app:check-run > /dev/null") | crontab -
+	echo "* * * * * /usr/bin/php /var/www/lumiatec/bin/console app:check-run > /dev/null" | crontab -
 
-sudo chmod a+x /usr/local/bin/init-lumiatec.sh
-init-lumiatec.sh
+#sudo chmod a+x /usr/local/bin/init-lumiatec.sh
+#init-lumiatec.sh
 
 sudo chown -R www-data ~/.lumiatec
 sudo chmod -R 777 ~/.lumiatec
 sudo chown -R www-data /var/www/lumiatec/public/
 sudo usermod -a -G dialout www-data 
+sudo chmod -R 777 var/cache var/log
 
 sudo nano /var/www/lumiatec/var/netplan.yaml # éditer les info
 
-	network:
-	    ethernets:
-	        eth0:
-	            addresses: [139.165.112.145/24]
-	            gateway4: 139.165.112.1
-	            nameservers:
-	                addresses: [139.165.214.214, 8.8.8.8, 8.8.4.4]
-	            dhcp4: yes
-	            dhcp6: false
-	    version: 2
+network:
+  version: 2
+  ethernets:
+    eth0:
+      addresses: [139.165.112.145/24]
+      gateway4: 139.165.112.1
+      nameservers:
+          addresses: [139.165.214.214, 8.8.8.8, 8.8.4.4]
+      dhcp4: yes
+      dhcp6: false
+  wifis:
+    wlan0:
+      access-points:
+        ULiege:
+          auth:
+            key-management: eap
+            method: peap
+            identity: "f054745"
+            password: "avtK5772"
+      dhcp4: yes
 
 cd /etc/netplan
 sudo ln -s /var/www/lumiatec/var/netplan.yaml lumiatec-network.yaml
@@ -156,9 +175,10 @@ sudo reboot
 sudo apt install openvpn
 # sudo mkdir -p /etc/openvpn
 sudo chmod 700 /etc/openvn
-# sudo chown ubuntu:root /etc/openvpn
-# sudo chmod 770 /etc/openvpn/client
-sudo cp /var/www/lumiatec/var/lumiatecvpn.conf /etc/openvpn/lumiatecvpn.conf
+sudo chown ubuntu:root /etc/openvpn
+sudo chmod 770 /etc/openvpn
+sudo cp /var/www/lumiatec/var/bin/lumiatecvpn.conf /etc/openvpn/lumiatecvpn.conf
+echo raspitest /etc/openvpn/lumiatec.txt
 sudo openvpn /etc/openvpn/lumiatecvpn.conf
 
 
