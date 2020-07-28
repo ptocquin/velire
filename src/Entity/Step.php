@@ -25,20 +25,20 @@ class Step
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"program"})
+     * @Groups({"program","run"})
      */
     private $type;
 
     /**
      * @ORM\Column(type="integer")
-     * @Groups({"program"})
+     * @Groups({"program","run"})
      */
     private $rank;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\Regex("/\d+:?\d+|\d+/")
-     * @Groups({"program"})
+     * @Groups({"program","run"})
      */
     private $value;
 
@@ -49,7 +49,7 @@ class Step
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Recipe", inversedBy="steps")
-     * @Groups({"program"})
+     * @Groups({"program","run"})
      */
     private $recipe;
 

@@ -3,9 +3,12 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\RunStepRepository")
+ * @ApiResource
  */
 class RunStep
 {
@@ -18,16 +21,19 @@ class RunStep
 
     /**
      * @ORM\Column(type="datetime")
+     * @Groups({"run"})
      */
     private $start;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"run"})
      */
     private $command;
 
     /**
      * @ORM\Column(type="integer")
+     * @Groups({"run"})
      */
     private $status;
 

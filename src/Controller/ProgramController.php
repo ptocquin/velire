@@ -655,9 +655,11 @@ class ProgramController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
 
+        // dd($data);
+
         $em = $this->getDoctrine()->getManager();
 
-        $program = $this->getDoctrine()->getRepository(Program::class)->findOneByLabel($data['program']['uuid']);
+        $program = $this->getDoctrine()->getRepository(Program::class)->findOneByUuid($data['program']['uuid']);
 
         if(is_null($program)){
             $program = new Program;
@@ -719,6 +721,10 @@ class ProgramController extends AbstractController
         $cluster = $this->getDoctrine()->getRepository(Cluster::class)->findOneByLabel($data['cluster']);
         $run->setCluster($cluster);
         $run->setProgram($program);
+        $run->setUuid($data['run']['uuid']);
+
+        $em->persist($run);
+        $em->flush();
 
         # Fetch lightings addresses
         $luminaires = $cluster->getLuminaires();
@@ -802,5 +808,44 @@ class ProgramController extends AbstractController
             Response::HTTP_OK,
             ['content-type' => 'text/html']
         );
+    }
+
+    /**
+     * @Route("/remote/run/delete", name="delete-run-from-remote")
+     */
+    public function deleteRunFromRemote(Request $request)
+    {
+        $em = $this->getDoctrine()->getManager();
+
+        $data = json_decode($request->getContent(), true);
+
+        $run = $this->getDoctrine()->getRepository(Run::class)->findOneByUuid($data['uuid']);
+
+        if(is_null($run))
+        {
+            return new Response(
+                'Run not found on controller ',
+                Response::HTTP_NO_CONTENT,
+                ['content-type' => 'text/html']
+            );
+        }
+
+        $steps = $run->getSteps();
+
+        foreach ($steps as $step) {
+            $em->remove($step);
+        }
+
+        // $process = new Process('./bin/velire.sh --delete-run'.$run->getCluster()->getId());
+        // $process->run();
+
+        $em->remove($run);
+        $em->flush();
+        
+        return new Response(
+            'Run '.$run->getLabel().' successfully removed ',
+            Response::HTTP_OK,
+            ['content-type' => 'text/html']
+        );   
     }
 }

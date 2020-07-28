@@ -5,9 +5,12 @@ namespace App\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\RunRepository")
+ * @ApiResource(normalizationContext={"groups"={"run"}})
  */
 class Run
 {
@@ -21,47 +24,56 @@ class Run
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Cluster", inversedBy="runs")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"run"})
      */
     private $cluster;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Program", inversedBy="runs")
      * @ORM\JoinColumn(nullable=true)
+     * @Groups({"run"})
      */
     private $program;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
+     * @Groups({"run"})
      */
     private $start;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"run"})
      */
     private $label;
 
     /**
      * @ORM\Column(type="text", nullable=true)
+     * @Groups({"run"})
      */
     private $description;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
+     * @Groups({"run"})
      */
-    private $date_end;
+    private $dateend;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"run"})
      */
     private $status;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\RunStep", mappedBy="run", cascade={"remove"})
+     * @Groups({"run"})
      */
     private $steps;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"run"})
      */
     private $uuid;
 
@@ -137,12 +149,12 @@ class Run
 
     public function getDateEnd(): ?\DateTimeInterface
     {
-        return $this->date_end;
+        return $this->dateend;
     }
 
-    public function setDateEnd(?\DateTimeInterface $date_end): self
+    public function setDateEnd(?\DateTimeInterface $dateend): self
     {
-        $this->date_end = $date_end;
+        $this->dateend = $dateend;
 
         return $this;
     }

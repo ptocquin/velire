@@ -25,13 +25,13 @@ class Cluster
 
     /**
      * @ORM\Column(type="integer")
-     * @Groups({"luminaire","log"})
+     * @Groups({"luminaire","log","run"})
      */
     private $label;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"luminaire"})
+     * @Groups({"luminaire","run"})
      */
     private $description;
 
