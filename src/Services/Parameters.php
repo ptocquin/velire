@@ -33,6 +33,20 @@ class Parameters
         return $controller_name;
     }
 
+    public function getFrequency()
+    {
+        
+        $filesystem = new Filesystem();
+        if ($filesystem->exists($this->params->get('app.shared_dir').'/params.yaml')) {
+            $values = Yaml::parseFile($this->params->get('app.shared_dir').'/params.yaml');
+            $frequency = $values['frequency'];
+        } else {
+            $frequency = 2500;
+        }
+
+        return $frequency;
+    }
+
     public function getPythonCmd()
     {
         return $this->params->get('app.velire_cmd');
