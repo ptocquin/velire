@@ -18,6 +18,10 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 
+use Symfony\Component\Yaml\Yaml;
+use Symfony\Component\Filesystem\Filesystem;
+
+
 use App\Entity\Program;
 use App\Entity\Step;
 use App\Entity\Run;
@@ -32,7 +36,6 @@ use App\Form\ProgramType;
 use App\Form\StepType;
 use App\Form\RunType;
 use App\Form\RunEditType;
-
 
 class ProgramController extends AbstractController
 {
@@ -223,14 +226,25 @@ class ProgramController extends AbstractController
                         list($hours, $minutes) = explode(':', $step->getValue(), 2);
                         $step_duration = $minutes * 60 + $hours * 3600;
                         $commands = [];
+                        $frequency = $step->getRecipe()->getFrequency();
+                        if(is_null($frequency)) {
+                            // default frequency
+                            $filesystem = new Filesystem();
+                            if ($filesystem->exists($this->getParameter('app.shared_dir').'/params.yaml')) {
+                                $values = Yaml::parseFile($this->getParameter('app.shared_dir').'/params.yaml');
+                                $frequency = $values['frequency'];
+                            } else {
+                                $frequency = 2500;
+                            }
+                        }
                         $ingredients = $step->getRecipe()->getIngredients();
                         foreach ($ingredients as $ingredient) {
                             $level = $ingredient->getLevel();
                             $led = $ingredient->getLed();
                             $color = $led->getType()."_".$led->getWavelength();
-                            $commands[] = $color." ".$level;
+                            $commands[] = $color." ".$level." ".$ingredient->getPwmStart()." ".$ingredient->getPwmStop();
                         }
-                        $cmd = $this->getParameter('app.velire_cmd').$list." --exclusive --set-power 1 --set-colors ".implode(" ", $commands);
+                        $cmd = $this->getParameter('app.velire_cmd').$list.' --exclusive --set-power 1 --set-freq '.$frequency.' --set-colors '.implode(" ", $commands);
                         $start = $start->add(new \DateInterval('PT'.$step_duration.'S'));
                         $new_step = new RunStep();
                         $new_step->setRun($run);
@@ -323,6 +337,17 @@ class ProgramController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
             $recipe = $data['recipe'];
+            $frequency = $recipe->getFrequency();
+            if(is_null($frequency)) {
+                // default frequency
+                $filesystem = new Filesystem();
+                if ($filesystem->exists($this->getParameter('app.shared_dir').'/params.yaml')) {
+                    $values = Yaml::parseFile($this->getParameter('app.shared_dir').'/params.yaml');
+                    $frequency = $values['frequency'];
+                } else {
+                    $frequency = 2500;
+                }
+            }
             // $recipe = $this->getDoctrine()->getRepository(Recipe::class)->find($r);
             $commands = [];
             $ingredients = $recipe->getIngredients();
@@ -330,7 +355,7 @@ class ProgramController extends AbstractController
                 $level = $ingredient->getLevel();
                 $led = $ingredient->getLed();
                 $color = $led->getType()."_".$led->getWavelength();
-                $commands[] = $color." ".$level;
+                $commands[] = $color." ".$level." ".$ingredient->getPwmStart()." ".$ingredient->getPwmStop();
             }
 
             // die(print_r($commands));
@@ -343,7 +368,7 @@ class ProgramController extends AbstractController
 
             // Utiliser les info dans la base de données + set-colors
             // !!! TODO !!!
-            $process = new Process($this->getParameter('app.velire_cmd').$list.' --exclusive --set-power 1 --set-colors '.implode(" ", $commands));
+            $process = new Process($this->getParameter('app.velire_cmd').$list.' --exclusive --set-power 1 --set-freq '.$frequency.' --set-colors '.implode(" ", $commands));
             $process->run();
 
             // executes after the command finishes
@@ -539,6 +564,18 @@ class ProgramController extends AbstractController
             $recipe->setUuid($data['recipe']['uuid']);
             $recipe->setLabel($data['recipe']['label']);
             $recipe->setDescription($data['recipe']['description']);
+            if(is_null($data['recipe']['frequency'])){
+                // default frequency
+                $filesystem = new Filesystem();
+                if ($filesystem->exists($this->getParameter('app.shared_dir').'/params.yaml')) {
+                    $values = Yaml::parseFile($this->getParameter('app.shared_dir').'/params.yaml');
+                    $frequency = $values['frequency'];
+                } else {
+                    $frequency = 2500;
+                }
+                $recipe->setFrequency($frequency);
+            }
+
             foreach ($data['recipe']['ingredients'] as $i) {
 
                 $led = $this->getDoctrine()->getRepository(Led::class)->findOneBy(
@@ -577,7 +614,7 @@ class ProgramController extends AbstractController
             $level = $ingredient->getLevel();
             $led = $ingredient->getLed();
             $color = $led->getType()."_".$led->getWavelength();
-            $commands[] = $color." ".$level;
+            $commands[] = $color." ".$level." ".$ingredient->getPwmStart()." ".$ingredient->getPwmStop();
         }
 
         $cluster = $this->getDoctrine()->getRepository(Cluster::class)->findOneByLabel($data['cluster']);
@@ -590,7 +627,7 @@ class ProgramController extends AbstractController
 
         // Utiliser les info dans la base de données + set-colors
         // !!! TODO !!!
-        $process = new Process($this->getParameter('app.velire_cmd').$list.' --exclusive --set-power 1 --set-colors '.implode(" ", $commands));
+        $process = new Process($this->getParameter('app.velire_cmd').$list.' --exclusive --set-power 1 --set-freq '.$recipe->getFrequency().' --set-colors '.implode(" ", $commands));
         $process->run();
 
         // executes after the command finishes
@@ -679,6 +716,17 @@ class ProgramController extends AbstractController
                         $recipe->setUuid($s['recipe']['uuid']);
                         $recipe->setLabel($s['recipe']['label']);
                         $recipe->setDescription($s['recipe']['description']);
+                        if(is_null($s['recipe']['frequency'])) {
+                            // default frequency
+                            $filesystem = new Filesystem();
+                            if ($filesystem->exists($this->getParameter('app.shared_dir').'/params.yaml')) {
+                                $values = Yaml::parseFile($this->getParameter('app.shared_dir').'/params.yaml');
+                                $frequency = $values['frequency'];
+                            } else {
+                                $frequency = 2500;
+                            }
+                            $recipe->setFrequency($frequency);
+                        }
                         foreach ($s['recipe']['ingredients'] as $i) {
 
                             $led = $this->getDoctrine()->getRepository(Led::class)->findOneBy(
@@ -700,6 +748,8 @@ class ProgramController extends AbstractController
                             $ingredient = new Ingredient;
                             $ingredient->setLed($led);
                             $ingredient->setLevel($i['level']);
+                            $ingredient->setPwmStart($i['pwm_start']);
+                            $ingredient->setPwmStop($i['pwm_stop']);
                             $em->persist($ingredient);
                             $recipe->addIngredient($ingredient);
                         }
@@ -755,9 +805,9 @@ class ProgramController extends AbstractController
                         $level = $ingredient->getLevel();
                         $led = $ingredient->getLed();
                         $color = $led->getType()."_".$led->getWavelength();
-                        $commands[] = $color." ".$level;
+                        $commands[] = $color." ".$level." ".$ingredient->getPwmStart()." ".$ingredient->getPwmStop();
                     }
-                    $cmd = $this->getParameter('app.velire_cmd').$list." --exclusive --set-power 1 --set-colors ".implode(" ", $commands);
+                    $cmd = $this->getParameter('app.velire_cmd').$list.' --exclusive --set-power 1 --set-freq '.$recipe->getFrequency().' --set-colors '.implode(" ", $commands);
                     $start = $start->add(new \DateInterval('PT'.$step_duration.'S'));
                     $new_step = new RunStep();
                     $new_step->setRun($run);

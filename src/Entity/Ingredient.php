@@ -41,6 +41,26 @@ class Ingredient
      */
     private $led;
 
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     * @Groups({"recipe"})
+     * @Assert\Range(
+     *      min = 0,
+     *      max = 1
+     * )
+     */
+    private $pwm_start;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     * @Groups({"recipe"})
+     * @Assert\Range(
+     *      min = 0,
+     *      max = 1
+     * )
+     */
+    private $pwm_stop;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -78,6 +98,30 @@ class Ingredient
     public function setLed(?Led $led): self
     {
         $this->led = $led;
+
+        return $this;
+    }
+
+    public function getPwmStart(): ?float
+    {
+        return $this->pwm_start;
+    }
+
+    public function setPwmStart(?float $pwm_start): self
+    {
+        $this->pwm_start = $pwm_start;
+
+        return $this;
+    }
+
+    public function getPwmStop(): ?float
+    {
+        return $this->pwm_stop;
+    }
+
+    public function setPwmStop(?float $pwm_stop): self
+    {
+        $this->pwm_stop = $pwm_stop;
 
         return $this;
     }

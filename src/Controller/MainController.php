@@ -103,7 +103,8 @@ class MainController extends Controller
         } else {
             $values = array(
                 'controller_name' => 'test controller name',
-                'ip_address' => 'xxx.xxx.xxx.xxx'
+                'ip_address' => 'xxx.xxx.xxx.xxx',
+                'frequency' => 2500
             );
 
             $yaml = Yaml::dump($values);
@@ -117,16 +118,21 @@ class MainController extends Controller
             ->add('ip_address', null, array(
                 'data' => $values['ip_address']
             ))
+            ->add('frequency', null, array(
+                'data' => $values['frequency']
+            ))
             ->getForm();
 
         $form->handleRequest($request);
         if ($form->isSubmitted()) {
             $controller_name = $form->get('controller_name')->getData();
             $ip_address = $form->get('ip_address')->getData();
+            $frequency = $form->get('frequency')->getData();
 
             $values = array(
                 'controller_name' => $controller_name,
-                'ip_address' => $ip_address
+                'ip_address' => $ip_address,
+                'frequency' => $frequency
             );
 
             $yaml = Yaml::dump($values);
@@ -673,6 +679,16 @@ class MainController extends Controller
 
         $recipe = new Recipe;
         $uuid = uuid_create(UUID_TYPE_RANDOM);
+
+        // default frequency
+        $filesystem = new Filesystem();
+        if ($filesystem->exists($this->getParameter('app.shared_dir').'/params.yaml')) {
+            $values = Yaml::parseFile($this->getParameter('app.shared_dir').'/params.yaml');
+            $frequency = $values['frequency'];
+        } else {
+            $frequency = 2500;
+        }
+        $recipe->setFrequency($frequency);
         $recipe->setUuid($uuid);
         foreach ($leds as $led) {
             $ingredient = new Ingredient;

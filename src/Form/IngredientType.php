@@ -13,6 +13,8 @@ class IngredientType extends AbstractType
     {
         $builder
             ->add('level')
+            ->add('pwm_start')
+            ->add('pwm_stop')
             // ->add('led')
             // ->add('recipe')
         ;

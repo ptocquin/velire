@@ -24,11 +24,20 @@ class RecipeType extends AbstractType
             ->add('color', ColorType::class, array(
                 'label' => 'recipes.form.new.color'
             ))
+            ->add('frequency', null, array(
+                'label' => 'recipes.form.new.frequency'
+            ))
             ->add('ingredients', CollectionType::class, array(
                 'entry_type' => IngredientType::class,
                 'entry_options' => array('label' => false),
                 'label' => 'recipes.form.new.ingredients'
             ))
+            // ->add('pwm_start', null, array(
+            //     'label' => 'recipes.form.new.pwm-start'
+            // ))
+            // ->add('pwm_stop', null, array(
+            //     'label' => 'recipes.form.new.pwm-stop'
+            // ))
         ;
     }
 

@@ -46,6 +46,7 @@ parameters:
   labels:
     controller-name: Nom du controlleur
     ip_address: Adresse IP fixe du controlleur
+    frequency: Fréquence du PWM (Hz)
 
 # Lightings window
 lightings:
@@ -83,6 +84,11 @@ recipes:
     new:
       label: Intitulé
       color: Couleur
+      description: Description
+      frequency: Fréquence du PWM (Hz)
+      pwm-start: Début du cycle [0..1]
+      pwm-stop: Fin de cycle [0..1]
+      pwm-constraint: La valeur doit être comprise entre 0 et 1
 
 #Programs window
 programs:
