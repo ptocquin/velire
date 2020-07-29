@@ -1212,84 +1212,84 @@ class MainController extends Controller
 
         $em->flush();
 
-        // réinitialiser + master/slave
-        // !!! TODO !! voir plus haut les modifs à ces commandes
-        $process = new Process($this->getParameter('app.velire_cmd').' --init --quiet');
-        $process->setTimeout(3600);
-        $process->run();
+        // // réinitialiser + master/slave
+        // // !!! TODO !! voir plus haut les modifs à ces commandes
+        // $process = new Process($this->getParameter('app.velire_cmd').' --init --quiet');
+        // $process->setTimeout(3600);
+        // $process->run();
 
-        // executes after the command finishes
-        if (!$process->isSuccessful()) {
-            throw new ProcessFailedException($process);
-        }
+        // // executes after the command finishes
+        // if (!$process->isSuccessful()) {
+        //     throw new ProcessFailedException($process);
+        // }
 
-        // Interroger le réseau de luminaires
-        // !!! TODO !! voir plus haut les modifs à ces commandes
-        $process = new Process($this->getParameter('app.velire_cmd').' --info all --quiet --json --output '.$this->getParameter('app.shared_dir').'/config.json');
-        $process->setTimeout(3600);
-        $process->run();
+        // // Interroger le réseau de luminaires
+        // // !!! TODO !! voir plus haut les modifs à ces commandes
+        // $process = new Process($this->getParameter('app.velire_cmd').' --info all --quiet --json --output '.$this->getParameter('app.shared_dir').'/config.json');
+        // $process->setTimeout(3600);
+        // $process->run();
 
-        // executes after the command finishes
-        if (!$process->isSuccessful()) {
-            throw new ProcessFailedException($process);
-        }
+        // // executes after the command finishes
+        // if (!$process->isSuccessful()) {
+        //     throw new ProcessFailedException($process);
+        // }
 
-        $data = json_decode(file_get_contents($this->getParameter('app.shared_dir')."/config.json"), TRUE);
+        // $data = json_decode(file_get_contents($this->getParameter('app.shared_dir')."/config.json"), TRUE);
 
-        $luminaires = $data['spots'];
+        // $luminaires = $data['spots'];
 
-        foreach ($luminaires as $l) { 
-            $luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->findOneByAddress($l['address']);
+        // foreach ($luminaires as $l) { 
+        //     $luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->findOneByAddress($l['address']);
 
-            if(count($luminaire->getPcbs()) == 0) {
-                $luminaire->setSerial($l['serial']);
-                // $em->persist($luminaire);
+        //     if(count($luminaire->getPcbs()) == 0) {
+        //         $luminaire->setSerial($l['serial']);
+        //         // $em->persist($luminaire);
 
-                foreach ($l['pcb'] as $pcb) {
-                    $p = new Pcb;
-                    $p->setCrc($pcb["crc"]);
-                    $p->setSerial($pcb["serial"]);
-                    $p->setN($pcb["n"]);
-                    $p->setType($pcb["type"]);
+        //         foreach ($l['pcb'] as $pcb) {
+        //             $p = new Pcb;
+        //             $p->setCrc($pcb["crc"]);
+        //             $p->setSerial($pcb["serial"]);
+        //             $p->setN($pcb["n"]);
+        //             $p->setType($pcb["type"]);
 
-                    $em->persist($p);
+        //             $em->persist($p);
 
-                    $luminaire->addPcb($p);
-                }
+        //             $luminaire->addPcb($p);
+        //         }
 
-                $em->persist($luminaire);
+        //         $em->persist($luminaire);
 
-                foreach ($l['channels'] as $channel) {
-                    $c = new Channel;
-                    $c->setChannel($channel["id"]);
-                    $c->setIPeek($channel["max"]);
-                    // $c->setPcb($channel["pcb"]);
-                    $c->setLuminaire($luminaire);
-                    // $em->persist($c);
+        //         foreach ($l['channels'] as $channel) {
+        //             $c = new Channel;
+        //             $c->setChannel($channel["id"]);
+        //             $c->setIPeek($channel["max"]);
+        //             // $c->setPcb($channel["pcb"]);
+        //             $c->setLuminaire($luminaire);
+        //             // $em->persist($c);
 
-                    # Vérifie que la Led existe dans la base de données, sinon l'ajoute.
-                    $led = $this->getDoctrine()->getRepository(Led::class)->findOneBy(array(
-                        'wavelength' => $channel["wl"],
-                        'type' => $channel["type"],
-                        'manufacturer' => $channel["manuf"]));
+        //             # Vérifie que la Led existe dans la base de données, sinon l'ajoute.
+        //             $led = $this->getDoctrine()->getRepository(Led::class)->findOneBy(array(
+        //                 'wavelength' => $channel["wl"],
+        //                 'type' => $channel["type"],
+        //                 'manufacturer' => $channel["manuf"]));
 
-                    if ($led == null) {
-                        $le = new Led;
-                        $le->setWavelength($channel["wl"]);
-                        $le->setType($channel["type"]);
-                        $le->setManufacturer($channel["manuf"]);
-                        $em->persist($le);
-                        $em->flush();
-                        $c->setLed($le);
-                    } else {
-                        $c->setLed($led);
-                    }
-                    $em->persist($c);
-                }
-            }
-        }
+        //             if ($led == null) {
+        //                 $le = new Led;
+        //                 $le->setWavelength($channel["wl"]);
+        //                 $le->setType($channel["type"]);
+        //                 $le->setManufacturer($channel["manuf"]);
+        //                 $em->persist($le);
+        //                 $em->flush();
+        //                 $c->setLed($le);
+        //             } else {
+        //                 $c->setLed($led);
+        //             }
+        //             $em->persist($c);
+        //         }
+        //     }
+        // }
 
-        $em->flush();
+        // $em->flush();
 
         return new Response(
             ' lightings were detected and successfully installed.',

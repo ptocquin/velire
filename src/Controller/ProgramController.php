@@ -848,4 +848,48 @@ class ProgramController extends AbstractController
             ['content-type' => 'text/html']
         );   
     }
+
+    /**
+     * @Route("/remote/luminaire/link", name="link-luminaire-from-remote")
+     */
+    public function linkLuminaireFromRemote(Request $request)
+    {
+        $em = $this->getDoctrine()->getManager();
+
+        $data = json_decode($request->getContent(), true);
+
+        //data: {"address":30,"serial":"0x12B0001E","ligne":2,"colonne":3,"cluster":{"label":1}}
+
+        $luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->findOneByAddress($data['address']);
+        $cluster = $this->getDoctrine()->getRepository(Cluster::class)->findOneByLabel($data['cluster']['label']);
+
+        if(is_null($cluster)){
+            $cluster = new Cluster();
+            $cluster->setLabel($data['cluster']['label']);
+            $em->persist($cluster);
+            $em->flush();
+        }
+
+        if(is_null($luminaire)) {
+            $luminaire = new Luminaire();
+            $luminaire->setAddress($data['address']);
+            $luminaire->setSerial($data['serial']);
+            $luminaire->setLigne($data['ligne']);
+            $luminaire->setColonne($data['colonne']);
+            $luminaire->setCluster($cluster);
+            $em->persist($luminaire);
+        } else {
+            $luminaire->setLigne($data['ligne']);
+            $luminaire->setColonne($data['colonne']);
+            $luminaire->setCluster($cluster);
+        }
+
+        $em->flush();
+
+        return new Response(
+            'Lighting '.$luminaire->getAddress().' correctly linked',
+            Response::HTTP_OK,
+            ['content-type' => 'text/html']
+        ); 
+    }
 }
