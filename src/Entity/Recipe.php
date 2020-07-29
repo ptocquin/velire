@@ -61,28 +61,6 @@ class Recipe
     /**
      * @ORM\Column(type="float", nullable=true)
      * @Groups({"recipe","program"})
-     * @Assert\Range(
-     *      min = 0,
-     *      max = 1,
-     *      notInRangeMessage = "recipes.form.new.pwm-constraint",
-     * )
-     */
-    private $pwm_start;
-
-    /**
-     * @ORM\Column(type="float", nullable=true)
-     * @Groups({"recipe","program"})
-     * @Assert\Range(
-     *      min = 0,
-     *      max = 1,
-     *      notInRangeMessage = "recipes.form.new.pwm-constraint",
-     * )
-     */
-    private $pwm_stop;
-
-    /**
-     * @ORM\Column(type="float", nullable=true)
-     * @Groups({"recipe","program"})
      */
     private $frequency;
 
@@ -208,30 +186,6 @@ class Recipe
     public function setUuid(?string $uuid): self
     {
         $this->uuid = $uuid;
-
-        return $this;
-    }
-
-    public function getPwmStart(): ?float
-    {
-        return $this->pwm_start;
-    }
-
-    public function setPwmStart(?float $pwm_start): self
-    {
-        $this->pwm_start = $pwm_start;
-
-        return $this;
-    }
-
-    public function getPwmStop(): ?float
-    {
-        return $this->pwm_stop;
-    }
-
-    public function setPwmStop(?float $pwm_stop): self
-    {
-        $this->pwm_stop = $pwm_stop;
 
         return $this;
     }
