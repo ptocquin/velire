@@ -50,6 +50,12 @@ class Program
      */
     private $uuid;
 
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"program","run"})
+     */
+    private $timestamp;
+
     public function __toString()
     {
         return $this->label;
@@ -160,6 +166,18 @@ class Program
     public function setUuid(?string $uuid): self
     {
         $this->uuid = $uuid;
+
+        return $this;
+    }
+
+    public function getTimestamp(): ?int
+    {
+        return $this->timestamp;
+    }
+
+    public function setTimestamp(?int $timestamp): self
+    {
+        $this->timestamp = $timestamp;
 
         return $this;
     }

@@ -59,6 +59,7 @@ class ProgramController extends AbstractController
     public function newProgram(Request $request)
     {
     	$program = new Program;
+        $program->setTimestamp(time());
         $uuid = uuid_create(UUID_TYPE_RANDOM);
         $program->setUuid($uuid);
     	$form = $this->createForm(ProgramType::class, $program);
@@ -95,6 +96,7 @@ class ProgramController extends AbstractController
 	        $originalSteps->add($step);
 	    }
 
+        $program->setTimestamp(time());
     	$form = $this->createForm(ProgramType::class, $program);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
@@ -191,6 +193,7 @@ class ProgramController extends AbstractController
         $em = $this->getDoctrine()->getManager();
 
         $run = new Run;
+        $run->setTimestamp(time());
         $uuid = uuid_create(UUID_TYPE_RANDOM);
         $run->setUuid($uuid);
         $run->setCluster($cluster);
@@ -425,6 +428,7 @@ class ProgramController extends AbstractController
     {
         $em = $this->getDoctrine()->getManager();
 
+        $run->setTimestamp(time());
         $form = $this->createForm(RunEditType::class, $run);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
@@ -648,6 +652,142 @@ class ProgramController extends AbstractController
 
         return new Response(
             'Recipe '.$recipe->getLabel().' successfully started on cluster '.$cluster->getLabel(),
+            Response::HTTP_OK,
+            ['content-type' => 'text/html']
+        );
+    }
+
+    /**
+     * @Route("/remote/update/recipe", name="update-recipe-from-remote")
+     */
+    public function updateRecipeFromRemote(Request $request)
+    {
+        $data = json_decode($request->getContent(), true);
+
+        $em = $this->getDoctrine()->getManager();
+
+        $r = $this->getDoctrine()->getRepository(Recipe::class)->findOneByUuid($data['recipe']['uuid']);
+
+        if(is_null($r)){
+            $recipe = new Recipe;
+        } else {
+            $recipe = $r;
+        }
+
+        $recipe->setUuid($data['recipe']['uuid']);
+        $recipe->setLabel($data['recipe']['label']);
+        $recipe->setDescription($data['recipe']['description']);
+        $recipe->setTimestamp($data['recipe']['timestamp']);
+        if(is_null($data['recipe']['frequency'])){
+            // default frequency
+            $filesystem = new Filesystem();
+            if ($filesystem->exists($this->getParameter('app.shared_dir').'/params.yaml')) {
+                $values = Yaml::parseFile($this->getParameter('app.shared_dir').'/params.yaml');
+                $frequency = $values['frequency'];
+            } else {
+                $frequency = 2500;
+            }
+            $recipe->setFrequency($frequency);
+        } else {
+            $recipe->setFrequency($data['recipe']['frequency']);
+        }
+
+        if(!is_null($r)) {
+            foreach ($recipe->getIngredients() as $ingredient) {
+                $em->remove($ingredient);
+            }
+        }
+
+        foreach ($data['recipe']['ingredients'] as $i) {
+
+            $led = $this->getDoctrine()->getRepository(Led::class)->findOneBy(
+                array(
+                    "wavelength" => $i['led']['wavelength'],
+                    "type" => $i['led']['type'],
+                    "manufacturer" => $i['led']['manufacturer']
+                )
+            );
+
+            if(is_null($led)) {
+                $led = new Led;
+                $led->setWavelength($i['led']['wavelength']);
+                $led->setType($i['led']['type']);
+                $led->setManufacturer($i['led']['manufacturer']);
+                $em->persist($led);
+            }
+
+            $ingredient = new Ingredient;
+            $ingredient->setLed($led);
+            $ingredient->setLevel($i['level']);
+            $ingredient->setPwmStart($i['pwm_start']);
+            $ingredient->setPwmStop($i['pwm_stop']);
+            $em->persist($ingredient);
+            $recipe->addIngredient($ingredient);
+        }
+
+        if(is_null($r)) {
+            $em->persist($recipe);
+        }
+        
+        $em->flush();
+
+        return new Response(
+            'Recipe '.$recipe->getLabel().' successfully updated ',
+            Response::HTTP_OK,
+            ['content-type' => 'text/html']
+        );
+    }
+
+    /**
+     * @Route("/remote/update/program", name="update-program-from-remote")
+     */
+    public function updateProgramFromRemote(Request $request)
+    {
+        $data = json_decode($request->getContent(), true);
+
+        $em = $this->getDoctrine()->getManager();
+
+        $p = $this->getDoctrine()->getRepository(Recipe::class)->findOneByUuid($data['program']['uuid']);
+
+        if(is_null($p)){
+            $program = new Program;
+        } else {
+            $program = $p;
+        }
+
+        $program->setUuid($data['program']['uuid']);
+        $program->setLabel($data['program']['label']);
+        $program->setDescription($data['program']['description']);
+        $program->setTimestamp($data['program']['timestamp']);
+        
+
+        if(!is_null($p)) {
+            foreach ($program->getSteps() as $step) {
+                $em->remove($step);
+            }
+        }
+
+        foreach ($data['program']['steps'] as $s) {
+            $step = new Step;
+            $step->setType($s['type']);
+            $step->setRank($s['rank']);
+            $step->setValue($s['value']);
+            if(!is_null($s['recipe'])){
+                $recipe = $this->getDoctrine()->getRepository(Recipe::class)->findOneBy(array('uuid' => $s['recipe']['uuid']));
+                $step->setRecipe($recipe);
+            }
+            $em->persist($step);
+            $program->addStep($step);
+        }
+
+        if(is_null($p)) {
+            $em->persist($program);
+        }
+        
+        $em->flush();
+
+        return new Response(
+            'Recipe '.$program->getLabel().' successfully updated ',
             Response::HTTP_OK,
             ['content-type' => 'text/html']
         );
