@@ -3,6 +3,9 @@ Ajouter netplan.yaml au bon endroit
 autoriser ssh
 sudo sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 
+# set time zone
+sudo dpkg-reconfigure tzdata
+
 sudo apt update && sudo apt upgrade
 sudo apt install nginx sqlite3 cmdtest apache2-utils composer php7.4-cli php7.4-fpm php7.4-sqlite3 php7.4-xml php7.4-curl php7.4-mbstring
 
@@ -188,5 +191,31 @@ sudo openvpn /etc/openvpn/lumiatecvpn.conf
 sudo ip rule add from $(ip route get 1 | grep -Po '(?<=src )(\S+)') table 128
 sudo ip route add table 128 to $(ip route get 1 | grep -Po '(?<=src )(\S+)')/32 dev $(ip -4 route ls | grep default | grep -Po '(?<=dev )(\S+)')
 sudo ip route add table 128 default via $(ip -4 route ls | grep default | grep -Po '(?<=via )(\S+)')
+
+
+#https://obrienlabs.net/setup-kiosk-ubuntu-chromium/
+sudo apt-get install -y chromium-browser unclutter xdotool
+sudo apt install lightdm
+sudo adduser kiosk
+sudo nano /etc/lightdm/lightdm.conf
+
+	[SeatDefaults]
+	autologin-user=kiosk
+	autologin-user-timeout=0
+	user-session=ubuntu
+	greeter-session=unity-greeter
+
+sudo nano /etc/lightdm/lightdm.conf.d/50-myconfig.conf
+
+	[SeatDefaults]
+	autologin-user=kiosk
+
+# rotation de l'écran
+sudo nano /boot/firmware/usercfg.txt
+
+	display_rotate=2
+
+
+
 
 
