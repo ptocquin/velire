@@ -44,7 +44,6 @@ use App\Form\IngredientType;
 use App\Form\LuminaireType;
 use App\Form\RunType;
 
-
 class MainController extends Controller
 {
     /**
@@ -52,7 +51,6 @@ class MainController extends Controller
      */
     public function index(Request $request)
     {
-
         $today = new \DateTime();
         $cluster_repo = $this->getDoctrine()->getRepository(Cluster::class);
         $run_repo = $this->getDoctrine()->getRepository(Run::class);
@@ -688,6 +686,7 @@ class MainController extends Controller
         } else {
             $frequency = 2500;
         }
+        $recipe->setTimestamp(time());
         $recipe->setFrequency($frequency);
         $recipe->setUuid($uuid);
         foreach ($leds as $led) {
@@ -721,6 +720,7 @@ class MainController extends Controller
     {
         $em = $this->getDoctrine()->getManager();
 
+        $recipe->setTimestamp(time());
         $form = $this->createForm(RecipeType::class, $recipe);
         $form->handleRequest($request);
 
@@ -990,7 +990,7 @@ class MainController extends Controller
     	$cluster = $this->getDoctrine()->getRepository(Cluster::class)->findOneByLabel($c);
     	// Compter les clusters existants
 		$cluster_number = count($this->getDoctrine()->getRepository(Cluster::class)->findAll());
-    	if (count($cluster) == 0) {
+    	if (is_null($cluster)) {
             $new_cluster = new Cluster;
             $new_cluster->setLabel($c);
             $new_cluster->addLuminaire($luminaire);

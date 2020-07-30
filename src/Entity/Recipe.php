@@ -64,6 +64,12 @@ class Recipe
      */
     private $frequency;
 
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"recipe","program"})
+     */
+    private $timestamp;
+
     public function __toString()
     {
         return $this->label;
@@ -198,6 +204,18 @@ class Recipe
     public function setFrequency(?float $frequency): self
     {
         $this->frequency = $frequency;
+
+        return $this;
+    }
+
+    public function getTimestamp(): ?int
+    {
+        return $this->timestamp;
+    }
+
+    public function setTimestamp(?int $timestamp): self
+    {
+        $this->timestamp = $timestamp;
 
         return $this;
     }

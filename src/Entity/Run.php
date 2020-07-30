@@ -77,6 +77,12 @@ class Run
      */
     private $uuid;
 
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"run"})
+     */
+    private $timestamp;
+
     public function __construct()
     {
         $this->steps = new ArrayCollection();
@@ -210,6 +216,18 @@ class Run
     public function setUuid(?string $uuid): self
     {
         $this->uuid = $uuid;
+
+        return $this;
+    }
+
+    public function getTimestamp(): ?int
+    {
+        return $this->timestamp;
+    }
+
+    public function setTimestamp(?int $timestamp): self
+    {
+        $this->timestamp = $timestamp;
 
         return $this;
     }
