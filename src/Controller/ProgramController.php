@@ -568,6 +568,7 @@ class ProgramController extends AbstractController
             $recipe->setUuid($data['recipe']['uuid']);
             $recipe->setLabel($data['recipe']['label']);
             $recipe->setDescription($data['recipe']['description']);
+            $recipe->setTimestamp($data['recipe']['timestamp']);
             if(is_null($data['recipe']['frequency'])){
                 // default frequency
                 $filesystem = new Filesystem();
@@ -578,6 +579,8 @@ class ProgramController extends AbstractController
                     $frequency = 2500;
                 }
                 $recipe->setFrequency($frequency);
+            } else {
+                $recipe->setFrequency($data['recipe']['frequency']);
             }
 
             foreach ($data['recipe']['ingredients'] as $i) {
@@ -609,7 +612,45 @@ class ProgramController extends AbstractController
 
             $msg = "null";
         } else {
-            $msg = "not null";
+            if($recipe->getTimestamp() < $data['recipe']['timestamp']) {
+                $recipe->setLabel($data['recipe']['label']);
+                $recipe->setDescription($data['recipe']['description']);
+                $recipe->setTimestamp($data['recipe']['timestamp']);
+                foreach ($recipe->getIngredients() as $ingredient) {
+                    $em->remove($ingredient);
+                }
+
+                foreach ($data['recipe']['ingredients'] as $i) {
+                    $led = $this->getDoctrine()->getRepository(Led::class)->findOneBy(
+                        array(
+                            "wavelength" => $i['led']['wavelength'],
+                            "type" => $i['led']['type'],
+                            "manufacturer" => $i['led']['manufacturer']
+                        )
+                    );
+
+                    if(is_null($led)) {
+                        $led = new Led;
+                        $led->setWavelength($i['led']['wavelength']);
+                        $led->setType($i['led']['type']);
+                        $led->setManufacturer($i['led']['manufacturer']);
+                        $em->persist($led);
+                    }
+                    $ingredient = new Ingredient;
+                    $ingredient->setLed($led);
+                    $ingredient->setLevel($i['level']);
+                    $ingredient->setPwmStart($i['pwm_start']);
+                    $ingredient->setPwmStop($i['pwm_stop']);
+                    $em->persist($ingredient);
+                    $recipe->addIngredient($ingredient);
+                }
+                $em->persist($recipe);
+            }
+            if($recipe->getTimestamp() > $data['recipe']['timestamp']) {
+                
+                    #TODO message erreur  
+                }
+            }
         }
 
         $commands = [];
