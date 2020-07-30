@@ -90,7 +90,7 @@ class MainController extends Controller
         $process = new Process('git fetch origin master 2>/dev/null && git diff --shortstat origin/master -- changelog | wc -l');
         $process->setTimeout(3600);
         $process->run();
-        if ($process->getOutput() > 0) {
+        if (strval($process->getOutput()) > 0) {
             $to_update = "true";
         }
 
