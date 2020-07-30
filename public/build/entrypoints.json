@@ -2,13 +2,8 @@
   "entrypoints": {
     "app": {
       "js": [
-<<<<<<< Updated upstream
         "/build/runtime.e9dea5e6.js",
         "/build/app.42f80326.js"
-=======
-        "/build/runtime.js",
-        "/build/app.js"
->>>>>>> Stashed changes
       ],
       "css": [
         "/build/app.css"
