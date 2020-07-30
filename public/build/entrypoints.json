@@ -3,22 +3,22 @@
     "app": {
       "js": [
         "/build/runtime.e9dea5e6.js",
-        "/build/app.5b8aa367.js"
+        "/build/app.42f80326.js"
       ],
       "css": [
-        "/build/app.fac7f5a4.css"
+        "/build/app.css"
       ]
     },
     "graph": {
       "js": [
-        "/build/runtime.e9dea5e6.js",
-        "/build/graph.9bb6f7ef.js"
+        "/build/runtime.js",
+        "/build/graph.js"
       ]
     },
     "test": {
       "js": [
-        "/build/runtime.e9dea5e6.js",
-        "/build/test.e5784386.js"
+        "/build/runtime.js",
+        "/build/test.js"
       ]
     }
   }
