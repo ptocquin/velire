@@ -1095,7 +1095,11 @@ class ProgramController extends AbstractController
 
         if(is_null($cluster)){
             $cluster = new Cluster();
-            $cluster->setLabel($data['cluster']['label']);
+            if(is_null($data['cluster']['label'])){
+                $cluster->setLabel(1);
+            } else {
+                $cluster->setLabel($data['cluster']['label']);
+            }
             $em->persist($cluster);
             $em->flush();
         }
