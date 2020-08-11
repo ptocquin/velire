@@ -1122,4 +1122,39 @@ class ProgramController extends AbstractController
             ['content-type' => 'text/html']
         ); 
     }
+
+    /**
+     * @Route("/remote/luminaire/unlink", name="unlink-luminaire-from-remote")
+     */
+    public function unlinkLuminaireFromRemote(Request $request)
+    {
+        $em = $this->getDoctrine()->getManager();
+
+        $data = json_decode($request->getContent(), true);
+
+        //data: {"address":30,"serial":"0x12B0001E","ligne":2,"colonne":3,"cluster":{"label":1}}
+
+        $luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->findOneByAddress($data['address']);
+
+        if(!is_null($luminaire)){
+            $em->remove($luminaire);
+            $em->flush();
+
+            return new Response(
+                'Lighting '.$luminaire->getAddress().' correctly unlinked',
+                Response::HTTP_OK,
+                ['content-type' => 'text/html']
+            );
+
+        } else {
+            return new Response(
+                $data['address'].' > Lighting not correctly unlinked',
+                Response::HTTP_NO_CONTENT,
+                ['content-type' => 'text/html']
+            );
+        }
+        
+
+         
+    }
 }
