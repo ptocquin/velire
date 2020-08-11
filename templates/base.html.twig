@@ -114,6 +114,29 @@
                 </div>
                 <div class="col-md-10 pb-5 ">
                 <main role="main">
+                    <div class="modal fade" id="modal-network">
+                      <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h4 class="modal-title">Network connexions</h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                              <span aria-hidden="true">&times;</span>
+                              <span class="sr-only">Close</span>
+                            </button>
+                          </div>
+                          <div class="modal-body">
+                            <ul>
+                              <li>Fixed IP: {{ parameters.getPublicIP }}</li>
+                              <li>Wifi: {{ parameters.getWlanIP }}</li>
+                              <li>VPN: {{ parameters.getVpnIP }}</li>
+                            </ul>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                          </div>
+                        </div><!-- /.modal-content -->
+                      </div><!-- /.modal-dialog -->
+                    </div><!-- /.modal -->
                   <nav id="navbar-scroll" class="navbar navbar-dark bg-dark fixed-bottom">
                     <ul class="nav">
                       <li class="nav-item">
@@ -123,7 +146,8 @@
                         <a id="time"href="#" class="nav-link text-light"></a>
                       </li>
                       <li class="nav-item">
-                        <a href="#" class="nav-link text-light">Public IP: {{ parameters.getPublicIP }} / VPN: {{ parameters.getVpnIP }}</a>
+                        {# <a href="#" class="nav-link text-light"></a>  #}
+                        <a href="#" class="nav-link text-light fa fa-wifi" data-toggle="modal" data-target="#modal-network"></a>
                       </li>
                       <li class="nav-item">
                         <a class="nav-link text-light" href="{{ path('update-log') }}"><span data-feather="refresh-cw"></span></a>
