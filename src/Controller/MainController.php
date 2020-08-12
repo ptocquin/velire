@@ -44,6 +44,8 @@ use App\Form\IngredientType;
 use App\Form\LuminaireType;
 use App\Form\RunType;
 
+use App\Services\Logs;
+
 class MainController extends Controller
 {
     /**
@@ -1042,7 +1044,7 @@ class MainController extends Controller
     /**
      * @Route("/control/{id}/off", name="set-cluster-off")
      */
-    public function setClusterOff(Request $request, Cluster $cluster)
+    public function setClusterOff(Request $request, Logs $logs, Cluster $cluster)
     {
         
         $session = new Session();
@@ -1065,7 +1067,9 @@ class MainController extends Controller
 
         $output = $process->getOutput();
 
-        return $this->redirectToRoute('update-log');
+        $logs->updateLogs();
+
+        return $this->redirectToRoute('home');
     }
 
     /**

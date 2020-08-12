@@ -164,6 +164,7 @@ sudo chmod -R 777 var/cache var/log
 	sqlite3 $DATABASE_URL "insert into luminaire_status (code,message) values (99, 'Not detected');"
 
 	echo "* * * * * /usr/bin/php /var/www/lumiatec/bin/console app:check-run > /dev/null" | crontab -
+	echo "*/5 * * * * /usr/bin/php /var/www/lumiatec/bin/console app:log > /dev/null" | crontab -
 
 #sudo chmod a+x /usr/local/bin/init-lumiatec.sh
 #init-lumiatec.sh
@@ -214,8 +215,9 @@ echo raspitest > /etc/openvpn/lumiatec.txt
 sudo openvpn /etc/openvpn/lumiatecvpn.conf
 
 # Pour utiliser des liens symboliques vers certificats: https://www.linuxquestions.org/questions/linux-software-2/openvpn-won%27t-work-with-keys-in-different-directory-4175637168/
-sudo nano /lib/systemd/system/openvpn@.service
-#ProtectHome=true to ProtectHome=read-only
+# sudo nano /lib/systemd/system/openvpn@.service
+# ProtectHome=true to ProtectHome=read-only
+sudo sed -i 's/ProtectHome=true/ProtectHome=read-only/' /lib/systemd/system/openvpn@.service
 
 
 
