@@ -31,11 +31,17 @@ use App\Entity\Recipe;
 use App\Entity\Luminaire;
 use App\Entity\Ingredient;
 use App\Entity\Led;
+use App\Entity\Pcb;
+use App\Entity\Channel;
+use App\Entity\LuminaireStatus;
+
 
 use App\Form\ProgramType;
 use App\Form\StepType;
 use App\Form\RunType;
 use App\Form\RunEditType;
+
+use App\Services\Logs;
 
 class ProgramController extends AbstractController
 {
@@ -320,7 +326,7 @@ class ProgramController extends AbstractController
     /**
      * @Route("/play/new/{id}", name="new-play")
      */
-    public function newPlay(Request $request, Cluster $cluster)
+    public function newPlay(Request $request, Logs $logs, Cluster $cluster)
     {        
         # Form to play
         $form = $this->createFormBuilder()
@@ -389,7 +395,10 @@ class ProgramController extends AbstractController
                     'Recipe '.$recipe->getLabel().' successfully started on cluster '.$cluster->getLabel()
                 );
             }
-            return $this->redirectToRoute('update-log');        
+            // return $this->redirectToRoute('update-log');  
+                $logs->updateLogs();   
+
+                return $this->redirectToRoute('home');     
         }
 
         return $this->render('control/new-play.html.twig', [
@@ -689,6 +698,9 @@ class ProgramController extends AbstractController
                 'Recipe '.$recipe->getLabel().' successfully started on cluster '.$cluster->getLabel()
             );
         }
+
+        $log = new Logs;
+        $log->updateLog();
 
         return new Response(
             'Recipe '.$recipe->getLabel().' successfully started on cluster '.$cluster->getLabel(),
@@ -1091,17 +1103,23 @@ class ProgramController extends AbstractController
         //data: {"address":30,"serial":"0x12B0001E","ligne":2,"colonne":3,"cluster":{"label":1}}
 
         $luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->findOneByAddress($data['address']);
-        $cluster = $this->getDoctrine()->getRepository(Cluster::class)->findOneByLabel($data['cluster']['label']);
 
-        if(is_null($cluster)){
-            $cluster = new Cluster();
-            if(is_null($data['cluster']['label'])){
+        if(is_null($data['cluster']['label'])){
+            $cluster = $this->getDoctrine()->getRepository(Cluster::class)->findOneByLabel(1);
+            if(is_null($cluster)){
+                $cluster = new Cluster();
                 $cluster->setLabel(1);
-            } else {
-                $cluster->setLabel($data['cluster']['label']);
+                $em->persist($cluster);
+                $em->flush();
             }
-            $em->persist($cluster);
-            $em->flush();
+        } else {
+            $cluster = $this->getDoctrine()->getRepository(Cluster::class)->findOneByLabel($data['cluster']['label']);
+            if(is_null($cluster)){
+                $cluster = new Cluster();
+                $cluster->setLabel($data['cluster']['label']);
+                $em->persist($cluster);
+                $em->flush();
+            }
         }
 
         if(is_null($luminaire)) {
@@ -1112,11 +1130,95 @@ class ProgramController extends AbstractController
             $luminaire->setColonne($data['colonne']);
             $luminaire->setCluster($cluster);
             $em->persist($luminaire);
+            $em->flush();
+
+
+            if($_SERVER['APP_ENV'] == 'prod') {
+                // Initialiser master/slave
+                // $spots = implode(" ", $data['found']);
+
+                // Interroger le réseau de luminaires
+                // !!!TODO!!! --address + liste des luminaires
+                $process = new Process($this->getParameter('app.velire_cmd').' -a '.$data['address'].' --get-info specs --quiet --json');
+                $process->setTimeout(3600);
+                $process->run();
+
+                // executes after the command finishes
+                if (!$process->isSuccessful()) {
+                    throw new ProcessFailedException($process);
+                }
+            } 
+
+            $data = json_decode($process->getOutput(), TRUE);
+
+            $luminaires = $data['specs']; //specs 
+
+            $i = 0;
+
+            foreach ($luminaires as $l) { 
+                $luminaire = $this->getDoctrine()->getRepository(Luminaire::class)->findOneByAddress($l['address']);
+
+                if(!is_null($luminaire)) {
+                    $i++;
+                    if(is_null($luminaire->getSerial())) {
+                        $luminaire->setSerial($l['SN']); // SN
+                        // récupérer firmware-version ? >> à ajouter dans la base de données
+                        // $em->persist($luminaire);
+                        foreach ($l['pcb-led'] as $key => $pcb) { // pcb-led
+                            $p = $this->getDoctrine()->getRepository(Pcb::class)->findOneBySerial($pcb["SN"]);
+                            if(is_null($p)){
+                                $p = new Pcb;
+                                $p->setCrc($pcb['desc']["crc"]); // desc > crc
+                                $p->setSerial($pcb["SN"]); // SN
+                                $p->setN($key); // c'est la clé.. comment on la récupère ?
+                                $p->setType($pcb["type"]);
+                                $em->persist($p);
+                                $luminaire->addPcb($p);
+                            }                        
+                        }
+                        $em->persist($luminaire);
+                        foreach ($l['pcb-led'][0]['desc']['channels'] as $key => $channel) { // dans desc > channels
+                            $c = new Channel;
+                            $c->setChannel($key); // c'est la clé.. comment on la récupère ?
+                            $c->setIPeek($channel["i_peek"]); // i_peek
+                            // $c->setPcb($channel["pcb"]);
+                            $c->setLuminaire($luminaire);
+                            // $em->persist($c);
+
+                            # Vérifie que la Led existe dans la base de données, sinon l'ajoute.
+                            $led = $this->getDoctrine()->getRepository(Led::class)->findOneBy(array(
+                                'wavelength' => $channel["wl"],
+                                'type' => $channel["col"], // col
+                                'manufacturer' => $channel["manuf"]));
+
+                            if ($led == null) {
+                                $le = new Led;
+                                $le->setWavelength($channel["wl"]);
+                                $le->setType($channel["col"]); // col
+                                $le->setManufacturer($channel["manuf"]);
+                                $em->persist($le);
+                                $em->flush();
+                                $c->setLed($le);
+                            } else {
+                                $c->setLed($led);
+                            }
+                            $em->persist($c);
+                        }
+                    }
+                }
+                
+            }
+
         } else {
             $luminaire->setLigne($data['ligne']);
             $luminaire->setColonne($data['colonne']);
             $luminaire->setCluster($cluster);
         }
+
+        $status_on = $this->getDoctrine()->getRepository(LuminaireStatus::class)->findOneByCode(0);
+        $status_off = $this->getDoctrine()->getRepository(LuminaireStatus::class)->findOneByCode(99);
+        $luminaire->removeStatus($status_off);
+        $luminaire->addStatus($status_on);
 
         $em->flush();
 

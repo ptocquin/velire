@@ -36,15 +36,17 @@ class ChannelRepository extends ServiceEntityRepository
     }
     */
 
-    /*
-    public function findOneBySomeField($value): ?Channel
+    
+    public function findOneByChannelAndLuminaire($channel, $luminaire): ?Channel
     {
         return $this->createQueryBuilder('c')
-            ->andWhere('c.exampleField = :val')
-            ->setParameter('val', $value)
+            ->andWhere('c.channel = :channel')
+            ->andWhere('c.luminaire = :luminaire')
+            ->setParameter('channel', $channel)
+            ->setParameter('luminaire', $luminaire)
             ->getQuery()
             ->getOneOrNullResult()
         ;
     }
-    */
+    
 }

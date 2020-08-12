@@ -54,7 +54,7 @@ class Parameters
 
     public function getWlanIP()
     {
-        $process = new Process("ip -4 -o addr show wlanO | awk '{print $4}' | cut -d/ -f1");
+        $process = new Process("ip -4 -o addr show wlan0 | awk '{print $4}' | cut -d/ -f1");
         $process->run();
         $output = $process->getOutput();
         return $output;

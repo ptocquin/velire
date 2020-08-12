@@ -99,7 +99,7 @@
                                   <li>Channels on:</li>
                                   <ol>
                                     {% for channel in log_repo.getLuminaireLastLog(luminaire.id)[0].value['channels_on'] %}
-                                        <li>{{ channel['color'] }} => {{ channel['intensity'] }}%</li>
+                                        <li>{{ channel['color'] }} => {{ channel['intensity']|round(1) }}%</li>
                                     {% endfor %}
                                   </ol>
                                 </ul>
@@ -149,7 +149,8 @@
               {% endfor %}
               </div>
             {% endfor %}
-          {% endif %}</div>
+          {% endif %}
+        </div>
     </div>
     <div class="tab-pane fade" id="unmapped" role="tabpanel" aria-labelledby="unmapped-tab">
       <div id="unmapped_lightings">
@@ -211,7 +212,7 @@
                                   <li>Channels on:</li>
                                   <ol>
                                     {% for channel in log_repo.getLuminaireLastLog(luminaire.id)[0].value['channels_on'] %}
-                                        <li>{{ channel['color'] }} => {{ channel['intensity'] }}%</li>
+                                        <li>{{ channel['color'] }} => {{ channel['intensity']|round(1) }}%</li>
                                     {% endfor %}
                                   </ol>
                                 </ul>
@@ -257,7 +258,8 @@
                     </div><!-- /.modal -->
                 </div>
               </div>
-            {% endfor %}</div>
+            {% endfor %}
+          </div>
       </div>
     </div>
     <div class="tab-pane fade" id="all" role="tabpanel" aria-labelledby="all-tab">
@@ -320,7 +322,7 @@
                                   <li>Channels on:</li>
                                   <ol>
                                     {% for channel in log_repo.getLuminaireLastLog(luminaire.id)[0].value['channels_on'] %}
-                                        <li>{{ channel['color'] }} => {{ channel['intensity'] }}%</li>
+                                        <li>{{ channel['color'] }} => {{ channel['intensity']|round(1) }}%</li>
                                     {% endfor %}
                                   </ol>
                                 </ul>
@@ -366,7 +368,8 @@
                     </div><!-- /.modal -->
                 </div>
               </div>
-            {% endfor %}</div>
+            {% endfor %}
+          </div>
       </div>
     </div>
   </div>
