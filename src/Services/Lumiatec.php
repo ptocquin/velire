@@ -100,16 +100,11 @@ class Lumiatec
             $process->run();
 
             if (!$process->isSuccessful()) {
-                //throw new ProcessFailedException($process);
-                $session->getFlashBag()->add(
-                        'error',
-                        $error_msg
-                    );
+                $msg = $error_msg;
             } else {
-                $session->getFlashBag()->add(
-                    'info',
-                    $success_msg
-                );
+                $msg = $success_msg;
             }
+
+            return $msg;
     }
 }
