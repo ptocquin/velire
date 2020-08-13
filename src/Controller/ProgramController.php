@@ -652,7 +652,7 @@ class ProgramController extends AbstractController
                     $em->persist($ingredient);
                     $recipe->addIngredient($ingredient);
                 }
-                $em->persist($recipe);
+                $em->flush();
             }
             if($recipe->getTimestamp() > $data['recipe']['timestamp']) {
                 
@@ -677,7 +677,7 @@ class ProgramController extends AbstractController
             $list .= $luminaire->getAddress()." ";
         }
 
-        $args = $list.' --exclusive --set-power 1 --set-freq '.$frequency.' --set-colors '.implode(" ", $commands);
+        $args = $list.' --exclusive --set-power 1 --set-freq '.$recipe->getFrequency().' --set-colors '.implode(" ", $commands);
         $success_msg = 'Recipe '.$recipe->getLabel().' successfully started on cluster '.$cluster->getLabel();
         $error_msg = 'For a unknown reason, the recipe was not started';
 
