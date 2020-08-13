@@ -97,6 +97,9 @@ sudo git clone https://github.com/ptocquin/velire.git lumiatec
 cd lumiatec
 #sudo cp .env.dist .env
 sudo sed  -i 's/$HOME/\/home\/ubuntu/' .env
+sudo chown -R :ubuntu .
+sudo chown -R www-data public/
+sudo chmod -R g+w .
 #sudo nano .env
 
 	# This file is a "template" of which env vars need to be defined for your application
@@ -165,7 +168,7 @@ sudo chmod -R 777 var/cache var/log
 	sqlite3 $DATABASE_URL "insert into luminaire_status (code,message) values (99, 'Not detected');"
 
 	echo "* * * * * /usr/bin/php /var/www/lumiatec/bin/console app:check-run > /dev/null" | crontab -
-	echo "*/5 * * * * /usr/bin/php /var/www/lumiatec/bin/console app:log > /dev/null" | crontab -
+	echo -e "$(crontab -l)\n*/5 * * * * /usr/bin/php /var/www/lumiatec/bin/console app:log > /dev/null" | crontab -
 
 #sudo chmod a+x /usr/local/bin/init-lumiatec.sh
 #init-lumiatec.sh
