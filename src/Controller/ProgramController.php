@@ -613,6 +613,18 @@ class ProgramController extends AbstractController
                 foreach ($recipe->getIngredients() as $ingredient) {
                     $em->remove($ingredient);
                 }
+                                // default frequency
+                $filesystem = new Filesystem();
+                    if ($filesystem->exists($this->getParameter('app.shared_dir').'/params.yaml')) {
+                        $values = Yaml::parseFile($this->getParameter('app.shared_dir').'/params.yaml');
+                        $frequency = $values['frequency'];
+                    } else {
+                        $frequency = 2500;
+                    }
+                    $recipe->setFrequency($frequency);
+                } else {
+                    $recipe->setFrequency($data['recipe']['frequency']);
+                }
 
                 foreach ($data['recipe']['ingredients'] as $i) {
                     $led = $this->getDoctrine()->getRepository(Led::class)->findOneBy(
