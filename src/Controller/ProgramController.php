@@ -681,11 +681,11 @@ class ProgramController extends AbstractController
         $success_msg = 'Recipe '.$recipe->getLabel().' successfully started on cluster '.$cluster->getLabel();
         $error_msg = 'For a unknown reason, the recipe was not started';
 
-        $lumiatec->sendCmd($args, $success_msg, $error_msg);
+        $msg = $lumiatec->sendCmd($args, $success_msg, $error_msg);
         $lumiatec->updateLogs();
 
         return new Response(
-            'Recipe '.$recipe->getLabel().' successfully started on cluster '.$cluster->getLabel(),
+            $msg,
             Response::HTTP_OK,
             ['content-type' => 'text/html']
         );
