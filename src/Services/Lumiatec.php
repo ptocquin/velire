@@ -10,6 +10,7 @@ use Symfony\Component\Process\Process;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 
 use App\Entity\Luminaire;
 use App\Entity\Channel;
