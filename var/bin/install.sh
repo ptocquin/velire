@@ -96,7 +96,7 @@ cd /var/www/
 sudo git clone https://github.com/ptocquin/velire.git lumiatec
 cd lumiatec
 #sudo cp .env.dist .env
-sudo sed  -i 's/$HOME/\/home\/ubuntu/' .env
+# sudo sed  -i 's/$HOME/\/home\/ubuntu/' .env
 sudo chown -R :ubuntu .
 sudo chown -R www-data public/
 sudo chmod -R g+w .
