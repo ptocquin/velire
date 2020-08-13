@@ -677,27 +677,11 @@ class ProgramController extends AbstractController
             $list .= $luminaire->getAddress()." ";
         }
 
-        // Utiliser les info dans la base de données + set-colors
-        // !!! TODO !!!
-        $process = new Process($this->getParameter('app.velire_cmd').$list.' --exclusive --set-power 1 --set-freq '.$recipe->getFrequency().' --set-colors '.implode(" ", $commands));
-        $process->run();
+        $args = $list.' --exclusive --set-power 1 --set-freq '.$frequency.' --set-colors '.implode(" ", $commands);
+        $success_msg = 'Recipe '.$recipe->getLabel().' successfully started on cluster '.$cluster->getLabel();
+        $error_msg = 'For a unknown reason, the recipe was not started';
 
-        // executes after the command finishes
-        if (!$process->isSuccessful()) {
-            //throw new ProcessFailedException($process);
-            $this->addFlash(
-                    'error',
-                    'For a unknown reason, the recipe was not started'
-                );
-        } else {
-                        // add flash messages
-            $this->addFlash(
-                'info',
-                // $process->getOutput()
-                'Recipe '.$recipe->getLabel().' successfully started on cluster '.$cluster->getLabel()
-            );
-        }
-
+        $lumiatec->sendCmd($args, $success_msg, $error_msg);
         $lumiatec->updateLogs();
 
         return new Response(
