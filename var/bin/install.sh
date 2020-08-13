@@ -95,7 +95,8 @@ sudo nginx -s reload
 cd /var/www/
 sudo git clone https://github.com/ptocquin/velire.git lumiatec
 cd lumiatec
-sudo cp .env.dist .env
+#sudo cp .env.dist .env
+sudo sed  -i 's/$HOME/\/home\/ubuntu/' .env
 #sudo nano .env
 
 	# This file is a "template" of which env vars need to be defined for your application
