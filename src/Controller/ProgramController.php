@@ -262,6 +262,9 @@ class ProgramController extends AbstractController
                         $new_step->setStatus(0);
                         $em->persist($new_step);
                         $em->flush();
+
+                        // dd($new_step->getCommand());
+
                         $step_index = $step_index + 1;
                         // die(print_r($start));
                         break;
@@ -975,6 +978,17 @@ class ProgramController extends AbstractController
                     list($hours, $minutes) = explode(':', $step->getValue(), 2);
                     $step_duration = $minutes * 60 + $hours * 3600;
                     $commands = [];
+                    $frequency = $step->getRecipe()->getFrequency();
+                    if(is_null($frequency)) {
+                        // default frequency
+                        $filesystem = new Filesystem();
+                        if ($filesystem->exists($this->getParameter('app.shared_dir').'/params.yaml')) {
+                            $values = Yaml::parseFile($this->getParameter('app.shared_dir').'/params.yaml');
+                            $frequency = $values['frequency'];
+                        } else {
+                            $frequency = 2500;
+                        }
+                    }
                     $ingredients = $step->getRecipe()->getIngredients();
                     foreach ($ingredients as $ingredient) {
                         $level = $ingredient->getLevel();
@@ -982,7 +996,7 @@ class ProgramController extends AbstractController
                         $color = $led->getType()."_".$led->getWavelength();
                         $commands[] = $color." ".$level." ".$ingredient->getPwmStart()." ".$ingredient->getPwmStop();
                     }
-                    $cmd = $this->getParameter('app.velire_cmd').$list.' --exclusive --set-power 1 --set-freq '.$recipe->getFrequency().' --set-colors '.implode(" ", $commands);
+                    $cmd = $this->getParameter('app.velire_cmd').$list.' --exclusive --set-power 1 --set-freq '.$frequency.' --set-colors '.implode(" ", $commands);
                     $start = $start->add(new \DateInterval('PT'.$step_duration.'S'));
                     $new_step = new RunStep();
                     $new_step->setRun($run);
