@@ -41,7 +41,7 @@ use App\Form\StepType;
 use App\Form\RunType;
 use App\Form\RunEditType;
 
-use App\Services\Logs;
+use App\Services\Lumiatec;
 
 class ProgramController extends AbstractController
 {
@@ -326,7 +326,7 @@ class ProgramController extends AbstractController
     /**
      * @Route("/play/new/{id}", name="new-play")
      */
-    public function newPlay(Request $request, Logs $logs, Cluster $cluster)
+    public function newPlay(Request $request, Lumiatec $lumiatec, Cluster $cluster)
     {        
         # Form to play
         $form = $this->createFormBuilder()
@@ -367,38 +367,20 @@ class ProgramController extends AbstractController
                 $commands[] = $color." ".$level." ".$ingredient->getPwmStart()." ".$ingredient->getPwmStop();
             }
 
-            // die(print_r($commands));
-
             $luminaires = $cluster->getLuminaires();
             $list = " --address ";
             foreach ($luminaires as $luminaire) {
                 $list .= $luminaire->getAddress()." ";
             }
 
-            // Utiliser les info dans la base de données + set-colors
-            // !!! TODO !!!
-            $process = new Process($this->getParameter('app.velire_cmd').$list.' --exclusive --set-power 1 --set-freq '.$frequency.' --set-colors '.implode(" ", $commands));
-            $process->run();
+            $args = $list.' --exclusive --set-power 1 --set-freq '.$frequency.' --set-colors '.implode(" ", $commands);
+            $success_msg = 'Recipe '.$recipe->getLabel().' successfully started on cluster '.$cluster->getLabel();
+            $error_msg = 'For a unknown reason, the recipe was not started';
 
-            // executes after the command finishes
-            if (!$process->isSuccessful()) {
-                //throw new ProcessFailedException($process);
-                $this->addFlash(
-                        'error',
-                        'For a unknown reason, the recipe was not started'
-                    );
-            } else {
-                            // add flash messages
-                $this->addFlash(
-                    'info',
-                    // $process->getOutput()
-                    'Recipe '.$recipe->getLabel().' successfully started on cluster '.$cluster->getLabel()
-                );
-            }
-            // return $this->redirectToRoute('update-log');  
-                $logs->updateLogs();   
+            $lumiatec->sendCmd($args, $success_msg, $error_msg);
+            $lumiatec->updateLogs();   
 
-                return $this->redirectToRoute('home');     
+            return $this->redirectToRoute('home');     
         }
 
         return $this->render('control/new-play.html.twig', [
@@ -564,7 +546,7 @@ class ProgramController extends AbstractController
     /**
      * @Route("/remote/play", name="play-from-remote")
      */
-    public function playFromRemote(Request $request)
+    public function playFromRemote(Request $request, Lumiatec $lumiatec)
     {
         $data = json_decode($request->getContent(), true);
 
@@ -699,8 +681,7 @@ class ProgramController extends AbstractController
             );
         }
 
-        $log = new Logs;
-        $log->updateLog();
+        $lumiatec->updateLogs();
 
         return new Response(
             'Recipe '.$recipe->getLabel().' successfully started on cluster '.$cluster->getLabel(),
@@ -848,7 +829,7 @@ class ProgramController extends AbstractController
     /**
      * @Route("/remote/shutdown", name="shutdown-from-remote")
      */
-    public function shutdownFromRemote(Request $request)
+    public function shutdownFromRemote(Request $request, Lumiatec $lumiatec)
     {
         $data = json_decode($request->getContent(), true);
 
@@ -869,6 +850,8 @@ class ProgramController extends AbstractController
         if (!$process->isSuccessful()) {
             throw new ProcessFailedException($process);
         }
+
+        $lumiatec->updateLogs();
 
         return new Response(
             'Cluster '.$cluster->getLabel().' has been switched off.',

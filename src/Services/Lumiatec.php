@@ -1,5 +1,5 @@
 <?php
-// src/Service/Parameters.php
+// src/Services/Utils.php
 namespace App\Services;
 
 
@@ -8,13 +8,15 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Process\Process;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 
 use App\Entity\Luminaire;
 use App\Entity\Channel;
 use App\Entity\Log;
 
 
-class Logs
+class Lumiatec
 {
     private $params;
     private $em;
@@ -86,5 +88,27 @@ class Logs
         }
 
         $this->em->flush();
+    }
+
+    public function sendCmd($args, $success_msg="", $error_msg="")
+    {
+            $session = new Session;
+
+            $cmd = $this->params->get('app.velire_cmd').$args;
+            $process = new Process($cmd);
+            $process->run();
+
+            if (!$process->isSuccessful()) {
+                //throw new ProcessFailedException($process);
+                $session->getFlashBag()->add(
+                        'error',
+                        $error_msg
+                    );
+            } else {
+                $session->getFlashBag()->add(
+                    'info',
+                    $success_msg
+                );
+            }
     }
 }

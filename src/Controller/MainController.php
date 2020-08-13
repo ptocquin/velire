@@ -44,7 +44,7 @@ use App\Form\IngredientType;
 use App\Form\LuminaireType;
 use App\Form\RunType;
 
-use App\Services\Logs;
+use App\Services\Lumiatec;
 
 class MainController extends Controller
 {
@@ -1044,7 +1044,7 @@ class MainController extends Controller
     /**
      * @Route("/control/{id}/off", name="set-cluster-off")
      */
-    public function setClusterOff(Request $request, Logs $logs, Cluster $cluster)
+    public function setClusterOff(Request $request, Lumiatec $lumiatec, Cluster $cluster)
     {
         
         $session = new Session();
@@ -1067,7 +1067,7 @@ class MainController extends Controller
 
         $output = $process->getOutput();
 
-        $logs->updateLogs();
+        $lumiatec->updateLogs();
 
         return $this->redirectToRoute('home');
     }

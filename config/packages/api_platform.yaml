@@ -2,3 +2,9 @@ api_platform:
   allow_plain_identifiers: true
   mapping:
     paths: ['%kernel.project_dir%/src/Entity']
+  collection:
+      exists_parameter_name: exists
+      order: ASC
+      order_parameter_name: order
+      pagination:
+          enabled: false
