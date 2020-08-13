@@ -44,7 +44,7 @@ class ClusterRepository extends ServiceEntityRepository
         $qb->leftJoin('c.runs', 'r')
             ->where('c.id = :id')
             ->andWhere('r.start <= :today')
-            ->andWhere('r.date_end >= :today')
+            ->andWhere('r.dateend >= :today')
             // ->andWhere('r.status is null')
             // ->orWhere('r.status <> :status')
             // ->andWhere($qb->expr()->neq('r.status', ':status'))
