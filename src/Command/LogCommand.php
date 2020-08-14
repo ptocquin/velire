@@ -64,9 +64,9 @@ class LogCommand extends Command
         
         // Interroger le réseau de luminaires
         $luminaires = $luminaire_repo->findAll();
-        $opt = "";
+        $opt = [];
         foreach ($luminaires as $l) {
-            $opt = $l->getAddress().' ';
+            $opt[] = $l->getAddress().' ';
         }
 
         $cmd = $this->params->getPythonCmd(). ' -a '.$opt.' --get-info --json';
