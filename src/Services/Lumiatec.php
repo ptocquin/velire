@@ -187,7 +187,7 @@ class Lumiatec
                         $commands[] = $color." ".$level." ".$ingredient->getPwmStart()." ".$ingredient->getPwmStop();
                     }
                     $cmd = $this->params->get('app.velire_cmd').$list.' --exclusive --set-power 1 --set-freq '.$frequency.' --set-colors '.implode(" ", $commands);
-                    $start = $start->add(new \DateInterval('PT'.$step_duration.'S'));
+                    
                     $new_step = new RunStep();
                     $new_step->setRun($run);
                     $new_step->setStart($start);
@@ -195,17 +195,14 @@ class Lumiatec
                     $new_step->setStatus(0);
                     $this->em->persist($new_step);
                     $this->em->flush();
-
-                    // dd($new_step->getCommand());
-
+                    $start = $start->add(new \DateInterval('PT'.$step_duration.'S'));
                     $step_index = $step_index + 1;
-                    // die(print_r($start));
                     break;
                 case "off":
                     list($hours, $minutes) = explode(':', $step->getValue(), 2);
                     $step_duration = $minutes * 60 + $hours * 3600;
                     $cmd = $this->params->get('app.velire_cmd').$list." --shutdown";
-                    $start = $start->add(new \DateInterval('PT'.$step_duration.'S'));
+                    
                     $new_step = new RunStep();
                     $new_step->setRun($run);
                     $new_step->setStart($start);
@@ -213,8 +210,8 @@ class Lumiatec
                     $new_step->setStatus(0);
                     $this->em->persist($new_step);
                     $this->em->flush();
+                    $start = $start->add(new \DateInterval('PT'.$step_duration.'S'));
                     $step_index = $step_index + 1;
-                    // die(print_r($cmd));
                     break;
                 case "goto":
                     list($s, $n) = explode(':', $step->getValue(), 2);
