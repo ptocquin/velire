@@ -396,7 +396,7 @@ class MainController extends Controller
     /**
      * @Route("/setup/get-connected-lightings", name="get-connected-lightings")
      */
-    public function getMyLightings()
+    public function getMyLightings(Lumiatec $lumiatec)
     {
         $em = $this->getDoctrine()->getManager();
         $session = new Session();
@@ -417,15 +417,7 @@ class MainController extends Controller
             }
             $status = $this->getDoctrine()->getRepository(LuminaireStatus::class)->findOneByCode(99);
             $luminaire->addStatus($status);
-            // $luminaire->setCluster(null);
-            // $luminaire->setLigne(null);
-            // $luminaire->setColonne(null);
-            // $em->persist($luminaire);
         }
-
-        // foreach ($clusters as $cluster) {
-        //     $em->remove($cluster);
-        // }
 
         $cluster = $this->getDoctrine()->getRepository(Cluster::class)->findOneByLabel(1);
         if(is_null($cluster)){
@@ -441,27 +433,21 @@ class MainController extends Controller
             // master/slave + set frequence à 2.5kHz + exctinction des drivers + tous les canaux à 0 + sauver dans la mémoire
             // à faire peu souvent car écriture mémoire limitée
             // !!!TODO!!! --address + liste des luminaires
-            $process = new Process($this->getParameter('app.velire_cmd').$list.' --set-master --set-freq 2500 --set-power 0 --shutdown --write --quiet'); // --set-freq 2500 ??--set-power 0?? --shutdown --write
-            $process->setTimeout(3600);
-            $process->run();
+            $args = $list.'--set-master --set-freq 2500 --set-power 0 --shutdown --write --quiet';
+            $success_msg = 'Initialisation successful !';
+            $error_msg = 'For a unknown reason, initialisation failed !';
 
-            // executes after the command finishes
-            if (!$process->isSuccessful()) {
-                throw new ProcessFailedException($process);
-            }
+            //$result = $lumiatec->sendCmd($args, $success_msg, $error_msg);
+
 
             // Interroger le réseau de luminaires
             // !!!TODO!!! --address + liste des luminaires
-            $process = new Process($this->getParameter('app.velire_cmd').$list.' --search --json --quiet');
-            $process->setTimeout(3600);
-            $process->run();
+            $args = $list.'--search --json --quiet';
+            $success_msg = 'Network scanning successful !';
+            $error_msg = 'For a unknown reason, network scanning failed !';
 
-            // executes after the command finishes
-            if (!$process->isSuccessful()) {
-                throw new ProcessFailedException($process);
-            }
-
-            $output = $process->getOutput();
+            $result = $lumiatec->sendCmd($args, $success_msg, $error_msg);
+            $output = $result['output'];
 
             // Decode to array
             $data = json_decode($output, true);
@@ -507,14 +493,11 @@ class MainController extends Controller
 
             // Interroger le réseau de luminaires
             // !!!TODO!!! --address + liste des luminaires
-            $process = new Process($this->getParameter('app.velire_cmd').$list.' --get-info specs --quiet --json --output-file '.$this->getParameter('app.shared_dir').'/config.json');
-            $process->setTimeout(3600);
-            $process->run();
+            $args = $list.' --get-info specs --quiet --json --output-file '.$this->getParameter('app.shared_dir').'/config.json';
+            $success_msg = 'Network scanning successful !';
+            $error_msg = 'For a unknown reason, network scanning failed !';
 
-            // executes after the command finishes
-            if (!$process->isSuccessful()) {
-                throw new ProcessFailedException($process);
-            }
+            $result = $lumiatec->sendCmd($args, $success_msg, $error_msg);
         } 
 
         $data = json_decode(file_get_contents($this->getParameter('app.shared_dir').'/config.json'), TRUE);

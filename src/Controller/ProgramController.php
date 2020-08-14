@@ -194,7 +194,7 @@ class ProgramController extends AbstractController
     /**
      * @Route("/run/new/{id}", name="new-run")
      */
-    public function newRun(Request $request, Cluster $cluster)
+    public function newRun(Request $request, Lumiatec $lumiatec, Cluster $cluster)
     {
         $em = $this->getDoctrine()->getManager();
 
@@ -210,112 +210,7 @@ class ProgramController extends AbstractController
             $em->persist($run);
             $em->flush();
 
-            # Fetch lightings addresses
-            $luminaires = $cluster->getLuminaires();
-            $list = " --address ";
-            foreach ($luminaires as $luminaire) {
-                $list .= $luminaire->getAddress()." ";
-            }
-
-            # Fetch Steps
-            $program = $run->getProgram();
-            $steps = $program->getSteps();
-            # Start
-            $start = $run->getStart();
-            $goto = -1;
-            $step_index = 0;
-
-            while ($step_index < count($steps)) {
-                // die(print_r($steps[$step_index]->getType()));
-                $step = $steps[$step_index];
-                $type = $step->getType();
-
-                switch ($type) {
-                    case "time":
-                        list($hours, $minutes) = explode(':', $step->getValue(), 2);
-                        $step_duration = $minutes * 60 + $hours * 3600;
-                        $commands = [];
-                        $frequency = $step->getRecipe()->getFrequency();
-                        if(is_null($frequency)) {
-                            // default frequency
-                            $filesystem = new Filesystem();
-                            if ($filesystem->exists($this->getParameter('app.shared_dir').'/params.yaml')) {
-                                $values = Yaml::parseFile($this->getParameter('app.shared_dir').'/params.yaml');
-                                $frequency = $values['frequency'];
-                            } else {
-                                $frequency = 2500;
-                            }
-                        }
-                        $ingredients = $step->getRecipe()->getIngredients();
-                        foreach ($ingredients as $ingredient) {
-                            $level = $ingredient->getLevel();
-                            $led = $ingredient->getLed();
-                            $color = $led->getType()."_".$led->getWavelength();
-                            $commands[] = $color." ".$level." ".$ingredient->getPwmStart()." ".$ingredient->getPwmStop();
-                        }
-                        $cmd = $this->getParameter('app.velire_cmd').$list.' --exclusive --set-power 1 --set-freq '.$frequency.' --set-colors '.implode(" ", $commands);
-                        $start = $start->add(new \DateInterval('PT'.$step_duration.'S'));
-                        $new_step = new RunStep();
-                        $new_step->setRun($run);
-                        $new_step->setStart($start);
-                        $new_step->setCommand($cmd);
-                        $new_step->setStatus(0);
-                        $em->persist($new_step);
-                        $em->flush();
-
-                        // dd($new_step->getCommand());
-
-                        $step_index = $step_index + 1;
-                        // die(print_r($start));
-                        break;
-                    case "off":
-                        list($hours, $minutes) = explode(':', $step->getValue(), 2);
-                        $step_duration = $minutes * 60 + $hours * 3600;
-                        $cmd = $this->getParameter('app.velire_cmd').$list." --shutdown";
-                        $start = $start->add(new \DateInterval('PT'.$step_duration.'S'));
-                        $new_step = new RunStep();
-                        $new_step->setRun($run);
-                        $new_step->setStart($start);
-                        $new_step->setCommand($cmd);
-                        $new_step->setStatus(0);
-                        $em->persist($new_step);
-                        $em->flush();
-                        $step_index = $step_index + 1;
-                        // die(print_r($cmd));
-                        break;
-                    case "goto":
-                        list($s, $n) = explode(':', $step->getValue(), 2);
-                        if($goto < 0){
-                            $goto = $n;
-                        } elseif ($goto == 0) {
-                            $goto = -1;
-                            $step_index = $step_index + 1;
-                        } elseif ($goto > 0) {
-                            $step_index = $s;
-                            $goto = $goto - 1;
-                        }
-                        break;
-                }
-            }
-
-            $run->setDateEnd($start);
-            $em->persist($run);
-            $em->flush();            
-            
-
-            // // !!! TODO !!! à reprendre dans la lib bash ?
-            // $process = new Process($this->getParameter('app.bash_cmd').' --run '.$data->getId());
-            // $process->run();
-
-            // // executes after the command finishes
-            // if (!$process->isSuccessful()) {
-            //     // throw new ProcessFailedException($process);
-            //         // add flash messages
-            //         $this->addFlash(
-            //             'error',
-            //             'For a unknown reason, the run was not started'
-            //         );
-            // }
+            $lumiatec->setRun($run);
 
             return $this->redirectToRoute('run');
         }
@@ -418,7 +313,7 @@ class ProgramController extends AbstractController
     /**
      * @Route("/run/edit/{id}", name="edit-run")
      */
-    public function editRun(Request $request, Run $run)
+    public function editRun(Request $request, Lumiatec $lumiatec, Run $run)
     {
         $em = $this->getDoctrine()->getManager();
 
@@ -437,9 +332,7 @@ class ProgramController extends AbstractController
             $em->persist($run);
             $em->flush();
 
-            // !!! TODO !!! à reprendre dans la lib bash ?
-            $process = new Process($this->getParameter('app.velire_cmd').' -e --input '.$this->getParameter('app.shared_dir').'/config.json --set-run '.$run->getId());
-            $process->run();
+            $lumiatec->setRun($run);
 
             return $this->redirectToRoute('run');
         }
@@ -681,11 +574,11 @@ class ProgramController extends AbstractController
         $success_msg = 'Recipe '.$recipe->getLabel().' successfully started on cluster '.$cluster->getLabel();
         $error_msg = 'For a unknown reason, the recipe was not started';
 
-        $msg = $lumiatec->sendCmd($args, $success_msg, $error_msg);
+        $result = $lumiatec->sendCmd($args, $success_msg, $error_msg);
         $lumiatec->updateLogs();
 
         return new Response(
-            $msg,
+            $result['message'],
             Response::HTTP_OK,
             ['content-type' => 'text/html']
         );
@@ -842,16 +735,11 @@ class ProgramController extends AbstractController
             $list .= $luminaire->getAddress()." ";
         }
 
-        // Interroger le réseau de luminaires
-        $process = new Process($this->getParameter('app.velire_cmd').$list.' --shutdown');
-        $process->setTimeout(3600);
-        $process->run();
+        $args = $list.' --shutdown';
+        $success_msg = 'Network scanning successful !';
+        $error_msg = 'For a unknown reason, network scanning failed !';
 
-        // executes after the command finishes
-        if (!$process->isSuccessful()) {
-            throw new ProcessFailedException($process);
-        }
-
+        $result = $lumiatec->sendCmd($args, $success_msg, $error_msg);
         $lumiatec->updateLogs();
 
         return new Response(
@@ -864,7 +752,7 @@ class ProgramController extends AbstractController
     /**
      * @Route("/remote/run", name="run-from-remote")
      */
-    public function runFromRemote(Request $request)
+    public function runFromRemote(Request $request, Lumiatec $lumiatec)
     {
         $data = json_decode($request->getContent(), true);
 
@@ -952,93 +840,7 @@ class ProgramController extends AbstractController
         $em->persist($run);
         $em->flush();
 
-        # Fetch lightings addresses
-        $luminaires = $cluster->getLuminaires();
-        $list = " --address ";
-        foreach ($luminaires as $luminaire) {
-            $list .= $luminaire->getAddress()." ";
-        }
-
-        # Fetch Steps
-        $steps = $program->getSteps();
-        # Start
-        $start = $now;
-        $goto = -1;
-        $step_index = 0;
-
-        while ($step_index < count($steps)) {
-            // die(print_r($steps[$step_index]->getType()));
-            $step = $steps[$step_index];
-            $type = $step->getType();
-
-            switch ($type) {
-                case "time":
-                    list($hours, $minutes) = explode(':', $step->getValue(), 2);
-                    $step_duration = $minutes * 60 + $hours * 3600;
-                    $commands = [];
-                    $frequency = $step->getRecipe()->getFrequency();
-                    if(is_null($frequency)) {
-                        // default frequency
-                        $filesystem = new Filesystem();
-                        if ($filesystem->exists($this->getParameter('app.shared_dir').'/params.yaml')) {
-                            $values = Yaml::parseFile($this->getParameter('app.shared_dir').'/params.yaml');
-                            $frequency = $values['frequency'];
-                        } else {
-                            $frequency = 2500;
-                        }
-                    }
-                    $ingredients = $step->getRecipe()->getIngredients();
-                    foreach ($ingredients as $ingredient) {
-                        $level = $ingredient->getLevel();
-                        $led = $ingredient->getLed();
-                        $color = $led->getType()."_".$led->getWavelength();
-                        $commands[] = $color." ".$level." ".$ingredient->getPwmStart()." ".$ingredient->getPwmStop();
-                    }
-                    $cmd = $this->getParameter('app.velire_cmd').$list.' --exclusive --set-power 1 --set-freq '.$frequency.' --set-colors '.implode(" ", $commands);
-                    $start = $start->add(new \DateInterval('PT'.$step_duration.'S'));
-                    $new_step = new RunStep();
-                    $new_step->setRun($run);
-                    $new_step->setStart($start);
-                    $new_step->setCommand($cmd);
-                    $new_step->setStatus(0);
-                    $em->persist($new_step);
-                    $em->flush();
-                    $step_index = $step_index + 1;
-                    // die(print_r($start));
-                    break;
-                case "off":
-                    list($hours, $minutes) = explode(':', $step->getValue(), 2);
-                    $step_duration = $minutes * 60 + $hours * 3600;
-                    $cmd = $this->getParameter('app.velire_cmd').$list." --shutdown";
-                    $start = $start->add(new \DateInterval('PT'.$step_duration.'S'));
-                    $new_step = new RunStep();
-                    $new_step->setRun($run);
-                    $new_step->setStart($start);
-                    $new_step->setCommand($cmd);
-                    $new_step->setStatus(0);
-                    $em->persist($new_step);
-                    $em->flush();
-                    $step_index = $step_index + 1;
-                    // die(print_r($cmd));
-                    break;
-                case "goto":
-                    list($s, $n) = explode(':', $step->getValue(), 2);
-                    if($goto < 0){
-                        $goto = $n;
-                    } elseif ($goto == 0) {
-                        $goto = -1;
-                        $step_index = $step_index + 1;
-                    } elseif ($goto > 0) {
-                        $step_index = $s;
-                        $goto = $goto - 1;
-                    }
-                    break;
-            }
-        }
-
-        $run->setDateEnd($start);
-        $em->persist($run);
-        $em->flush(); 
+        $lumiatec->setRun($run); 
 
         return new Response(
             'Run '.$run->getLabel().' successfully started on cluster '.$cluster->getLabel(),
@@ -1089,7 +891,7 @@ class ProgramController extends AbstractController
     /**
      * @Route("/remote/luminaire/link", name="link-luminaire-from-remote")
      */
-    public function linkLuminaireFromRemote(Request $request)
+    public function linkLuminaireFromRemote(Request $request, Lumiatec $lumiatec)
     {
         $em = $this->getDoctrine()->getManager();
 
@@ -1134,17 +936,15 @@ class ProgramController extends AbstractController
 
                 // Interroger le réseau de luminaires
                 // !!!TODO!!! --address + liste des luminaires
-                $process = new Process($this->getParameter('app.velire_cmd').' -a '.$data['address'].' --get-info specs --quiet --json');
-                $process->setTimeout(3600);
-                $process->run();
+                $args = ' -a '.$data['address'].' --get-info specs --quiet --json';
+                $success_msg = 'Data from '.$data['address'].'successfully retrieved !';
+                $error_msg = 'For a unknown reason, data from '.$data['address'].'were not retrieved !';
 
-                // executes after the command finishes
-                if (!$process->isSuccessful()) {
-                    throw new ProcessFailedException($process);
-                }
+                $result = $lumiatec->sendCmd($args, $success_msg, $error_msg);
+
             } 
 
-            $data = json_decode($process->getOutput(), TRUE);
+            $data = json_decode($result['output'], TRUE);
 
             $luminaires = $data['specs']; //specs 
 
