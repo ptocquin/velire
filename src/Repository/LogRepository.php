@@ -104,22 +104,26 @@ class LogRepository extends ServiceEntityRepository
             ->andWhere('l.time = :time')
             ->setParameter('cluster', $cluster)
             ->setParameter('type', 'luminaire_info')
-             ->setParameter('time', $time)
+            ->setParameter('time', $time)
             ->getQuery()
             ->getResult()
         ;
     }
     
 
-    /*
-    public function findOneBySomeField($value): ?Log
+    
+    public function findLogsOlderThan($time)
     {
         return $this->createQueryBuilder('l')
-            ->andWhere('l.exampleField = :val')
-            ->setParameter('val', $value)
+            ->andWhere('l.time > :time')
+            ->andWhere('l.type = :type')
+            ->setParameter('time', $time)
+            ->setParameter('type', 'luminaire_info')
+            ->orderBy('l.time', 'DESC')
+            ->setMaxResults(5000)
             ->getQuery()
-            ->getOneOrNullResult()
+            ->getArrayResult()
         ;
     }
-    */
+    
 }

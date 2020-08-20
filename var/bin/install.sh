@@ -223,7 +223,8 @@ sudo openvpn /etc/openvpn/lumiatecvpn.conf
 # ProtectHome=true to ProtectHome=read-only
 sudo sed -i 's/ProtectHome=true/ProtectHome=read-only/' /lib/systemd/system/openvpn@.service
 
-
+# DNS 
+# https://github.com/jonathanio/update-systemd-resolved
 
 # https://serverfault.com/a/918441
 # permettre l'accès ssh sur l'adresse IP publique quand VPN actif
