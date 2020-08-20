@@ -21,6 +21,14 @@ use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Filesystem\Filesystem;
 
+use Doctrine\Common\Annotations\AnnotationReader;
+use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
+use Symfony\Component\Serializer\Mapping\Loader\AnnotationLoader;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Encoder\XmlEncoder;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Serializer;
+
 
 use App\Entity\Program;
 use App\Entity\Step;
@@ -34,6 +42,7 @@ use App\Entity\Led;
 use App\Entity\Pcb;
 use App\Entity\Channel;
 use App\Entity\LuminaireStatus;
+use App\Entity\Log;
 
 
 use App\Form\ProgramType;
@@ -674,21 +683,28 @@ class ProgramController extends AbstractController
 
         $em = $this->getDoctrine()->getManager();
 
-        $p = $this->getDoctrine()->getRepository(Recipe::class)->findOneByUuid($data['program']['uuid']);
+        $program = $this->getDoctrine()->getRepository(Program::class)->findOneByUuid($data['program']['uuid']);
 
-        if(is_null($p)){
+        $message = 'updated';
+        $flag = false;
+        if(is_null($program)){
             $program = new Program;
-        } else {
-            $program = $p;
+            $flag = true;
+            $message = 'created';
+        } elseif ($program->getTimestamp() == $data['program']['timestamp']) {
+            return new Response(
+                'exists',
+                Response::HTTP_OK,
+                ['content-type' => 'text/html']
+            );
         }
 
         $program->setUuid($data['program']['uuid']);
         $program->setLabel($data['program']['label']);
         $program->setDescription($data['program']['description']);
         $program->setTimestamp($data['program']['timestamp']);
-        
 
-        if(!is_null($p)) {
+        if(!$flag) {
             foreach ($program->getSteps() as $step) {
                 $em->remove($step);
             }
@@ -707,14 +723,14 @@ class ProgramController extends AbstractController
             $program->addStep($step);
         }
 
-        if(is_null($p)) {
+        if($flag) {
             $em->persist($program);
         }
         
         $em->flush();
 
         return new Response(
-            'Recipe '.$program->getLabel().' successfully updated ',
+            $message,
             Response::HTTP_OK,
             ['content-type' => 'text/html']
         );
@@ -1053,9 +1069,40 @@ class ProgramController extends AbstractController
                 Response::HTTP_NO_CONTENT,
                 ['content-type' => 'text/html']
             );
-        }
-        
+        } 
+    }
 
-         
+    /**
+     * @Route("/remote/logs", name="logs-from-remote")
+     */
+    public function logsFromRemote(Request $request)
+    {
+        $data = json_decode($request->getContent(), true);
+
+        // dd($data);
+
+        $em = $this->getDoctrine()->getManager();
+
+        $logs = $this->getDoctrine()->getRepository(Log::class)->findLogsOlderThan($data['date']);
+
+        // $encoders = [new XmlEncoder(), new JsonEncoder()];
+        // $normalizers = [new ObjectNormalizer()];
+        // $serializer = new Serializer($normalizers, $encoders);
+
+        // $jsonContent = $serializer->serialize($logs, 'json');
+
+        $response = new JsonResponse();
+        $response->setData($logs);
+        // $response->headers->set('Content-Type', 'application/json');
+
+        return $response;
+
+        // return new Response(
+        //     $logs,
+        //     Response::HTTP_OK,
+        //     ['content-type' => 'text/html']
+        // );
+
+        
     }
 }
