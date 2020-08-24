@@ -49,6 +49,8 @@ class CheckRunCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $em = $this->entityManager;
+        $NUM_OF_ATTEMPTS = 5; // attempts to retry commands
+
 
         $time = date('Y-m-d H:i:00');
         // $time = date('2020-07-10 17:42:00');
@@ -78,7 +80,6 @@ class CheckRunCommand extends Command
             $process = new Process($step->getCommand());
             $process->setTimeout(3600);
 
-            $NUM_OF_ATTEMPTS = 5;
             $attempts = 0;
 
             do {
