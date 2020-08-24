@@ -76,12 +76,29 @@ class CheckRunCommand extends Command
             $output->writeln('Command: '.$step->getCommand());
             $process = new Process($step->getCommand());
             $process->setTimeout(3600);
-            $process->run();
 
-            // executes after the command finishes
+            $NUM_OF_ATTEMPTS = 5;
+            $attempts = 0;
+
+            do {
+                try
+                {
+                    $process->run();
+                } catch (Exception $e) {
+                    $attempts++;
+                    sleep(1);
+                    continue;
+                }
+                break;
+            } while($attempts < $NUM_OF_ATTEMPTS);
+
             if (!$process->isSuccessful()) {
+                $msg = $error_msg;
                 $output->writeln('The command failed Command: '.$process->getOutput());
+                // $output = '';
             } else {
+                $msg = $success_msg;
+                // $output = $process->getOutput();
                 // les anciennes commandes reçoivent le status 2; seule la dernière
                 // commande exécutée garde le status 1
                 // les commandes anciennes non exécutées (par exemple car le programme 
@@ -102,7 +119,7 @@ class CheckRunCommand extends Command
                     $output->writeln('Previous step '.$s->getId().' set status to 3');
                     $em->flush();
                 }
-            }    
+            }   
         }
 
         // On vérifie que des commandes antérieures n'ont pas été lancées
@@ -114,7 +131,20 @@ class CheckRunCommand extends Command
                 $output->writeln('Command: '.$step->getCommand());
                 $process = new Process($step->getCommand());
                 $process->setTimeout(3600);
-                $process->run();
+
+                $attempts = 0;
+
+                do {
+                    try
+                    {
+                        $process->run();
+                    } catch (Exception $e) {
+                        $attempts++;
+                        sleep(1);
+                        continue;
+                    }
+                    break;
+                } while($attempts < $NUM_OF_ATTEMPTS);
 
                 // executes after the command finishes
                 if (!$process->isSuccessful()) {
