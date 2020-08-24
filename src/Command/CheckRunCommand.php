@@ -84,7 +84,7 @@ class CheckRunCommand extends Command
 
             do {
                 try {
-                        $output->writeln('Attempt: ',$attempts+1);
+                        $output->writeln('Attempt: '.$attempts+1);
                         $process->mustRun();
                         $msg = $process->getOutput();
                     } catch (ProcessFailedException $exception) {
@@ -149,7 +149,7 @@ class CheckRunCommand extends Command
 
                 do {
                     try {
-                        $output->writeln('Attempt: ',$attempts+1);
+                        $output->writeln('Attempt: '.$attempts+1);
                         $process->mustRun();
                         $msg = $process->getOutput();
                     } catch (ProcessFailedException $exception) {
