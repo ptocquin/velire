@@ -18,6 +18,7 @@ use App\Services\Parameters;
 // 1. Import the ORM EntityManager Interface
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Process\Process;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 
 
 class CheckRunCommand extends Command
@@ -81,14 +82,24 @@ class CheckRunCommand extends Command
             $attempts = 0;
 
             do {
-                try
-                {
-                    $process->run();
-                } catch (Exception $e) {
-                    $attempts++;
-                    sleep(1);
-                    continue;
-                }
+                try {
+                        $process->mustRun();
+                        $msg = $process->getOutput();
+                    } catch (ProcessFailedException $exception) {
+                        $msg = $exception->getMessage();
+                        $output->writeln('The command failed with msg '.$msg);
+                        $attempts++;
+                        sleep(1);
+                        continue;
+                    }
+                // try
+                // {
+                //     $process->run();
+                // } catch (Exception $e) {
+                //     $attempts++;
+                //     sleep(1);
+                //     continue;
+                // }
                 break;
             } while($attempts < $NUM_OF_ATTEMPTS);
 
@@ -135,20 +146,30 @@ class CheckRunCommand extends Command
                 $attempts = 0;
 
                 do {
-                    try
-                    {
-                        $process->run();
-                    } catch (Exception $e) {
+                    try {
+                        $process->mustRun();
+                        $msg = $process->getOutput();
+                    } catch (ProcessFailedException $exception) {
+                        $msg = $exception->getMessage();
+                        $output->writeln('The command failed with msg '.$msg);
                         $attempts++;
                         sleep(1);
                         continue;
                     }
+                    // try
+                    // {
+                    //     $process->run();
+                    // } catch (Exception $e) {
+                    //     $attempts++;
+                    //     sleep(1);
+                    //     continue;
+                    // }
                     break;
                 } while($attempts < $NUM_OF_ATTEMPTS);
 
                 // executes after the command finishes
                 if (!$process->isSuccessful()) {
-                    $output->writeln('The command failed Command: '.$process->getOutput());
+                    $output->writeln('The command failed Command: '.$msg);
                 } else {
                     // les anciennes commandes reçoivent le status 2; seule la dernière
                     // commande exécutée garde le status 1
