@@ -49,8 +49,8 @@ class CheckRunCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $em = $this->entityManager;
-        $NUM_OF_ATTEMPTS = 5; // attempts to retry commands
-
+        $NUM_OF_ATTEMPTS = 10; // attempts to retry commands
+        $SLEEP = 10; //seconds between 2 attempts
 
         $time = date('Y-m-d H:i:00');
         // $time = date('2020-07-10 17:42:00');
@@ -84,13 +84,14 @@ class CheckRunCommand extends Command
 
             do {
                 try {
+                        $output->writeln('Attempt: ',$attempts+1);
                         $process->mustRun();
                         $msg = $process->getOutput();
                     } catch (ProcessFailedException $exception) {
                         $msg = $exception->getMessage();
                         $output->writeln('The command failed with msg '.$msg);
                         $attempts++;
-                        sleep(1);
+                        sleep($SLEEP);
                         continue;
                     }
                 // try
@@ -148,13 +149,14 @@ class CheckRunCommand extends Command
 
                 do {
                     try {
+                        $output->writeln('Attempt: ',$attempts+1);
                         $process->mustRun();
                         $msg = $process->getOutput();
                     } catch (ProcessFailedException $exception) {
                         $msg = $exception->getMessage();
                         $output->writeln('The command failed with msg '.$msg);
                         $attempts++;
-                        sleep(1);
+                        sleep($SLEEP);
                         continue;
                     }
                     // try
