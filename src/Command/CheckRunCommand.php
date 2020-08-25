@@ -84,9 +84,8 @@ class CheckRunCommand extends Command
 
             do {
                 try {
-                        $output->writeln('Attempt: '.$attempts+1);
+                        $output->writeln('Attempt: '.$attempts);
                         $process->mustRun();
-                        $msg = $process->getOutput();
                     } catch (ProcessFailedException $exception) {
                         $msg = $exception->getMessage();
                         $output->writeln('The command failed with msg '.$msg);
@@ -106,8 +105,8 @@ class CheckRunCommand extends Command
             } while($attempts < $NUM_OF_ATTEMPTS);
 
             if (!$process->isSuccessful()) {
-                $msg = $error_msg;
-                $output->writeln('The command failed Command: '.$process->getOutput());
+                $msg = $process->getOutput();
+                $output->writeln('The command failed Command: '.$msg);
                 // $output = '';
             } else {
                 $msg = $success_msg;
@@ -149,9 +148,8 @@ class CheckRunCommand extends Command
 
                 do {
                     try {
-                        $output->writeln('Attempt: '.$attempts+1);
+                        $output->writeln('Attempt: '.$attempts);
                         $process->mustRun();
-                        $msg = $process->getOutput();
                     } catch (ProcessFailedException $exception) {
                         $msg = $exception->getMessage();
                         $output->writeln('The command failed with msg '.$msg);
@@ -172,6 +170,7 @@ class CheckRunCommand extends Command
 
                 // executes after the command finishes
                 if (!$process->isSuccessful()) {
+                    $msg = $process->getOutput();
                     $output->writeln('The command failed Command: '.$msg);
                 } else {
                     // les anciennes commandes reçoivent le status 2; seule la dernière
