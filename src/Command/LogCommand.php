@@ -52,6 +52,8 @@ class LogCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $em = $this->entityManager;
+        $NUM_OF_ATTEMPTS = 5;
+        $SLEEP = 10;
 
         $time = date('Y-m-d H:i:00');
         // $time = date('2020-07-10 17:42:00');
@@ -75,7 +77,31 @@ class LogCommand extends Command
 
         $process = new Process($cmd);
         $process->setTimeout(3600);
-        $process->run();
+
+        $attempts = 0;
+
+        do {
+            try {
+                    $output->writeln('Attempt: '.$attempts);
+                    $process->mustRun();
+                } catch (ProcessFailedException $exception) {
+                    $msg = $exception->getMessage();
+                    $output->writeln('The command failed with msg '.$msg);
+                    $attempts++;
+                    sleep($SLEEP);
+                    continue;
+                }
+            // try
+            // {
+            //     $process->run();
+            // } catch (Exception $e) {
+            //     $attempts++;
+            //     sleep(1);
+            //     continue;
+            // }
+            break;
+        } while($attempts < $NUM_OF_ATTEMPTS);
+
 
         // executes after the command finishes
         if (!$process->isSuccessful()) {
